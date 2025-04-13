@@ -131,4 +131,6 @@ class User extends Authenticatable
         // Asume que la clave foránea en la tabla 'videos' es 'uploaded_by'
         return $this->hasMany(Video::class, 'uploaded_by');
     }
+
+   
 }
