@@ -131,6 +131,20 @@ class User extends Authenticatable
         // Asume que la clave foránea en la tabla 'videos' es 'uploaded_by'
         return $this->hasMany(Video::class, 'uploaded_by');
     }
+    /**
+     * Las fotos a las que este usuario le ha dado "like".
+     */
+    public function likedPhotos(): BelongsToMany
+    {
+        // Nombre de la tabla pivot, clave foránea de este modelo, clave foránea del otro modelo
+        return $this->belongsToMany(Photo::class, 'photo_user_likes', 'user_id', 'photo_id')
+                    ->withTimestamps(); // Para que maneje created_at en la tabla pivot si lo tienes
+    }
+    public function likedPhoto(): BelongsToMany
+    {
+        // Nombre de la tabla pivot, clave foránea de este modelo, clave foránea del otro modelo
+        return $this->belongsToMany(Photo::class, 'photo_user_likes', 'user_id', 'photo_id')
+                    ->withTimestamps(); // Para que maneje created_at en la tabla pivot si lo tienes
+    }
 
-   
 }

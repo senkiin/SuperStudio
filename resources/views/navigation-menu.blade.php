@@ -5,7 +5,7 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
+                    <a href="{{ route('albums') }}">
                         <img class="block max-w-xs h-auto p-12 " src="{{Storage::url('/media/logos/logo1.png')}}"/>
                     </a>
                 </div>
@@ -13,13 +13,28 @@
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     @auth
-                    <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
+
                     <x-nav-link href="{{ route('albums') }}" :active="request()->routeIs('albums')">
                         {{ __('Albumes') }}
                     </x-nav-link>
+                    <x-nav-link href="{{ route('photos.liked') }}" :active="request()->routeIs('photos.liked')">
+                        {{ __('Mis fotos Favoritas') }}
+                    </x-nav-link>
+                        @if (Auth::user()->role === 'admin')
+                            <x-nav-link href="{{ route('user.likes') }}" :active="request()->routeIs('user.likes')">
+                                {{ __('Admin fotos') }}
+                            </x-nav-link>
+                        @endif
                     @endauth
+                    @if (Auth::user()?->role === 'admin') {{-- ¡Ajusta comprobación de rol! --}}
+                    <x-nav-link href="{{ route('admin.dashboard') }}" :active="request()->routeIs('admin.dashboard')">
+                        {{ __('Panel Admin') }} {{-- Enlace al NUEVO dashboard de admin --}}
+                    </x-nav-link>
+                    {{-- Podrías mover aquí el enlace a admin.user.likes también --}}
+                    <x-nav-link href="{{ route('admin.user.likes') }}" :active="request()->routeIs('admin.user.likes')">
+                         {{ __('Admin Likes') }}
+                     </x-nav-link>
+                @endif
                 </div>
             </div>
 
@@ -82,12 +97,7 @@
                     @if (Route::has('login'))
                         <nav class="-mx-3 flex flex-1 justify-end">
                             @auth
-                                <a
-                                    href="{{ url('/dashboard') }}"
-                                    class="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
-                                >
-                                    Dashboard
-                                </a>
+
                             @else
                                 <a
                                     href="{{ route('login') }}"

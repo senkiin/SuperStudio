@@ -12,8 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('photo_user_likes', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('photo_id')->constrained('photos')->onDelete('cascade');
+            $table->timestamps(); // Agrega 'created_at' y 'updated_at'
+            $table->unique(['user_id', 'photo_id']);
         });
     }
 

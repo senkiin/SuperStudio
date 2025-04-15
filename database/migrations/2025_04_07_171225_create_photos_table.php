@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('file_path');
             $table->string('thumbnail_path')->nullable();
             $table->foreignId('uploaded_by')->constrained('users')->onDelete('cascade');
-            $table->boolean('like')->default(false);
             $table->timestamps();
         });
     }

@@ -325,7 +325,7 @@
                                     @endif
 
                                     {{-- Indicador Like (Corazón - siempre visible si tiene like) --}}
-                                    @if ($photo->like)
+                                    @if ($photo->liked_by_current_user)
                                         <div class="absolute bottom-1.5 left-1.5 z-10 p-1 bg-black/50 backdrop-blur-sm rounded-full pointer-events-none"
                                             title="Te gusta">
                                             <svg class="w-3.5 h-3.5 text-red-500" fill="currentColor"

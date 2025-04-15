@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Photo extends Model
 {
@@ -16,7 +17,7 @@ class Photo extends Model
         'file_path',
         'thumbnail_path',
         'uploaded_by',
-        'like',
+
     ];
 
     /**
@@ -36,5 +37,14 @@ class Photo extends Model
     {
         // Especificamos la clave foránea porque no sigue la convención ('uploader_id')
         return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
+    /**
+     * Los usuarios a los que les gusta esta foto.
+     */
+    public function likedByUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'photo_user_likes', 'photo_id', 'user_id')
+                    ->withTimestamps();
     }
 }

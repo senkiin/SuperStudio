@@ -23,7 +23,6 @@ class PhotoFactory extends Factory
             'album_id'=>Album::all()->random()->id,
             'file_path'=>'images/photos/'.fake()->picsum('public/storage/images/photos', 400, 400, false),
             'uploaded_by'=>User::all()->random()->id,
-            'like'=>fake()->boolean(),
         ];
     }
 }
