@@ -184,11 +184,13 @@
                     </h3>
                     <div class="flex items-center space-x-3">
                         {{-- Botón Seleccionar / Cancelar --}}
+                        @if (Auth::user()->role === "admin")
                         <button wire:click="toggleSelectionMode"
                             class="px-3 py-1.5 text-xs font-semibold rounded-md shadow-sm transition-colors duration-150 {{ $selectionMode ? 'bg-gray-600 hover:bg-gray-700 focus:ring-gray-500' : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500' }} text-white focus:outline-none focus:ring-2 focus:ring-offset-2"
                             wire:loading.attr="disabled">
                             {{ $selectionMode ? 'Cancelar Selección' : 'Seleccionar Fotos' }}
                         </button>
+                        @endif
 
                         {{-- Botón Cerrar --}}
                         <button wire:click="closeModal" wire:loading.attr="disabled"
@@ -222,6 +224,7 @@
                         @enderror
                     </div>
                     {{-- === ZONA PARA AÑADIR FOTOS === --}}
+                    @if (Auth::user()->role === "admin" )
                     <div class="mb-6 border-b pb-4">
                         <h4 class="text-lg font-medium mb-2">Añadir Nuevas Fotos</h4>
                         <form wire:submit.prevent="savePhotos">
@@ -260,6 +263,8 @@
                             @endif
                         </form>
                     </div>
+                    @endif
+
                     {{-- === FIN ZONA AÑADIR FOTOS === --}}
 
                     {{-- Título de Galería y Botón Borrar --}}

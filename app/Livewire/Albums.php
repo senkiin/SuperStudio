@@ -359,7 +359,7 @@ class Albums extends Component
         $this->reset(['newAlbumName', 'newAlbumDescription', 'newAlbumType', 'newAlbumCover', 'newAlbumClientId']);
         $this->newAlbumType = 'public'; // Resetear tipo a por defecto
         // Cargar usuarios con rol 'client' (¡Ajusta el rol si es diferente!)
-        $this->clients = User::where('role', 'client')->orderBy('name')->get(['id', 'name', 'email']); // Añadido email
+        $this->clients = User::where('role', 'admin')->orderBy('name')->get(['id', 'name', 'email']); // Añadido email
         $this->showCreateAlbumModal = true; // Mostrar el modal
     }
     // Cierra el modal de creación y limpia los campos y errores
@@ -398,8 +398,11 @@ class Albums extends Component
             'type' => $validatedData['newAlbumType'],
             'user_id' => $user->id, // El admin es el creador/dueño
             'cover_image' => $coverPath,
-            // Asigna client_id solo si el tipo es 'client' y se seleccionó un cliente válido
-            'client_id' => ($validatedData['newAlbumType'] === 'client' && !empty($validatedData['newAlbumClientId'])) ? $validatedData['newAlbumClientId'] : null,
+            // Asigna client_id si el tipo es 'client' y se seleccionó un cliente válido,
+            // o si el tipo es 'public', asigna el ID del usuario que está creando el álbum
+            'client_id' => ($validatedData['newAlbumType'] === 'client' && !empty($validatedData['newAlbumClientId']))
+            ? $validatedData['newAlbumClientId']
+            : ($validatedData['newAlbumType'] === 'public' ? $user->id : null),
         ]);
         $this->closeCreateAlbumModal(); // Cerrar el modal
         session()->flash('message', 'Álbum creado.'); // Mensaje de éxito
@@ -415,12 +418,12 @@ class Albums extends Component
 
         // Aplicar filtro basado en rol
         if ($user) { // Si hay usuario logueado
-            if ($user->role != 'admin') { // Si NO es admin (asume cliente) ¡Ajusta rol!
-                // Solo ve sus álbumes (por user_id) O los de tipo 'public'
+            if ($user->role != 'admin') { // Si NO es admin (asume cliente)
+                // Solo ve sus álbumes (por user_id), los de tipo 'public' o donde es client_id
                 $query->where(function ($q) use ($user) {
                     $q->where('user_id', $user->id)
-                        // ->orWhere('client_id', $user->id) // Descomentar si un cliente debe ver álbumes donde es client_id
-                        ->orWhere('type', 'public'); // ¡Ajusta columna/valor si es necesario!
+                        ->orWhere('client_id', $user->id) // Ver álbumes donde es client_id
+                        ->orWhere('type', 'public'); // Ver álbumes públicos
                 });
             }
             // Si es admin, no se aplica filtro de usuario/tipo (ve todo)
@@ -555,5 +558,6 @@ class Albums extends Component
          session()->flash('message', 'Álbum actualizado correctamente.');
          // $this->dispatch('$refresh'); // Refrescar componente actual si es necesario
      }
+     
 
 } // Fin de la clase Albums
