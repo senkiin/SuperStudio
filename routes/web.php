@@ -6,10 +6,10 @@ use App\Livewire\Albums;
 use App\Livewire\LikedPhotos;
 use App\Livewire\Admin\Dashboard;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomepageController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', HomepageController::class)->name('home'); // Cambié el nombre a 'home'
+
 
 Route::middleware([
     'auth:sanctum',

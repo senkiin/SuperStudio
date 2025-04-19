@@ -1,5 +1,5 @@
 {{-- resources/views/livewire/admin/dashboard.blade.php --}}
-<x-app-layout> {{-- Usando el mismo layout base por ahora --}}
+<div> {{-- Usando el mismo layout base por ahora --}}
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Panel de Administración') }} {{-- Título diferente --}}
@@ -61,4 +61,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+</div>

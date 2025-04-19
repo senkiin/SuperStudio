@@ -24,7 +24,7 @@ class Dashboard extends Component
         }
 
         // Cargar datos iniciales para el dashboard (ejemplo)
-        $this->userCount = User::where('role', 'client')->count(); // Contar solo clientes
+        $this->userCount = User::where('role', 'user')->count(); // Contar solo clientes
         $this->albumCount = Album::count();
         $this->orderCount = Order::whereIn('status', ['pending', 'processing'])->count(); // Contar pedidos pendientes/procesando
     }

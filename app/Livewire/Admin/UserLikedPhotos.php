@@ -1,43 +1,22 @@
 <?php
 
-namespace App\Livewire\Admin; // Namespace actualizado
+namespace App\Livewire\Admin;
 
 use App\Models\User;
 use App\Models\Photo;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage; // Asegúrate de importar Storage
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Database\Eloquent\Collection; // Importar Collection
 
 class UserLikedPhotos extends Component
 {
     use WithPagination;
 
-    // Propiedades públicas
-    public $clients = [];          // Guarda la lista de clientes para el dropdown
+    // --- Propiedades para Búsqueda ---
+    public string $searchQuery = '';      // Término de búsqueda para clientes
     public ?int $selectedClientId = null; // Guarda el ID del cliente seleccionado
-
-    /**
-     * Se ejecuta cuando el componente se monta por primera vez.
-     * Carga la lista inicial de clientes.
-     */
-    public function mount()
-    {
-        // Cargar solo si el usuario actual es admin (¡Ajusta la lógica de rol!)
-        if (Auth::user()?->role === 'admin') {
-            $this->loadClients();
-        }
-    }
-
-    /**
-     * Carga la lista de usuarios que son clientes.
-     */
-    public function loadClients()
-    {
-         // Obtener usuarios con rol 'client' (¡Ajusta el rol!)
-        $this->clients = User::where('role', 'client')
-                             ->orderBy('name')
-                             ->get(['id', 'name', 'email']);
-    }
 
     /**
      * Hook que se ejecuta cuando se actualiza $selectedClientId.
@@ -45,22 +24,49 @@ class UserLikedPhotos extends Component
      */
     public function updatedSelectedClientId()
     {
-        $this->resetPage(); // Resetea la paginación por defecto
+        $this->resetPage(); // Resetea la paginación de fotos
     }
 
-     /**
-      * Método para quitar el "Like" (como admin, actuando sobre la selección) - Opcional
-      */
-     public function adminUnlikePhoto(int $photoId)
-     {
-         if (Auth::user()?->role !== 'admin' || !$this->selectedClientId) {
+    /**
+     * Hook que se ejecuta cuando se actualiza $searchQuery.
+     * Limpia la selección anterior y resetea la paginación.
+     */
+    public function updatedSearchQuery()
+    {
+        $this->selectedClientId = null; // Deselecciona el cliente al buscar de nuevo
+        $this->resetPage();         // Resetea la paginación de fotos
+    }
+
+    /**
+     * Selecciona un cliente desde los resultados de búsqueda.
+     */
+    public function selectClient(int $clientId)
+    {
+        $this->selectedClientId = $clientId;
+        $this->searchQuery = ''; // Limpia el campo de búsqueda después de seleccionar
+        $this->resetPage();      // Asegura resetear paginación de fotos
+    }
+
+    /**
+     * Método para quitar el "Like" (como admin, actuando sobre la selección)
+     */
+    public function adminUnlikePhoto(int $photoId)
+    {
+        if (Auth::user()?->role !== 'admin' || !$this->selectedClientId) {
+            session()->flash('error', 'Acción no permitida.');
             return; // Solo admin y con cliente seleccionado
-         }
-         $targetClient = User::find($this->selectedClientId);
-         if ($targetClient) {
-             $targetClient->likedPhotos()->detach($photoId); // Quita el like para el cliente seleccionado
-         }
-     }
+        }
+
+        $targetClient = User::find($this->selectedClientId);
+        if ($targetClient) {
+            $targetClient->likedPhotos()->detach($photoId); // Quita el like para el cliente seleccionado
+            // Opcional: Refrescar la lista o mostrar mensaje de éxito
+             session()->flash('message', 'Like eliminado correctamente.');
+             // $this->resetPage(); // Puede ser necesario si no se actualiza automáticamente
+        } else {
+            session()->flash('error', 'No se pudo encontrar al cliente.');
+        }
+    }
 
     /**
      * Renderiza la vista.
@@ -69,30 +75,50 @@ class UserLikedPhotos extends Component
     {
         // Doble verificación de permiso de administrador (¡Ajusta rol!)
         if (Auth::user()?->role !== 'admin') {
-            // Puedes mostrar una vista de error, abortar, o redirigir
              session()->flash('error', 'Acceso no autorizado.');
-             return view('livewire.admin.user-liked-photos', ['likedPhotos' => null]); // Vista vacía o de error
-             // O: abort(403);
+             return view('livewire.admin.user-liked-photos', [
+                 'likedPhotos' => null,
+                 'filteredClients' => collect(), // Colección vacía
+                 'selectedClient' => null,
+             ]);
         }
 
+        // --- Búsqueda de Clientes ---
+        $filteredClients = collect(); // Inicializa como colección vacía
+        if (!empty($this->searchQuery)) {
+            $query = User::where('role', 'user') // Busca solo clientes (¡Ajusta rol!)
+                         ->where(function ($q) {
+                             $q->where('name', 'like', '%' . $this->searchQuery . '%')
+                               ->orWhere('email', 'like', '%' . $this->searchQuery . '%');
+                         })
+                         ->orderBy('name')
+                         ->limit(10); // Limita el número de resultados mostrados
+
+            $filteredClients = $query->get(['id', 'name', 'email']);
+        }
+
+        // --- Obtener Cliente y Fotos Favoritas ---
+        $selectedClient = null;
         $likedPhotos = null;
-        // Si se ha seleccionado un cliente válido, busca sus fotos favoritas
+
         if ($this->selectedClientId) {
-            $targetClient = User::find($this->selectedClientId);
-            if ($targetClient) {
-                $likedPhotos = $targetClient->likedPhotos() // Usa la relación del modelo User
-                                    ->with('album:id,name') // Carga nombre del álbum
-                                    ->orderByPivot('created_at', 'desc') // Ordena por fecha de like
-                                    ->paginate(20); // Pagina los resultados
+            $selectedClient = User::find($this->selectedClientId); // Busca el cliente seleccionado
+            if ($selectedClient && $selectedClient->role === 'user') { // Verifica que exista y sea cliente
+                $likedPhotos = $selectedClient->likedPhotos() // Usa la relación del modelo User
+                                        ->with('album:id,name') // Carga nombre del álbum
+                                        ->orderByPivot('created_at', 'desc') // Ordena por fecha de like
+                                        ->paginate(20); // Pagina los resultados
+            } else {
+                // Si el ID existe pero no es un cliente válido o no se encontró, resetea
+                $this->selectedClientId = null;
+                $selectedClient = null;
             }
         }
 
-        $users = User::all();
-
         return view('livewire.admin.user-liked-photos', [
-            'likedPhotos' => $likedPhotos,
-            'users'=> $users,
-            // 'clients' ya es una propiedad pública, disponible en la vista
+            'filteredClients' => $filteredClients, // Clientes encontrados en la búsqueda
+            'selectedClient'  => $selectedClient,  // El cliente que ha sido seleccionado
+            'likedPhotos'     => $likedPhotos,     // Fotos favoritas del cliente seleccionado
         ]);
     }
 }
