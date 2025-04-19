@@ -45,6 +45,9 @@
                     <div class="mt-8 border-t pt-6">
                         <h3 class="text-lg font-medium text-gray-900 mb-4">Accesos Rápidos</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <a href="{{ route('admin.homepage.carousel') }}" class="block p-4 bg-green-50 hover:bg-green-100 rounded-lg text-green-700 font-medium transition-colors">
+                                Gestionar Carrusel Inicio
+                            </a>
                             <a href="{{ route('admin.user.likes') }}" class="block p-4 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-700 font-medium transition-colors">
                                 Ver Likes por Cliente
                             </a>
