@@ -7,6 +7,9 @@ use App\Models\Album;
 use App\Models\Order;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth; // Importar Auth
+use Illuminate\View\View;
+use Livewire\Attributes\Layout; // <<< Importar el atributo
+
 
 class Dashboard extends Component
 {
@@ -32,8 +35,7 @@ class Dashboard extends Component
     // El método render simplemente devuelve la vista
     public function render()
     {
-        // Puedes usar un layout específico de admin si lo creas: ->layout('layouts.admin')
-        return view('livewire.admin.dashboard');
-           // ->layout('layouts.app'); // O seguir usando el layout de app por ahora
+        return view('livewire.admin.dashboard'); // Ya no necesita ->layout()
+
     }
 }

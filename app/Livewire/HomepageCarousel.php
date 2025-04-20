@@ -5,42 +5,41 @@ namespace App\Livewire;
 use App\Models\CarouselImage;
 use Livewire\Component;
 use Illuminate\Support\Collection; // Import Collection
-
+use Livewire\Attributes\On;       // <-- Importa esto
+use Illuminate\Support\Facades\Log; // <-- Importa Log si quieres depurar
+use App\Livewire\Admin\ManageHomepageCarousel;
 class HomepageCarousel extends Component
 {
-    public Collection $images; // Usaremos una Colección de Laravel
-    public string $slogan = "Igniting Passion"; // Eslogan por defecto
+    public Collection $images;
+    public string $slogan = 'IGNITING PASSION'; // O como lo obtengas
 
     public function mount()
     {
         $this->loadImages();
-        // Aquí podrías cargar el slogan desde la BD si lo haces editable
-        // $setting = Setting::where('key', 'homepage_slogan')->first();
-        // $this->slogan = $setting->value ?? "Igniting Passion";
     }
 
     public function loadImages()
     {
-        // Carga las imágenes activas, ordenadas
+        // Carga solo imágenes activas y ordenadas para mostrar
         $this->images = CarouselImage::where('is_active', true)
                                     ->orderBy('order', 'asc')
                                     ->get();
+        Log::debug('HomepageCarousel loaded ' . $this->images->count() . ' images.');
+    }
+
+    // Listener que se activa cuando ManageHomepageCarousel dispara 'carouselUpdated'
+    #[On('carouselUpdated')]
+    public function refreshCarouselData()
+    {
+        Log::debug('HomepageCarousel received carouselUpdated event. Refreshing data...');
+        $this->loadImages(); // Vuelve a cargar las imágenes
+
+        // Opcional: Forzar actualización de Alpine si es necesario (ver nota abajo)
+        // $this->dispatch('alpine-carousel-images-updated', images: $this->images->toArray()); // Ejemplo
     }
 
     public function render()
     {
-        // Si no hay imágenes, podríamos mostrar una por defecto
-        if ($this->images->isEmpty()) {
-             // Crear una imagen placeholder si la colección está vacía
-             $placeholder = new CarouselImage([
-                'image_path' => 'images/placeholder-hero.jpg', // Ruta en public/images
-                'caption' => $this->slogan,
-            ]);
-            // Usamos asset() para rutas en public/
-            $placeholder->imageUrl = asset($placeholder->image_path);
-            $this->images = collect([$placeholder]);
-        }
-
         return view('livewire.homepage-carousel');
     }
 }

@@ -12,6 +12,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Support\Facades\Session; // Necesario para el método isImpersonating
 
 class User extends Authenticatable
 {
@@ -24,6 +25,7 @@ class User extends Authenticatable
     use HasProfilePhoto;
     use Notifiable;
     use TwoFactorAuthenticatable;
+
 
     /**
      * The attributes that are mass assignable.
@@ -146,5 +148,41 @@ class User extends Authenticatable
         return $this->belongsToMany(Photo::class, 'photo_user_likes', 'user_id', 'photo_id')
                     ->withTimestamps(); // Para que maneje created_at en la tabla pivot si lo tienes
     }
+   /**
+     * Determina si este usuario (el admin) tiene permiso para impersonar a otros.
+     */
+    public function canImpersonateOthers(): bool
+    {
+        // Lógica simple: Solo los usuarios con rol 'admin' pueden
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Determina si este usuario puede ser impersonado por el usuario actual (admin).
+     * Puedes pasar el $impersonator si necesitas lógica más compleja.
+     */
+    public function canBeImpersonated(): bool
+    {
+        // Lógica simple: Los administradores no pueden ser impersonados
+        return $this->role !== 'admin';
+    }
+
+    /**
+     * Verifica si la sesión actual es una sesión de impersonación.
+     * Helper para usar en vistas/middleware.
+     */
+    public static function isImpersonating(): bool
+    {
+        return Session::has('original_admin_id');
+    }
+
+    /**
+     * Obtiene el ID del administrador original si se está impersonando.
+     */
+    public static function getOriginalAdminId(): ?int
+    {
+        return Session::get('original_admin_id');
+    }
+
 
 }

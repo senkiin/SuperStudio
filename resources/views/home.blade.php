@@ -2,7 +2,12 @@
 <x-app-layout> {{-- O x-guest-layout si no quieres la barra de navegación aquí --}}
 
     {{-- Incluir el componente Livewire del carrusel --}}
-    @livewire('homepage-carousel')
+    <div class="flex flex-col">
+        @livewire('homepage-carousel')
+        @livewire('admin.manage-homepage-carousel') {{-- El modal vive aquí --}}
+        @livewire('homepage.info-blocks-manager')
+
+    </div>
 
     {{-- Contenido Principal de la Página (Debajo del Carrusel) --}}
     {{-- Este es el punto al que apunta el botón de scroll --}}
@@ -26,3 +31,4 @@
     {{-- Otro contenido... sección sobre mí, contacto, etc. --}}
 
 </x-app-layout>
+

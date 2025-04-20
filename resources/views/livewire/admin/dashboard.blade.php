@@ -5,6 +5,7 @@
             {{ __('Panel de Administración') }} {{-- Título diferente --}}
         </h2>
     </x-slot>
+    @livewire('admin.manage-homepage-carousel') {{-- El modal vive aquí --}}
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -45,9 +46,9 @@
                     <div class="mt-8 border-t pt-6">
                         <h3 class="text-lg font-medium text-gray-900 mb-4">Accesos Rápidos</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <a href="{{ route('admin.homepage.carousel') }}" class="block p-4 bg-green-50 hover:bg-green-100 rounded-lg text-green-700 font-medium transition-colors">
-                                Gestionar Carrusel Inicio
-                            </a>
+                            <button wire:click="$dispatch('openCarouselModal')" type="button" class="block w-full text-left p-4 bg-green-50 hover:bg-green-100 rounded-lg text-green-700 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-green-500">
+                                  Gestionar Carrusel Inicio
+                            </button>
                             <a href="{{ route('admin.user.likes') }}" class="block p-4 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-700 font-medium transition-colors">
                                 Ver Likes por Cliente
                             </a>
