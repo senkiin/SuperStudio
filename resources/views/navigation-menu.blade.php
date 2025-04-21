@@ -1,5 +1,12 @@
 {{-- resources/views/navigation-menu.blade.php (CORREGIDO) --}}
-<div> {{-- DIV ENVOLVENTE --}}
+<div x-data="{ open: false, scrolled: false }"
+@scroll.window.debounce.50ms="scrolled = (window.scrollY > 20)"
+{{-- Clases: Sticky + Z-index + Transición para colores/sombras --}}
+class="sticky top-0 z-50 w-full transition-all duration-300 ease-in-out text-gray-100" {{-- Movido text-gray-100 aquí --}}
+:class="{
+   'bg-grey-500 shadow-lg': !scrolled,
+   'bg-transparent border-transparent': scrolled
+}"> {{-- DIV ENVOLVENTE --}}
 
     {{-- Banner de Impersonación (Usa la comprobación de sesión) --}}
     @if (session('original_admin_id')) {{-- Verifica si la clave existe en la sesión --}}
@@ -20,21 +27,41 @@
         </div>
     @endif
 
-    <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
+    <nav x-data="{ open: false }" class="w-full">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex">
-                    <div class="shrink-0 flex items-center">
-                        {{-- Decide a dónde apunta el logo según si eres admin REAL o no --}}
+                    <div class="shrink-0 flex items-center"> {{-- flex items-center centra verticalmente --}}
+                        @php
+                            // Obtenemos las URLs de ambos logos una sola vez usando Storage::url()
+                            $logoUrlDefault = Storage::url('media/logos/logo1.png'); // Logo sin scroll
+                            $logoUrlScrolled = Storage::url('media/logos/logo2.png'); // Logo con scroll
+                        @endphp
+
                         @auth
-                            {{-- *** CORRECCIÓN AQUÍ *** --}}
                             @if(Auth::user()->role === 'admin' && !session('original_admin_id'))
-                               <a href="{{ route('admin.dashboard') }}"> <x-application-mark class="block h-9 w-auto" /> </a>
+                               <a href="{{ route('admin.dashboard') }}">
+                                   {{-- Vinculamos :src con Alpine --}}
+                                   {{-- Si scrolled=true, usa logoUrlScrolled, si no, usa logoUrlDefault --}}
+                                   <img :src="scrolled ? '{{ $logoUrlScrolled }}' : '{{ $logoUrlDefault }}'"
+                                        alt="Logo"
+                                        style="display: block; height: 14rem; width: auto;" />
+                                </a>
                             @else
-                               <a href="{{ route('home') }}"> <x-application-mark class="block h-9 w-auto" /> </a>
+                               <a href="{{ route('home') }}">
+                                   {{-- Vinculamos :src con Alpine --}}
+                                   <img :src="scrolled ? '{{ $logoUrlScrolled }}' : '{{ $logoUrlDefault }}'"
+                                        alt="Logo"
+                                        style="display: block; height: 14rem; width: auto;" />
+                               </a>
                             @endif
                         @else
-                             <a href="{{ route('home') }}"> <x-application-mark class="block h-9 w-auto" /> </a>
+                             <a href="{{ route('home') }}">
+                                 {{-- Vinculamos :src con Alpine --}}
+                                 <img :src="scrolled ? '{{ $logoUrlScrolled }}' : '{{ $logoUrlDefault }}'"
+                                      alt="Logo"
+                                      style="display: block; height: 14rem; width: auto;" />
+                             </a>
                         @endauth
                     </div>
 
@@ -43,10 +70,6 @@
                             {{-- ENLACES PARA ADMIN REAL (NO IMPERSONANDO) --}}
                             {{-- *** CORRECCIÓN AQUÍ *** --}}
                             @if (Auth::user()->role === 'admin' && !session('original_admin_id'))
-                                <x-nav-link href="{{ route('admin.dashboard') }}" :active="request()->routeIs('admin.dashboard')">
-                                    {{ __('Panel Admin') }}
-                                </x-nav-link>
-
                                 {{-- Menú Desplegable Admin --}}
                                 <div class="hidden sm:flex sm:items-center sm:ms-3">
                                     <x-dropdown align="left" width="48">
@@ -66,12 +89,19 @@
                                         </x-slot>
                                     </x-dropdown>
                                 </div>
+                                <x-nav-link href="{{ route('admin.dashboard') }}" :active="request()->routeIs('admin.dashboard')">
+                                    {{ __('Panel Admin') }}
+                                </x-nav-link>
+
 
                                  {{-- Enlace para Impersonar (Solo Admin Real) --}}
                                  @if(Route::has('admin.users.index'))
                                     <x-nav-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('admin.users.index')">
                                          {{ __('Impersonar') }}
                                      </x-nav-link>
+                                     <x-nav-link href="{{ route('photos.liked') }}" :active="request()->routeIs('photos.liked')">
+                                        {{ __('Mis Favoritas') }}
+                                    </x-nav-link>
                                  @endif
 
                                  {{-- Enlace Ver Sitio (Solo Admin Real) --}}
@@ -122,9 +152,8 @@
                                  </x-slot>
                                  <x-slot name="content">
                                      {{-- Código del content (Profile, Logout, etc) --}}
-                                      <div class="block px-4 py-2 text-xs text-gray-400">{{ __('Manage Account') }}</div>
+                                      <x-nav-link>{{ __('Manage Account') }}</x-nav-link>
                                       <x-dropdown-link href="{{ route('profile.show') }}">{{ __('Profile') }}</x-dropdown-link>
-                                      {{-- ... otros enlaces de perfil ... --}}
                                       <div class="border-t border-gray-200"></div>
                                       <form method="POST" action="{{ route('logout') }}" x-data> @csrf
                                           <x-dropdown-link href="{{ route('logout') }}" @click.prevent="$root.submit();">{{ __('Log Out') }}</x-dropdown-link>
@@ -136,9 +165,9 @@
                         {{-- Botones Login/Register para invitados --}}
                          @if (Route::has('login'))
                              <nav class="-mx-3 flex flex-1 justify-end">
-                                 <a href="{{ route('login') }}" class="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20]"> Log in </a>
+                                 <x-nav-link href="{{ route('login') }}" class="rounded-md px-3 py-2 text-[#BF00FF] ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20]"> Log in </x-nav-link>
                                  @if (Route::has('register'))
-                                     <a href="{{ route('register') }}" class="ml-3 rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20]"> Register </a>
+                                     <x-nav-link href="{{ route('register') }}" class="ml-3 rounded-md px-3 py-2 text-[#BF00FF] ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20]"> Register </x-nav-link>
                                  @endif
                              </nav>
                          @endif
@@ -146,10 +175,23 @@
                 </div>
 
                 <div class="-me-2 flex items-center sm:hidden">
-                     <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
-                         <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24"> <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /> <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /> </svg>
-                     </button>
-                 </div>
+                    <button @click="open = ! open"
+                            {{-- Clases base para layout, padding, redondeo, transición --}}
+                            class="inline-flex items-center justify-center p-2 rounded-md focus:outline-none transition duration-150 ease-in-out"
+                            {{-- Clases condicionales para color y hover/focus basadas en 'scrolled' --}}
+                            :class="{
+                                'text-gray-900 hover:bg-black/5 focus:bg-black/10': !scrolled, /* Texto oscuro, hover/focus con fondo negro muy sutil */
+                                'text-gray-100 hover:bg-white/10 focus:bg-white/20': scrolled  /* Texto claro, hover/focus con fondo blanco muy sutil */
+                            }">
+                        <span class="sr-only">Abrir menú principal</span> {{-- Añadido para accesibilidad --}}
+                        <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                            {{-- Icono Hamburguesa (visible cuando !open) --}}
+                            <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            {{-- Icono Cruz (visible cuando open) --}}
+                            <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
 
             </div>
         </div>

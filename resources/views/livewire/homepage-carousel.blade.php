@@ -121,15 +121,40 @@
         </div>
     @endif
 
-    
+
 
     {{-- Controles de Navegación (sin cambios) --}}
     @if ($images->count() > 1)
        {{-- ... (botones prev/next y puntos indicadores sin cambios) ... --}}
-       <button @click="prev()" class="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-black/30 rounded-full text-white hover:bg-black/50 transition focus:outline-none focus:ring-2 focus:ring-white/50" aria-label="Imagen anterior">...</button>
-       <button @click="next()" class="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-black/30 rounded-full text-white hover:bg-black/50 transition focus:outline-none focus:ring-2 focus:ring-white/50" aria-label="Siguiente imagen">...</button>
-       <div class="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex space-x-2">...</div>
-    @endif
+       <button @click="prev()" class="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-black/40 hover:bg-black/60 text-white rounded-full shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/60 group" aria-label="Imagen anterior">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
+      <!-- Flecha derecha -->
+      <button @click="next()" class="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-black/40 hover:bg-black/60 text-white rounded-full shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/60 group" aria-label="Siguiente imagen">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+      {{-- *** Puntos Indicadores *** --}}
+      <div class="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex space-x-2">
+        {{-- Itera sobre las imágenes para crear un punto por cada una --}}
+        @foreach ($images as $index => $image)
+            <button
+                @click="goTo({{ $index }})"
+                :aria-label="'Ir a imagen ' + ({{ $index }} + 1)"
+                class="w-2.5 h-2.5 rounded-full transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black/50 focus:ring-white"
+                {{-- Clases condicionales para el punto activo/inactivo --}}
+                :class="{
+                    'bg-white opacity-100 scale-110': activeIndex === {{ $index }},
+                    'bg-white/60 opacity-60 hover:opacity-80 hover:bg-white/80': activeIndex !== {{ $index }}
+                }"
+            ></button>
+        @endforeach
+    </div>
+      @endif
 
     {{-- Sección Admin (sin cambios) --}}
     @auth
