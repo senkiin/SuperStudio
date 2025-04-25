@@ -6,6 +6,8 @@
         @livewire('homepage-carousel')
         @livewire('admin.manage-homepage-carousel') {{-- El modal vive aquí --}}
         @livewire('homepage.info-blocks-manager')
+        @livewire('homepage.hero-section')
+        @livewire('homepage.content-cards')
 
     </div>
 

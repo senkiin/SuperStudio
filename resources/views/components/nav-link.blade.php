@@ -10,7 +10,7 @@ $outerHoverFocusClasses = '';
 
 if ($active ?? false) {
     // Activo: Borde morado en <a>
-    $outerBorderClasses = 'border-purple-500';
+    $outerBorderClasses = 'border-blue-500';
 } else {
     // Inactivo: Borde transparente en <a>, cambia a gris en hover/focus
     $outerBorderClasses = 'border-transparent';
@@ -30,14 +30,13 @@ $innerTextShadowClasses = ''; // Sombra del texto
 if ($active ?? false) {
     // Activo: Texto Neón + Sombra. Fondo blanco de $innerBaseClasses.
     $innerTextClasses = 'text-blue-500';
-    $innerTextShadowClasses = '[text-shadow:0_0_8px_#BF00FF]';
 } else {
     // Inactivo: Texto negro por defecto, azul en hover/focus. Fondo blanco de $innerBaseClasses.
     $innerTextClasses = 'text-black hover:text-blue-500 focus:text-blue-500'; // Texto negro -> Azul
     // Sin sombra si está inactivo
 }
 // Clases combinadas para <span>
-$innerClasses = $innerBaseClasses . ' ' . $innerTextClasses . ' ' . $innerTextShadowClasses;
+$innerClasses = $innerBaseClasses . ' ' . $innerTextClasses;
 
 @endphp
 
