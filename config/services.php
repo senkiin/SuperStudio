@@ -34,5 +34,17 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'google' => [
+        // Correcto: Usa el NOMBRE de la variable de .env
+        'places_api_key' => env('GOOGLE_PLACES_API_KEY'),
+        // Correcto: Usa el NOMBRE de la variable de .env
+        'places_id' => env('GOOGLE_PLACES_ID'),
+    ],
+        'google_business' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'), // ID de Cliente OAuth
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'), // Secreto de Cliente OAuth
+        'redirect' => env('GOOGLE_REDIRECT_URI'), // URL de Redirección OAuth
+    ],
+
 
 ];

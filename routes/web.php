@@ -13,6 +13,7 @@ use App\Livewire\Admin\Dashboard as AdminDashboard;
 use App\Livewire\Admin\ManageHomepageCarousel;
 use App\Livewire\Admin\UserLikedPhotos;
 use App\Livewire\Admin\ManageUsers;
+use App\Http\Controllers\GoogleAuthController;
 
 // Impersonate
 
@@ -69,5 +70,7 @@ Route::middleware([
              ->name('impersonate.leave');
 }); // --- Fin Grupo Autenticado ---
 
-// Las rutas de Login, Register, Password Reset, etc., son manejadas por Fortify/Jetstream
-// No necesitas definirlas aquí normalmente.
+Route::middleware(['auth:sanctum', IsAdmin::class])->group(function () { // O solo ['auth', IsAdmin::class] si no usas Sanctum aquí
+    Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirectToGoogle'])->name('google.auth.redirect');
+    Route::get('/auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback'])->name('google.auth.callback');
+});

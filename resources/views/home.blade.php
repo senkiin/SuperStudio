@@ -8,6 +8,13 @@
         @livewire('homepage.info-blocks-manager')
         @livewire('homepage.hero-section')
         @livewire('homepage.content-cards')
+        <!-- Elfsight Google Reviews | Untitled Google Reviews -->
+        {{-- <div class="bg-black dark:bg-black">
+            <script src="https://static.elfsight.com/platform/platform.js" async></script>
+            <div class="elfsight-app-e06d6322-eb5a-4f98-b2af-079fc1eab9aa" data-elfsight-app-lazy></div>
+        </div> --}}
+        @livewire('google-reviews-slider')
+
 
     </div>
 
