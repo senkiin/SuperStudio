@@ -1,7 +1,27 @@
+/* Import Swiper styles before Tailwind */
+@import 'swiper/css';
+@import 'swiper/css/navigation';
+@import 'swiper/css/pagination';
+
+/* Then import Tailwind */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-[x-cloak] {
-    display: none;
+/* Your custom styles */
+/* Add custom styles for Swiper arrows/pagination if needed */
+.swiper-button-next,
+.swiper-button-prev {
+    color: #fff; /* Example: White arrows */
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    width: 40px !important; /* Use !important carefully */
+    height: 40px !important;
+    &::after {
+         font-size: 18px !important;
+         font-weight: bold;
+    }
+}
+.swiper-pagination-bullet-active {
+    background: #fff !important; /* Example: White active dot */
 }

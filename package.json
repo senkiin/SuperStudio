@@ -19,6 +19,7 @@
     },
     "dependencies": {
         "gsap": "^3.12.7",
-        "sortablejs": "^1.15.6"
+        "sortablejs": "^1.15.6",
+        "swiper": "^11.2.6"
     }
 }
