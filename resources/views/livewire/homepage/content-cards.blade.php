@@ -2,7 +2,6 @@
 <div x-data="{ isAdmin: @js($isAdmin) }" class=" bg-black dark:bg-black">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {{-- Flash Messages (Copied from previous component) --}}
         @if (session()->has('message'))
             <div x-data="{ show: true }" x-show="show" x-transition:leave="transition ease-in duration-300"
                 x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" x-init="setTimeout(() => show = false, 3500)"
@@ -36,7 +35,8 @@
 
         {{-- Section Header & Add Button --}}
         <div :class="isAdmin ? 'flex justify-between items-center mb-8 mt-16' : 'text-center mb-8 mt-16'">
-            <h2 class="text-4xl lg:text-4xl font-extrabold tracking-wide uppercase text-gray-900 dark:text-white">
+            <h2 x-data x-init="$el.classList.add('title-animate-down')" data-aos
+                class="title-animate-down text-4xl lg:text-4xl font-extrabold tracking-wide uppercase text-gray-900 dark:text-white">
                 Nuestros Servicios Destacados
             </h2>
 
@@ -77,9 +77,13 @@
 
             {{-- Card Loop --}}
             @forelse ($cards as $card)
-                <div wire:key="card-{{ $card->id }}"
-                    class="relative group/card bg-gray-800 aspect-square overflow-hidden shadow-md transition transform hover:scale-110 hover:shadow-2xl duration-300">
+                @php
+                    $directions = ['aos-from-left', 'aos-from-right', 'aos-from-top', 'aos-from-bottom'];
+                    $randomClass = $directions[$loop->index % count($directions)];
+                @endphp
 
+                <div wire:key="card-{{ $card->id }}" x-data x-init="$el.classList.add('{{ $randomClass }}')" data-aos
+                    class="relative group/card bg-gray-800 aspect-square overflow-hidden shadow-md transition transform hover:scale-110 hover:shadow-2xl duration-75">
                     {{-- Imagen de Fondo --}}
                     @if ($card->image_path && Storage::disk('public')->exists($card->image_path))
                         <img src="{{ Storage::url($card->image_path) }}" alt="{{ $card->title }}"
@@ -100,15 +104,6 @@
                         @if ($isAdmin)
                             <div
                                 class="absolute top-2 right-2 flex gap-2 opacity-0 group-hover/card:opacity-100 transition duration-300">
-                                {{-- Drag Handle --}}
-                                <div class="card-drag-handle p-1.5 bg-gray-500 text-white cursor-move hover:bg-gray-600"
-                                    title="Arrastrar para reordenar">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M3.75 9h16.5m-16.5 6.75h16.5" />
-                                    </svg>
-                                </div>
                                 {{-- Editar --}}
                                 <button wire:click="openEditModal({{ $card->id }})" title="Editar"
                                     class="p-1.5 bg-blue-600 hover:bg-blue-700 text-white">

@@ -1,9 +1,9 @@
 {{-- resources/views/livewire/homepage/info-blocks-manager.blade.php --}}
 <div> {{-- Root div --}}
-    <div class="bg-gray-100 dark:bg-gray-900">
+    <div class="bg-black">
 
         {{-- Contenedor CON MÁXIMO ANCHO para elementos NO repetitivos --}}
-        <div class="bg-gray-100 dark:bg-gray-900">
+        <div class="bg-black">
             {{-- Mensajes Flash --}}
             @if (session()->has('message'))
                 <div x-data="{ show: true }" x-show="show" x-transition:leave="transition ease-in duration-300"
@@ -53,15 +53,14 @@
         <div class="space-y-0">
             @forelse ($blocks as $block)
                 {{-- Contenedor del bloque individual (full width) --}}
-                <div wire:key="block-{{ $block->id }}" x-data="{}" {{-- Animación comentada por defecto para asegurar visibilidad. Descomenta si Animate.css y Alpine están ok --}}
-                    {{-- x-intersect:enter.full.threshold.25="() => { $el.classList.add('animate__animated', 'animate__fadeInUp') }" --}}
+                <div wire:key="block-{{ $block->id }}"
                     class="relative group flex flex-col md:flex-row overflow-hidden
-                            {{ $block->image_position == 'right' ? 'md:flex-row-reverse' : 'md:flex-row' }}"
-                    {{-- Quitamos style="opacity: 0;" --}}>
+                           {{ $block->image_position === 'right' ? 'md:flex-row-reverse' : 'md:flex-row' }}">
+
 
                     {{-- *** Columna de Texto (50%) *** --}}
-                    <div
-                        class="w-full md:w-1/2 bg-black dark:bg-black text-white p-8 md:p-10 lg:p-16 flex items-center justify-center order-2 md:order-none min-h-[300px] md:min-h-0">
+                    <div x-data x-init="$el.classList.add('aos-fade-up-big')" data-aos
+                        class="transition-all duration-[1500ms] w-full md:w-1/2 bg-black text-white p-8 md:p-10 lg:p-16 flex items-center justify-center order-2 md:order-none min-h-[300px] md:min-h-0">
                         <div class="text-center max-w-lg">
                             {{-- Controles Admin --}}
                             @if ($isAdmin)
@@ -110,7 +109,10 @@
 
 
                     {{-- *** Columna de Imagen (50%) *** --}}
-                    <div class="w-full md:w-1/2 order-1 md:order-none">
+                    <div x-data x-init="$el.classList.add(
+                        '{{ $block->image_position === 'right' ? 'aos-fade-left-big' : 'aos-fade-right-big' }}'
+                    )" data-aos
+                        class="transition-all duration-[1500ms] w-full md:w-1/2 order-1 md:order-none">
                         @if ($block->image_path)
                             <img src="{{ Storage::url($block->image_path) }}" alt="{{ $block->title }}"
                                 class="block w-full h-80 md:h-full object-cover">
@@ -135,7 +137,8 @@
                             </svg>
                             <h3 class="mt-2 text-lg font-semibold text-gray-900 dark:text-white">No hay bloques todavía
                             </h3>
-                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">¡Empieza añadiendo el primer bloque
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">¡Empieza añadiendo el primer
+                                bloque
                                 de información!</p>
                             <div class="mt-6">
                                 <x-button wire:click="openCreateModal"

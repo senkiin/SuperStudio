@@ -19,6 +19,7 @@
     },
     "dependencies": {
         "gsap": "^3.12.7",
+        "photoswipe": "^5.4.4",
         "sortablejs": "^1.15.6",
         "swiper": "^11.2.6"
     }

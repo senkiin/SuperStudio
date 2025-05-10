@@ -37,7 +37,8 @@
 
         {{-- Section Header & Sort Dropdown --}}
         <div class="flex flex-row flex-wrap justify-between items-center mb-6 gap-4">
-            <h2 class="text-2xl lg:text-3xl font-bold text-white"> {{-- Changed text color --}}
+            <h2 x-data x-init="$el.classList.add('title-animate-down')" data-aos
+                class="title-animate-down text-4xl lg:text-3, xl font-extrabold tracking-wide uppercase text-gray-900 dark:text-white">
                 Qué dicen nuestros clientes
             </h2>
             @auth
@@ -85,8 +86,8 @@
         {{-- Overall Rating and Review Button --}}
         {{-- Overall Rating and Review Button (Versión Rectangular y Compacta) --}}
         @if (!is_null($averageRating) && $totalReviewsCount > 0)
-            <div
-                class="flex flex-col md:flex-row items-center justify-between bg-gray-800 p-4 shadow-md mb-6 space-y-3 md:space-y-0">
+            <div x-data x-init="$el.classList.add('google-rating-bar')" data-aos
+                class="google-rating-bar flex flex-col md:flex-row items-center justify-between bg-gray-800 p-4 shadow-md mb-6 space-y-3 md:space-y-0">
 
                 {{-- Left side: Stars and Rating --}}
                 <div class="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-3">
@@ -119,9 +120,9 @@
 
                 {{-- Right side: Button --}}
                 <div class="w-full md:w-auto">
-                    <a href="https://search.google.com/local/writereview?placeid=ChIJg5ycdgB2cA0RWgnvcvELUuQ"
-                        target="_blank" rel="noopener noreferrer"
-                        class="inline-flex w-full md:w-auto justify-center items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold transition">
+                    <a href="https://search.google.com/local/writereview?placeid=..." x-data x-init="$el.classList.add('google-btn-animate')"
+                        data-aos
+                        class="inline-flex google-btn-animate w-full md:w-auto justify-center items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold transition">
                         Califícanos en Google
                     </a>
                 </div>
@@ -153,9 +154,10 @@
                 <div class="flex px-2 sm:px-4 lg:px-6 gap-4 snap-x snap-mandatory overflow-x-auto scroll-smooth">
 
                     @forelse ($this->reviews as $review)
-                        <a href="{{ $review->author_url }}" target="_blank" rel="noopener noreferrer"
-                            @touchstart="touchStart($event)" @touchend="touchEnd($event)"
-                            class="flex-shrink-0 w-52 h-52 sm:w-56 sm:h-56 md:w-60 md:h-60 lg:w-64 lg:h-64 bg-gray-800 shadow-md hover:shadow-lg transition-all duration-300 snap-start flex flex-col justify-between p-3 group hover:-translate-y-1 hover:scale-105">
+                        <a href="{{ $review->author_url }}" target="_blank" rel="noopener noreferrer" x-data
+                            x-init="$el.classList.add('review-animate-up')" data-aos @touchstart="touchStart($event)"
+                            @touchend="touchEnd($event)"
+                            class="review-card flex-shrink-0 w-52 h-52 sm:w-56 sm:h-56 md:w-60 md:h-60 lg:w-64 lg:h-64 bg-gray-800 shadow-md hover:shadow-lg transition-all duration-300 snap-start flex flex-col justify-between p-3 group hover:-translate-y-1 hover:scale-105">
 
                             {{-- Top: Avatar, Name, Date --}}
                             <div>
@@ -281,7 +283,6 @@
         function reviewSlider() {
             return {
                 swiperInstance: null,
-                loading: @entangle('reviews').live === null, // Initial check if reviews are loading
                 reviewsExist: {{ $this->reviews->count() > 0 ? 'true' : 'false' }}, // Initial check if reviews exist
 
                 initSwiper() {

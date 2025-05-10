@@ -13,16 +13,21 @@ use App\Livewire\Admin\Dashboard as AdminDashboard;
 use App\Livewire\Admin\ManageHomepageCarousel;
 use App\Livewire\Admin\UserLikedPhotos;
 use App\Livewire\Admin\ManageUsers;
-
-// Impersonate
-
-// Middleware
 use App\Http\Middleware\IsAdmin;
-
+use App\Livewire\AlbumDetailPage;
+use App\Livewire\WeddingsPage;
 
 // --- Ruta Pública Principal ---
 Route::get('/', HomepageController::class)->name('home');
-
+Route::get('/bodas', WeddingsPage::class)->name('weddings');
+Route::get('/album/{album}', AlbumDetailPage::class)->name('album.show');
+Route::get('/comuniones', function () {
+    return view('comuniones', [
+        'pageTitle' => 'Comuniones | Fotovalera',
+        'metaDescription' => 'Reportajes fotográficos y de vídeo para primeras comuniones. Capturamos momentos únicos y especiales.'
+        // Puedes añadir más datos para SEO o para la vista aquí
+    ]);
+})->name('comuniones');
 // --- Rutas Autenticadas ---
 Route::middleware([
     'auth:sanctum',

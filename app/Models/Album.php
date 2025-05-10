@@ -11,7 +11,7 @@ class Album extends Model
 {
     /** @use HasFactory<\Database\Factories\AlbumFactory> */
     use HasFactory;
-    
+
 
     protected $fillable = [
         'name',
@@ -20,6 +20,8 @@ class Album extends Model
         'user_id',
         'type',
         'client_id',
+        'sort_order', // Add this
+        'is_visible_on_weddings_page', // Add this
     ];
 
      /**

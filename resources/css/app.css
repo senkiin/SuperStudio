@@ -2,6 +2,7 @@
 @import 'swiper/css';
 @import 'swiper/css/navigation';
 @import 'swiper/css/pagination';
+@import 'photoswipe/style.css';
 
 /* Then import Tailwind */
 @tailwind base;
@@ -25,3 +26,178 @@
 .swiper-pagination-bullet-active {
     background: #fff !important; /* Example: White active dot */
 }
+/* Desplazamientos más exagerados */
+.aos-fade-up-big {
+    opacity: 0;
+    transform: translateY(150px);
+    transition-property: opacity, transform;
+}
+
+.aos-fade-up-big.aos-animate {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.aos-fade-left-big {
+    opacity: 0;
+    transform: translateX(-150px);
+    transition-property: opacity, transform;
+}
+
+.aos-fade-left-big.aos-animate {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.aos-fade-right-big {
+    opacity: 0;
+    transform: translateX(150px);
+    transition-property: opacity, transform;
+}
+
+.aos-fade-right-big.aos-animate {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.aos-hero-text {
+    opacity: 0;
+    transform: translateY(-120px);
+    transition: opacity 1.2s ease-out, transform 1.2s ease-out;
+}
+.aos-hero-text.aos-animate {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* HERO: Imagen desde abajo */
+.aos-hero-bg {
+    opacity: 0;
+    transform: translateY(120px);
+    transition: opacity 1.2s ease-out, transform 1.2s ease-out;
+}
+.aos-hero-bg.aos-animate {
+    opacity: 1;
+    transform: translateY(0);
+}
+/* Animaciones para tarjetas desde distintas direcciones */
+.aos-from-left {
+    opacity: 0;
+    transform: translateX(-150px);
+    transition: all 1.2s ease-out;
+}
+.aos-from-left.aos-animate {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.aos-from-right {
+    opacity: 0;
+    transform: translateX(150px);
+    transition: all 1.2s ease-out;
+}
+.aos-from-right.aos-animate {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.aos-from-top {
+    opacity: 0;
+    transform: translateY(-150px);
+    transition: all 1.2s ease-out;
+}
+.aos-from-top.aos-animate {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.aos-from-bottom {
+    opacity: 0;
+    transform: translateY(150px);
+    transition: all 1.2s ease-out;
+}
+.aos-from-bottom.aos-animate {
+    opacity: 1;
+    transform: translateY(0);
+}
+/* Entrada desde abajo con desplazamiento */
+.review-animate-up {
+    opacity: 0;
+    transform: translateY(80px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+.review-animate-up.aos-animate {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Animación del botón Google */
+.google-btn-animate {
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.google-btn-animate.aos-animate {
+    opacity: 1;
+    transform: scale(1);
+}
+.google-btn-animate:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease-in-out;
+}
+.google-rating-bar {
+    opacity: 0;
+    transform: translateY(100px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+.google-rating-bar.aos-animate {
+    opacity: 1;
+    transform: translateY(0);
+}
+.title-animate-down {
+    opacity: 0;
+    transform: translateY(-80px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+.title-animate-down.aos-animate {
+    opacity: 1;
+    transform: translateY(0);
+}
+.title-animate-down {
+    opacity: 0;
+    transform: translateY(-80px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  }
+  .card-animate-up {
+    opacity: 0;
+    transform: translateY(100px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  }
+  .aos-animate {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+  }
+  @layer utilities {
+  .fade-up {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+  }
+
+  .fade-up.aos-animate {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+  }
+
+  .zoom-in {
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+  }
+
+  .zoom-in.aos-animate {
+    opacity: 1 !important;
+    transform: scale(1) !important;
+  }
+}
+
