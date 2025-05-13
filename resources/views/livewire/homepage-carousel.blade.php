@@ -1,5 +1,5 @@
 {{-- resources/views/livewire/homepage-carousel.blade.php --}}
-<div class="relative h-screen w-full overflow-hidden "
+<div class="relative h-screen w-full overflow-hidden"
     {{-- Lógica Alpine para controlar el carrusel --}}
     x-data="{
         activeIndex: 0,

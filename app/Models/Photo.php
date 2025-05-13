@@ -47,4 +47,8 @@ class Photo extends Model
         return $this->belongsToMany(User::class, 'photo_user_likes', 'photo_id', 'user_id')
                     ->withTimestamps();
     }
+    public function gridGalleries() // Nueva relación
+    {
+        return $this->belongsToMany(GridGallery::class, 'grid_gallery_photo');
+    }
 }

@@ -5,35 +5,41 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <!-- Favicon PNG moderno -->
+
+    <title>@yield('title', config('app.name', 'Fotovalera'))</title>
+    <meta name="description" content="@yield('metaDescription', 'Explora nuestros álbumes, comuniones y sesiones únicas en Almeria')">
+
+    <meta property="og:title" content="@yield('title', config('app.name'))">
+    <meta property="og:description" content="@yield('metaDescription', 'Explora nuestros álbumes y fotos destacadas')">
+    <meta property="og:image" content="{{ Storage::url('favicon/apple-touch-icon.png') }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('title', config('app.name'))">
+    <meta name="twitter:description" content="@yield('metaDescription', 'Explora nuestras sesiones y fotos profesionales')">
+    <meta name="twitter:image" content="{{ Storage::url('favicon/apple-touch-icon.png') }}">
+
+    <link rel="canonical" href="{{ url()->current() }}" />
+
+    <!-- Favicons -->
     <link rel="icon" type="image/png" href="{{ Storage::url('favicon/favicon-96x96.png') }}" sizes="96x96">
-
-    <!-- Favicon SVG -->
     <link rel="icon" type="image/svg+xml" href="{{ Storage::url('favicon/favicon.svg') }}">
-
-    <!-- Favicon clásico (.ico) -->
     <link rel="shortcut icon" href="{{ Storage::url('favicon/favicon.ico') }}">
-
-    <!-- Apple Touch Icon -->
     <link rel="apple-touch-icon" sizes="180x180" href="{{ Storage::url('favicon/apple-touch-icon.png') }}">
-
-    <!-- Web App Manifest -->
     <link rel="manifest" href="{{ Storage::url('favicon/site.webmanifest') }}">
-
-
-    <title>{{ config('app.name', 'Laravel') }}</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
     @livewireStyles
     @stack('styles')
 </head>
 
-<body class="font-sans antialiased">
+
+<body class="font-sans antialiased ">
     <x-banner />
 
     <div class="min-h-screen bg-gray-100">

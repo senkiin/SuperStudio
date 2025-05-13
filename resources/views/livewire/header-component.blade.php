@@ -17,14 +17,17 @@
                         </svg>
                     </button>
                 @endif
-                <div x-data x-intersect="$el.classList.add('aos-animate')" class="relative z-10 flex flex-col items-center justify-center h-full text-center px-4 -mt-16 md:-mt-20 fade-up">
-    <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-tight mb-4 drop-shadow-md">
-        {{ $settings->hero_title ?? 'Título Hero por Defecto' }}
-    </h1>
-    <p class="text-lg sm:text-xl md:text-2xl text-gray-200 max-w-3xl drop-shadow-md fade-up" x-data x-intersect="$el.classList.add('aos-animate')">
-        {{ $settings->hero_subtitle ?? 'Subtítulo Hero por Defecto' }}
-    </p>
-</div>
+                <div x-data x-intersect="$el.classList.add('aos-animate')"
+                    class="relative z-10 flex flex-col items-center justify-center h-full text-center px-4 -mt-16 md:-mt-20 fade-up">
+                    <h1
+                        class="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-tight mb-4 drop-shadow-md">
+                        {{ $settings->hero_title ?? 'Título Hero por Defecto' }}
+                    </h1>
+                    <p class="text-lg sm:text-xl md:text-2xl text-gray-200 max-w-3xl drop-shadow-md fade-up" x-data
+                        x-intersect="$el.classList.add('aos-animate')">
+                        {{ $settings->hero_subtitle ?? 'Subtítulo Hero por Defecto' }}
+                    </p>
+                </div>
             </div>
 
         </div>
@@ -146,28 +149,22 @@
 
 
     <section class="py-12 bg-black text-white">
-    <div class="container mx-auto px-6">
+        <div class="container mx-auto px-6">
 
-        {{-- Título --}}
-        <h2 x-data x-intersect="$el.classList.add('aos-animate')"
-            class="text-3xl font-semibold mb-4 text-center fade-up">
-            Nuestras Comuniones
-        </h2>
+            {{-- Título --}}
+            <h2 x-data x-intersect="$el.classList.add('aos-animate')"
+                class="text-3xl font-semibold mb-4 text-center fade-up">
+                Nuestras Comuniones
+            </h2>
 
-        {{-- Párrafo --}}
-        <p x-data x-intersect="$el.classList.add('aos-animate')"
-           class="text-gray-400 text-center max-w-3xl mx-auto fade-up">
-            Más de 1000 comuniones documentadas.
-        </p>
+            {{-- Párrafo --}}
+            <p x-data x-intersect="$el.classList.add('aos-animate')"
+                class="text-gray-400 text-center max-w-3xl mx-auto fade-up">
+                Más de 1000 comuniones documentadas.
+            </p>
 
-        {{-- Imagen decorativa opcional --}}
-        <div x-data x-intersect="$el.classList.add('aos-animate')" class="mt-10 text-center zoom-in">
-            {{-- Puedes cambiar por una imagen real si la tienes --}}
-            <img src="/images/comuniones-simbolica.jpg" alt="Decoración comuniones"
-                 class="mx-auto rounded shadow-lg max-w-xs sm:max-w-md lg:max-w-lg" />
+
         </div>
-
-    </div>
-</section>
+    </section>
 
 </div>

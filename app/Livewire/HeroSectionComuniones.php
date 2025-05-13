@@ -4,22 +4,20 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
-use App\Models\HeroSectionSetting; // CAMBIO: Usar el nuevo modelo
+use App\Models\HeroSectionSetting;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 
-class HeroSectionComuniones extends Component // CAMBIO: Nuevo nombre de clase
+class HeroSectionComuniones extends Component
 {
     use WithFileUploads;
+    public ?HeroSectionSetting $settings;
+    public string $identifier;
 
-    public ?HeroSectionSetting $settings; // CAMBIO: Tipo de la propiedad
-
-    // Propiedades para los campos del modal
     public string $heroTitle = '';
     public string $heroSubtitle = '';
     public $newBackgroundImage;
     public ?string $existingBackgroundImageUrl = null;
-
     public bool $showEditModal = false;
 
     protected function rules()
@@ -27,7 +25,7 @@ class HeroSectionComuniones extends Component // CAMBIO: Nuevo nombre de clase
         return [
             'heroTitle' => 'required|string|max:255',
             'heroSubtitle' => 'required|string|max:1000',
-            'newBackgroundImage' => 'nullable|image|max:2048', // Max 2MB
+            'newBackgroundImage' => 'nullable|image|max:2048',
         ];
     }
 
@@ -38,19 +36,23 @@ class HeroSectionComuniones extends Component // CAMBIO: Nuevo nombre de clase
         'newBackgroundImage.max' => 'La imagen no debe superar los 2MB.',
     ];
 
-    public function mount()
+    public function mount(string $identifier, string $defaultTitle = 'Título por Defecto (Comuniones)', string $defaultSubtitle = 'Subtítulo por defecto (Comuniones).', ?string $defaultImage = null)
     {
-        $this->loadSettings();
+        $this->identifier = $identifier;
+        $this->loadSettings($defaultTitle, $defaultSubtitle, $defaultImage);
     }
 
-    public function loadSettings()
+    public function loadSettings(string $defaultTitle = 'Título por Defecto', string $defaultSubtitle = 'Subtítulo por defecto.', ?string $defaultImage = null)
     {
-        // CAMBIO: Usar el nuevo modelo HeroSectionSetting
-        $this->settings = HeroSectionSetting::firstOrCreate([], [
-            'hero_title' => 'NUEVO HERO SECTION (Default)',
-            'hero_subtitle' => "Explora este nuevo contenido personalizable (Default)",
-            'background_image_url' => null,
-        ]);
+        $this->settings = HeroSectionSetting::firstOrCreate(
+            ['identifier' => $this->identifier], // Atributos para buscar el registro
+            [   // Atributos para usar si se crea un nuevo registro
+                'identifier' => $this->identifier, // <--- AÑADIR ESTA LÍNEA AQUÍ
+                'hero_title' => $defaultTitle,
+                'hero_subtitle' => $defaultSubtitle,
+                'background_image_url' => $defaultImage,
+            ]
+        );
 
         $this->heroTitle = $this->settings->hero_title;
         $this->heroSubtitle = $this->settings->hero_subtitle;
@@ -60,7 +62,22 @@ class HeroSectionComuniones extends Component // CAMBIO: Nuevo nombre de clase
     public function openEditModal()
     {
         if (Auth::check() && Auth::user()->role === 'admin') {
-            $this->settings->refresh();
+            // Cargar (o crear si no existe) el registro correcto para el identifier actual
+            // Es importante que loadSettings maneje los defaults si el registro no existe aún
+            $this->loadSettings($this->heroTitle, $this->heroSubtitle, $this->existingBackgroundImageUrl); // Esto asegura que $this->settings esté actualizado o creado para el identifier actual
+
+            // Si después de loadSettings, $this->settings sigue siendo null (no debería pasar con firstOrCreate), hay un problema.
+            if(!$this->settings) {
+                // Manejar este caso improbable, quizás con valores por defecto o un error.
+                // Por ahora, se asume que loadSettings siempre instancia $this->settings.
+                session()->flash('error', 'No se pudo cargar la configuración de la sección.');
+                return;
+            }
+
+            // $this->settings->refresh(); // No es necesario refrescar inmediatamente después de firstOrCreate si es nuevo, pero sí si ya existía.
+                                       // loadSettings ya lo carga, así que el refresh es para asegurar que es el más reciente si otro proceso lo modificó.
+                                       // Pero como lo acabamos de cargar/crear, debería estar fresco.
+
             $this->heroTitle = $this->settings->hero_title;
             $this->heroSubtitle = $this->settings->hero_subtitle;
             $this->existingBackgroundImageUrl = $this->settings->background_image_url;
@@ -87,6 +104,12 @@ class HeroSectionComuniones extends Component // CAMBIO: Nuevo nombre de clase
 
         $this->validate();
 
+        if (!$this->settings) {
+             session()->flash('error', 'Error: Configuración no encontrada para guardar.');
+             $this->closeEditModal();
+             return;
+        }
+
         $dataToUpdate = [
             'hero_title' => $this->heroTitle,
             'hero_subtitle' => $this->heroSubtitle,
@@ -96,26 +119,25 @@ class HeroSectionComuniones extends Component // CAMBIO: Nuevo nombre de clase
             if ($this->settings->background_image_url) {
                 Storage::disk('public')->delete($this->settings->background_image_url);
             }
-            // Considera cambiar el nombre del directorio de almacenamiento también
-            $imagePath = $this->newBackgroundImage->store('hero-section-backgrounds', 'public');
+            $imagePath = $this->newBackgroundImage->store('hero_sections/' . $this->identifier, 'public');
             $dataToUpdate['background_image_url'] = $imagePath;
         }
 
         $this->settings->update($dataToUpdate);
 
-        session()->flash('message', 'Sección Hero actualizada con éxito.');
+        session()->flash('message', 'Sección Hero "' . $this->identifier . '" actualizada con éxito.');
         $this->closeEditModal();
-        $this->loadSettings();
+        $this->loadSettings($this->settings->hero_title, $this->settings->hero_subtitle, $this->settings->background_image_url);
     }
 
     public function render()
     {
         $isAdmin = Auth::check() && Auth::user()->role === 'admin';
 
-        if (!$this->settings) {
-            $this->loadSettings();
+        if (!$this->settings && isset($this->identifier)) {
+             $this->loadSettings();
         }
-        // CAMBIO: Usar el nuevo nombre de la vista
+
         return view('livewire.hero-section-comuniones', [
             'isAdmin' => $isAdmin,
         ]);

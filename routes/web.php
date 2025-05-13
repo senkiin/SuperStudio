@@ -28,6 +28,23 @@ Route::get('/comuniones', function () {
         // Puedes añadir más datos para SEO o para la vista aquí
     ]);
 })->name('comuniones');
+
+Route::get('/fotografia-embarazo', function () {
+    return view('embarazo', [
+        'pageTitle' => 'Fotografía de Embarazo | Fotovalera',
+        'metaDescription' => 'Sesiones de fotos de embarazo artísticas y emotivas. Capturamos la belleza de la maternidad y la dulce espera de tu bebé.',
+    ]);
+})->name('embarazo.index');
+
+
+
+Route::get('/fotografia-recien-nacidos', function () {
+    return view('newborn', [ // Nombre del archivo Blade que crearemos
+        'pageTitle' => 'Fotografía Newborn y Recién Nacidos | Fotovalera',
+        'metaDescription' => 'Sesiones de fotos para recién nacidos (newborn) tiernas y seguras. Capturamos los primeros días de tu bebé con arte y delicadeza.',
+    ]);
+})->name('newborn.index');
+
 // --- Rutas Autenticadas ---
 Route::middleware([
     'auth:sanctum',

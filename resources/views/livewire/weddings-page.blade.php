@@ -2,7 +2,14 @@
     @section('title', $pageTitle)
     @section('metaDescription', $metaDescription)
 
-    @livewire('header-component')
+    {{-- @livewire('header-component') --}}
+ @livewire('configurable-page-header', [
+        'identifier' => 'bodas_header', // ¡Nuevo identificador!
+        'defaultTitle' => 'Bodas de Ensueño',
+        'defaultSubtitle' => 'Vuestro día más especial, contado a través de imágenes que emocionan.',
+        'defaultImage' => null // O '/images/bodas_default_bg.jpg'
+    ])
+
 
     {{-- Album Section --}}
 
