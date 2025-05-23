@@ -6,7 +6,8 @@ use App\Models\Album;
 use App\Models\AlbumSectionConfig;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log; // Asegúrate de tener Log importado
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -15,28 +16,29 @@ class ConfigurableAlbumSection extends Component
 {
     use WithPagination;
 
-    // --- Propiedades de la Configuración de la Sección ---
+    // --- Disco S3 por defecto para todas las operaciones ----
+    protected string $disk = 'albums';
+
+    // --- Propiedades de configuración ---
     public ?AlbumSectionConfig $sectionConfig = null;
     public string $sectionTitle = '';
-    public array $selectedAlbumOrder = []; // Array de IDs de álbumes en el orden de visualización
+    public array $selectedAlbumOrder = [];
 
-    // --- Para la Vista Pública ---
-    public Collection $albumsToDisplay; // Álbumes seleccionados (objetos)
+    // --- Para la vista pública ---
+    public Collection $albumsToDisplay;
 
-    // --- Para el Modal de Configuración Principal ---
+    // --- Modal de configuración principal ---
     public bool $showConfigurationModal = false;
-    public string $editableSectionTitle = ''; // Para editar el título en el modal
+    public string $editableSectionTitle = '';
 
-    // --- Para el Modal de Selección de Álbumes ---
+    // --- Modal de selección de álbumes ---
     public bool $showAlbumSelectionModal = false;
     public string $albumSearchQuery = '';
     public string $albumSortField = 'created_at';
     public string $albumSortDirection = 'desc';
-    public array $tempSelectedAlbumIds = []; // IDs marcados en el modal de selección
+    public array $tempSelectedAlbumIds = [];
 
     protected $paginationTheme = 'tailwind';
-
-    // protected $listeners = ['albumsConfirmed' => 'handleAlbumsConfirmed']; // Si no usas este listener, puedes quitarlo.
 
     public function mount(string $identifier = 'default_featured_albums')
     {
@@ -45,201 +47,183 @@ class ConfigurableAlbumSection extends Component
             ['section_title' => 'Destacados', 'selected_album_ids_ordered' => []]
         );
 
-        $this->sectionTitle = $this->sectionConfig->section_title ?? 'Destacados';
-        $this->selectedAlbumOrder = $this->sectionConfig->selected_album_ids_ordered ?? [];
+        $this->sectionTitle         = $this->sectionConfig->section_title ?? 'Destacados';
+        $this->selectedAlbumOrder   = $this->sectionConfig->selected_album_ids_ordered ?? [];
         $this->editableSectionTitle = $this->sectionTitle;
+
         $this->loadAlbumsToDisplay();
     }
 
-    protected function loadAlbumsToDisplay()
+    protected function loadAlbumsToDisplay(): void
     {
         if (empty($this->selectedAlbumOrder)) {
             $this->albumsToDisplay = collect();
             return;
         }
-        // Asegurarse que los IDs son enteros para la consulta y el ordenamiento
-        $integerIds = array_map('intval', $this->selectedAlbumOrder);
-        if (empty($integerIds)) {
-            $this->albumsToDisplay = collect();
-            return;
-        }
-        $this->albumsToDisplay = Album::whereIn('id', $integerIds)
+
+        $ids = array_map('intval', $this->selectedAlbumOrder);
+
+        $this->albumsToDisplay = Album::whereIn('id', $ids)
             ->get()
-            ->sortBy(function ($album) use ($integerIds) {
-                return array_search($album->id, $integerIds);
-            });
+            ->sortBy(fn($album) => array_search($album->id, $ids));
     }
 
-    // --- MODAL DE CONFIGURACIÓN PRINCIPAL ---
-    public function openConfigurationModal()
+    // --------- CONFIGURACIÓN PRINCIPAL ---------
+
+    public function openConfigurationModal(): void
     {
-        if (!Auth::check() || Auth::user()->role !== 'admin') return;
-        // Recargar la configuración desde la BD al abrir el modal para asegurar datos frescos
+        if (!Auth::check() || Auth::user()->role !== 'admin') {
+            return;
+        }
+
         $this->sectionConfig->refresh();
-        $this->selectedAlbumOrder = $this->sectionConfig->selected_album_ids_ordered ?? [];
+        $this->selectedAlbumOrder   = $this->sectionConfig->selected_album_ids_ordered ?? [];
         $this->editableSectionTitle = $this->sectionConfig->section_title ?? 'Destacados';
         $this->showConfigurationModal = true;
     }
 
-    public function saveConfiguration()
+    public function saveConfiguration(): void
     {
-        if (!Auth::check() || Auth::user()->role !== 'admin') return;
-
-        $this->validate([
-            'editableSectionTitle' => 'nullable|string|max:255',
-            'selectedAlbumOrder' => 'array',
-        ]);
-
-        if (!$this->sectionConfig) {
-            session()->flash('error', 'Error: Configuración de la sección no encontrada.');
+        if (!Auth::check() || Auth::user()->role !== 'admin') {
             return;
         }
 
-        $this->sectionConfig->section_title = $this->editableSectionTitle;
-        $this->sectionConfig->selected_album_ids_ordered = array_map('intval', $this->selectedAlbumOrder); // Asegurar IDs como enteros
-        $this->sectionConfig->save();
+        $this->validate([
+            'editableSectionTitle' => 'nullable|string|max:255',
+            'selectedAlbumOrder'   => 'array',
+        ]);
+
+        if (!$this->sectionConfig) {
+            session()->flash('error', 'Configuración no encontrada.');
+            return;
+        }
+
+        $this->sectionConfig->update([
+            'section_title'              => $this->editableSectionTitle,
+            'selected_album_ids_ordered' => array_map('intval', $this->selectedAlbumOrder),
+        ]);
 
         $this->sectionTitle = $this->editableSectionTitle;
         $this->loadAlbumsToDisplay();
         $this->showConfigurationModal = false;
-        session()->flash('message', 'Configuración guardada con éxito.');
+        session()->flash('message', 'Configuración guardada.');
     }
 
-    public function removeAlbumFromSelection(int $albumId)
+    public function removeAlbumFromSelection(int $albumId): void
     {
-        if (!Auth::check() || Auth::user()->role !== 'admin') return;
+        if (!Auth::check() || Auth::user()->role !== 'admin') {
+            return;
+        }
 
-        Log::info('[ConfigurableAlbumSection] Intentando eliminar album ID: ' . $albumId . ' de la lista y BD.');
-        Log::info('[ConfigurableAlbumSection] selectedAlbumOrder ANTES: ', $this->selectedAlbumOrder);
+        $this->selectedAlbumOrder = array_values(array_filter(
+            $this->selectedAlbumOrder,
+            fn($id) => intval($id) !== $albumId
+        ));
 
-        // 1. Modificar el array local
-        $newSelectedAlbumOrder = array_filter($this->selectedAlbumOrder, fn($id) => intval($id) !== $albumId);
-        $this->selectedAlbumOrder = array_values($newSelectedAlbumOrder); // Re-indexar
-
-        Log::info('[ConfigurableAlbumSection] selectedAlbumOrder DESPUÉS (local): ', $this->selectedAlbumOrder);
-
-        // 2. Actualizar el modelo y guardar en la base de datos inmediatamente
         if ($this->sectionConfig) {
-            $this->sectionConfig->selected_album_ids_ordered = $this->selectedAlbumOrder; // Ya está reindexado y con IDs como enteros
             try {
-                $this->sectionConfig->save();
-                Log::info('[ConfigurableAlbumSection] Album ID: ' . $albumId . ' eliminado de la BD. Configuración guardada.');
-                // La vista del modal se actualizará porque $selectedAlbumOrder (propiedad pública) cambió.
-                // $albumsInConfiguration se recalculará en el render.
-                // Opcional: Mensaje flash específico para esta acción si no interfiere con el guardado general.
-                // session()->flash('message', 'Álbum quitado de la selección.');
+                $this->sectionConfig->update([
+                    'selected_album_ids_ordered' => $this->selectedAlbumOrder,
+                ]);
             } catch (\Exception $e) {
-                Log::error('[ConfigurableAlbumSection] Error al guardar la eliminación del album ID: ' . $albumId . ' en la BD: ' . $e->getMessage());
-                // Considera revertir $this->selectedAlbumOrder si el guardado falla
-                session()->flash('error', 'Error al quitar el álbum de la base de datos.');
+                Log::error("Error al quitar álbum: {$e->getMessage()}");
+                session()->flash('error', 'No se pudo eliminar el álbum.');
             }
-        } else {
-            Log::error('[ConfigurableAlbumSection] sectionConfig no está cargado. No se puede eliminar el álbum de la BD.');
-            session()->flash('error', 'Error: Configuración de la sección no encontrada.');
         }
     }
 
-    // Este método se usaba para el drag-and-drop. Si ya no lo usas, puedes comentarlo o eliminarlo.
-    // Si lo mantienes para otros usos futuros, está bien.
-    public function updateDisplayOrder(array $orderedIds)
+    public function updateDisplayOrder(array $orderedIds): void
     {
-        if (!Auth::check() || Auth::user()->role !== 'admin') return;
+        if (!Auth::check() || Auth::user()->role !== 'admin') {
+            return;
+        }
+
         $this->selectedAlbumOrder = array_map('intval', $orderedIds);
-        // Si quieres que el reordenamiento también se guarde inmediatamente en la BD:
-        /*
-        if ($this->sectionConfig) {
-            $this->sectionConfig->selected_album_ids_ordered = $this->selectedAlbumOrder;
-            $this->sectionConfig->save();
-            session()->flash('message', 'Orden de álbumes actualizado.');
-        }
-        */
+        // Si quieres guardar inmediatamente:
+        // $this->sectionConfig->update(['selected_album_ids_ordered' => $this->selectedAlbumOrder]);
     }
 
+    // --------- MODAL DE SELECCIÓN DE ÁLBUMES ---------
 
-    // --- MODAL DE SELECCIÓN DE ÁLBUMES ---
-    public function openAlbumSelectionSubModal()
+    public function openAlbumSelectionSubModal(): void
     {
-        if (!Auth::check() || Auth::user()->role !== 'admin') return;
-        $this->albumSearchQuery = '';
-        $this->albumSortField = 'created_at';
-        $this->albumSortDirection = 'desc';
-        // Al abrir el submodal, $tempSelectedAlbumIds debe reflejar el estado actual de $selectedAlbumOrder
+        if (!Auth::check() || Auth::user()->role !== 'admin') {
+            return;
+        }
+
+        $this->albumSearchQuery     = '';
+        $this->albumSortField       = 'created_at';
+        $this->albumSortDirection   = 'desc';
         $this->tempSelectedAlbumIds = array_map('intval', $this->selectedAlbumOrder);
         $this->resetPage('availableAlbumsPage');
         $this->showAlbumSelectionModal = true;
     }
 
-    public function closeAlbumSelectionSubModal()
+    public function closeAlbumSelectionSubModal(): void
     {
         $this->showAlbumSelectionModal = false;
     }
 
-    public function sortBy($field)
+    public function sortBy(string $field): void
     {
         if ($this->albumSortField === $field) {
             $this->albumSortDirection = $this->albumSortDirection === 'asc' ? 'desc' : 'asc';
         } else {
-            $this->albumSortField = $field;
+            $this->albumSortField     = $field;
             $this->albumSortDirection = 'asc';
         }
         $this->resetPage('availableAlbumsPage');
     }
 
-    public function updatedAlbumSearchQuery()
+    public function updatedAlbumSearchQuery(): void
     {
         $this->resetPage('availableAlbumsPage');
     }
 
-    public function confirmAndCloseAlbumSelection()
+    public function confirmAndCloseAlbumSelection(): void
     {
-        // Los IDs ya están en $this->tempSelectedAlbumIds gracias a wire:model
-        // Asegurarse que son enteros
         $this->selectedAlbumOrder = array_map('intval', $this->tempSelectedAlbumIds);
         $this->closeAlbumSelectionSubModal();
-        // IMPORTANTE: Si quieres que esta confirmación también guarde en BD inmediatamente:
-        /*
-        if ($this->sectionConfig) {
-            $this->sectionConfig->selected_album_ids_ordered = $this->selectedAlbumOrder;
-            $this->sectionConfig->save();
-            session()->flash('message', 'Selección de álbumes actualizada y guardada.');
-        }
-        */
-        // Si no, los cambios se guardarán al presionar "Guardar Configuración" en el modal principal.
     }
 
-
-    #[Computed()]
+    #[Computed]
     public function availableAlbums()
     {
         return Album::query()
-            ->when(!empty($this->albumSearchQuery), function ($query) {
-                $query->where('name', 'like', '%' . $this->albumSearchQuery . '%')
-                    ->orWhere('description', 'like', '%' . $this->albumSearchQuery . '%');
-            })
+            ->when($this->albumSearchQuery, fn($q) =>
+                $q->where('name', 'like', "%{$this->albumSearchQuery}%")
+                  ->orWhere('description', 'like', "%{$this->albumSearchQuery}%")
+            )
             ->orderBy($this->albumSortField, $this->albumSortDirection)
             ->paginate(10, ['*'], 'availableAlbumsPage');
+    }
+
+    // Computed: URLs públicas de las portadas (cover_image) de cada álbum
+    #[Computed]
+    public function coverUrls(): array
+    {
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $s3 */
+        $s3 = Storage::disk($this->disk);
+
+        return $this->albumsToDisplay->mapWithKeys(fn($album) => [
+            $album->id => ($album->cover_image && $s3->exists($album->cover_image))
+                ? $s3->url($album->cover_image)
+                : null,
+        ])->toArray();
     }
 
     public function render()
     {
         $isAdmin = Auth::check() && Auth::user()->role === 'admin';
 
-        // Asegurar que $selectedAlbumOrder contiene solo enteros antes de pasarlo a la vista o usarlo en consultas
-        $safeSelectedAlbumOrder = array_map('intval', $this->selectedAlbumOrder);
-
-        $albumsInConfigurationView = collect();
-        if (!empty($safeSelectedAlbumOrder)) {
-            $albumsInConfigurationView = Album::whereIn('id', $safeSelectedAlbumOrder)
-                ->get()
-                ->sortBy(function ($album) use ($safeSelectedAlbumOrder) {
-                    return array_search($album->id, $safeSelectedAlbumOrder);
-                });
-        }
-
         return view('livewire.configurable-album-section', [
-            'isAdmin' => $isAdmin,
-            'displayedAlbums' => $this->albumsToDisplay,
-            'albumsInConfiguration' => $albumsInConfigurationView,
+            'isAdmin'               => $isAdmin,
+            'displayedAlbums'       => $this->albumsToDisplay,
+            'albumsInConfiguration' => Album::whereIn('id', array_map('intval', $this->selectedAlbumOrder))
+                                             ->get()
+                                             ->sortBy(fn($a) => array_search($a->id, $this->selectedAlbumOrder)),
+            'disk'                  => $this->disk,
+            'coverUrls'             => $this->coverUrls(),
         ]);
     }
 }

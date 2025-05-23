@@ -112,8 +112,10 @@
                     <div class="aspect-video overflow-hidden bg-gray-100">
                         @if ($album->cover_image)
                             <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-in-out"
-                                src="{{ Storage::url($album->cover_image) }}" alt="{{ $album->name }}"
-                                loading="lazy">
+                                src="{{ $album->cover_image
+                                    ? Storage::disk('albums')->url($album->cover_image)
+                                    : asset('images/placeholder-fallback.jpg') }}"
+                                alt="{{ $album->name }}" loading="lazy">
                         @else
                             {{-- Placeholder SVG si no hay imagen --}}
                             <div class="w-full h-full flex items-center justify-center text-gray-400">
@@ -184,12 +186,12 @@
                     </h3>
                     <div class="flex items-center space-x-3">
                         {{-- Botón Seleccionar / Cancelar --}}
-                        @if (Auth::user()->role === "admin")
-                        <button wire:click="toggleSelectionMode"
-                            class="px-3 py-1.5 text-xs font-semibold rounded-md shadow-sm transition-colors duration-150 {{ $selectionMode ? 'bg-gray-600 hover:bg-gray-700 focus:ring-gray-500' : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500' }} text-white focus:outline-none focus:ring-2 focus:ring-offset-2"
-                            wire:loading.attr="disabled">
-                            {{ $selectionMode ? 'Cancelar Selección' : 'Seleccionar Fotos' }}
-                        </button>
+                        @if (Auth::user()->role === 'admin')
+                            <button wire:click="toggleSelectionMode"
+                                class="px-3 py-1.5 text-xs font-semibold rounded-md shadow-sm transition-colors duration-150 {{ $selectionMode ? 'bg-gray-600 hover:bg-gray-700 focus:ring-gray-500' : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500' }} text-white focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                wire:loading.attr="disabled">
+                                {{ $selectionMode ? 'Cancelar Selección' : 'Seleccionar Fotos' }}
+                            </button>
                         @endif
 
                         {{-- Botón Cerrar --}}
@@ -224,45 +226,45 @@
                         @enderror
                     </div>
                     {{-- === ZONA PARA AÑADIR FOTOS === --}}
-                    @if (Auth::user()->role === "admin" )
-                    <div class="mb-6 border-b pb-4">
-                        <h4 class="text-lg font-medium mb-2">Añadir Nuevas Fotos</h4>
-                        <form wire:submit.prevent="savePhotos">
-                            <input type="file" wire:model="uploadedPhotos" multiple
-                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mb-2">
+                    @if (Auth::user()->role === 'admin')
+                        <div class="mb-6 border-b pb-4">
+                            <h4 class="text-lg font-medium mb-2">Añadir Nuevas Fotos</h4>
+                            <form wire:submit.prevent="savePhotos">
+                                <input type="file" wire:model="uploadedPhotos" multiple
+                                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mb-2">
 
-                            {{-- Indicador de carga para la subida --}}
-                            <div wire:loading wire:target="uploadedPhotos">
-                                <span class="text-sm text-gray-500">Cargando previsualización...</span>
-                            </div>
-
-                            {{-- Previsualización simple (opcional) --}}
-                            @if ($uploadedPhotos)
-                                <div class="mt-2 text-sm text-gray-600">Previsualización:</div>
-                                <div class="flex flex-wrap gap-2 mt-1">
-                                    @foreach ($uploadedPhotos as $uploadedPhoto)
-                                        <img src="{{ $uploadedPhoto->temporaryUrl() }}"
-                                            class="h-16 w-16 object-cover rounded">
-                                    @endforeach
+                                {{-- Indicador de carga para la subida --}}
+                                <div wire:loading wire:target="uploadedPhotos">
+                                    <span class="text-sm text-gray-500">Cargando previsualización...</span>
                                 </div>
-                            @endif
 
-                            {{-- Mostrar errores de validación --}}
-                            @error('uploadedPhotos.*')
-                                <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
-                            @enderror
+                                {{-- Previsualización simple (opcional) --}}
+                                @if ($uploadedPhotos)
+                                    <div class="mt-2 text-sm text-gray-600">Previsualización:</div>
+                                    <div class="flex flex-wrap gap-2 mt-1">
+                                        @foreach ($uploadedPhotos as $uploadedPhoto)
+                                            <img src="{{ $uploadedPhoto->temporaryUrl() }}"
+                                                class="h-16 w-16 object-cover rounded">
+                                        @endforeach
+                                    </div>
+                                @endif
 
-                            {{-- Botón para guardar (se activa si hay archivos) --}}
-                            @if ($uploadedPhotos)
-                                <button type="submit"
-                                    class="mt-3 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 disabled:opacity-50"
-                                    wire:loading.attr="disabled" wire:target="savePhotos">
-                                    <span wire:loading wire:target="savePhotos">Guardando...</span>
-                                    <span wire:loading.remove wire:target="savePhotos">Guardar Fotos</span>
-                                </button>
-                            @endif
-                        </form>
-                    </div>
+                                {{-- Mostrar errores de validación --}}
+                                @error('uploadedPhotos.*')
+                                    <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
+                                @enderror
+
+                                {{-- Botón para guardar (se activa si hay archivos) --}}
+                                @if ($uploadedPhotos)
+                                    <button type="submit"
+                                        class="mt-3 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 disabled:opacity-50"
+                                        wire:loading.attr="disabled" wire:target="savePhotos">
+                                        <span wire:loading wire:target="savePhotos">Guardando...</span>
+                                        <span wire:loading.remove wire:target="savePhotos">Guardar Fotos</span>
+                                    </button>
+                                @endif
+                            </form>
+                        </div>
                     @endif
 
                     {{-- === FIN ZONA AÑADIR FOTOS === --}}
@@ -308,7 +310,11 @@
                                     wire:dblclick="viewPhoto({{ $photo->id }})" {{-- CLIC SIMPLE: Llama a toggleLike O toggleSelection según el modo --}}
                                     wire:click="{{ $selectionMode ? 'toggleSelection(' . $photo->id . ')' : 'toggleLike(' . $photo->id . ')' }}">
                                     {{-- Imagen (Usa thumbnail) --}}
-                                    <img src="{{ $photo->thumbnail_path && Storage::disk('public')->exists($photo->thumbnail_path) ? Storage::url($photo->thumbnail_path) : ($photo->file_path && Storage::disk('public')->exists($photo->file_path) ? Storage::url($photo->file_path) : asset('images/placeholder-photo.png')) }}"
+                                    <img src="{{ $photo->thumbnail_path && Storage::disk('albums')->exists($photo->thumbnail_path)
+                                        ? Storage::disk('albums')->url($photo->thumbnail_path)
+                                        : ($photo->file_path && Storage::disk('albums')->exists($photo->file_path)
+                                            ? Storage::disk('albums')->url($photo->file_path)
+                                            : asset('images/placeholder-photo.png')) }}"
                                         alt="Foto {{ $photo->id }}" loading="lazy"
                                         class="block w-full h-full object-cover pointer-events-none">
 
@@ -524,7 +530,9 @@
                 x-transition:leave-end="opacity-0 scale-95">
 
                 {{-- Imagen Grande --}}
-                <img src="{{ $viewingPhoto->file_path && Storage::disk('public')->exists($viewingPhoto->file_path) ? Storage::url($viewingPhoto->file_path) : asset('images/placeholder-photo-large.png') }}"
+                <img src="{{ $viewingPhoto->file_path && Storage::disk('albums')->exists($viewingPhoto->file_path)
+                    ? Storage::disk('albums')->url($viewingPhoto->file_path)
+                    : asset('images/placeholder-photo-large.png') }}"
                     alt="Foto {{ $viewingPhoto->id }} del álbum {{ $selectedAlbum->name }}"
                     class="block max-w-full max-h-[88vh] object-contain rounded-lg shadow-lg pointer-events-none"
                     {{-- pointer-events-none si los botones están encima --}}>

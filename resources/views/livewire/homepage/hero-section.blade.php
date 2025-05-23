@@ -75,19 +75,19 @@
             <section
                 class="relative bg-gray-900 text-white overflow-hidden min-h-[60vh] md:min-h-[75vh] flex items-center justify-center">
                 {{-- Imagen de Fondo --}}
-                @if ($heroBlock->image_path && Storage::disk('public')->exists($heroBlock->image_path))
-                <img
-                x-data
-                x-init="$el.classList.add('aos-hero-bg')"
-                data-aos
-                src="{{ Storage::url($heroBlock->image_path) }}"
-                alt="{{ $heroBlock->title }}"
-                loading="lazy"
-                class="absolute inset-0 w-full h-full object-cover object-center z-0"
-            />
-                @else
-                    <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-700 to-gray-900 z-0"></div>
-                @endif
+                @if ($heroBlock->image_path)
+    <img
+        x-data
+        x-init="$el.classList.add('aos-hero-bg')"
+        data-aos
+        src="{{ Storage::disk('hero-home')->url($heroBlock->image_path) }}"
+        alt="{{ $heroBlock->title }}"
+        loading="lazy"
+        class="absolute inset-0 w-full h-full object-cover object-center z-0"
+    />
+@else
+    <div class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-700 to-gray-900 z-0"></div>
+@endif
                 {{-- Overlay Oscuro --}}
                 <div class="absolute inset-0 bg-black/60 z-10"></div>
                 {{-- Contenido Centrado --}}
@@ -178,7 +178,7 @@
                         @elseif ($current_image_path)
                             <span
                                 class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Actual:</span>
-                            <img src="{{ Storage::url($current_image_path) }}"
+                            <img src="{{ Storage::disk('hero-home')->url($heroBlock->image_path) }}"
                                 class="w-auto h-auto rounded border object-contain max-h-40">
                         @endif
                     </div>

@@ -43,13 +43,14 @@
                         x-transition:enter-start="opacity-0 -translate-y-10"
                         x-transition:enter-end="opacity-100 translate-y-0" class="shrink-0 flex items-center">
                         @php
-                            //$logoUrlDefault = Storage::url('media/logos/logo1.png');
-                            $logoUrlScrolled = Storage::url('media/logos/logo2.png');
-                        @endphp
+                                                        $logoUrlScrolled = Storage::disk('logos')->temporaryUrl(
+                                                    'logo2.png',
+                                                    now()->addMinutes(30)
+                        ); @endphp
                         @auth
                             @if (Auth::user()->role === 'admin' && !session('original_admin_id'))
                                 <a href="{{ route('admin.dashboard') }}">
-                                    <img src="{{ $logoUrlScrolled }} " alt="Logo"
+                                    <img src="{{ $logoUrlScrolled }} "  class="mt-2" alt="Logo"
                                         style="display: block; height: 14rem; width: auto;" />
                                 </a>
                             @else
@@ -102,7 +103,9 @@
                                 </div>
                                 <x-nav-link href="{{ route('comuniones') }}" :active="request()->routeIs('comuniones')"> {{ __('Comuniones') }}
                                 </x-nav-link>
-                               
+                                <x-nav-link href="{{ route('studio.index') }}"
+                                    :active="request()->routeIs('studio.index')">{{ __('Studio') }}</x-nav-link>
+
                                 <x-nav-link href="{{ route('photos.liked') }}" :active="request()->routeIs('photos.liked')">
                                     {{ __('Favoritas') }} </x-nav-link>
                                 {{-- Menú "Gestión" --}}
@@ -164,6 +167,8 @@
                                 </div>
                                 <x-nav-link href="{{ route('comuniones') }}" :active="request()->routeIs('comuniones')"> {{ __('Comuniones') }}
                                 </x-nav-link>
+                                <x-nav-link href="{{ route('studio.index') }}"
+                                    :active="request()->routeIs('studio.index')">{{ __('Studio') }}</x-nav-link>
                             @endif
                         @else
                             {{-- Invitados --}}
@@ -192,6 +197,9 @@
                             </div>
                             <x-nav-link href="{{ route('comuniones') }}" :active="request()->routeIs('comuniones')"> {{ __('Comuniones') }}
                             </x-nav-link>
+                            <x-nav-link href="{{ route('studio.index') }}"
+                                :active="request()->routeIs('studio.index')">{{ __('Studio') }}</x-nav-link>
+
                         @endauth
                     </div>
                 </div>

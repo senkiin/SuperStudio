@@ -2,7 +2,9 @@
 <div>
     <header class="relative text-white bg-gray-900"> {{-- bg-gray-900 como fallback si no hay imagen --}}
         <div class="relative h-[55vh] md:h-[65vh] bg-cover bg-center group"
-            style="background-image: url('{{ $settings && $settings->background_image_url ? Storage::url($settings->background_image_url) : '/images/default_header_placeholder.jpg' }}');">
+            style="background-image: url('{{ $settings && $settings->background_image_url
+    ? Storage::disk('page-headers')->url($settings->background_image_url)
+    : '/images/default_header_placeholder.jpg' }}');">
             {{-- CAMBIO: Usar una imagen placeholder local si se prefiere, ej: public/images/default_header_placeholder.jpg --}}
             <div class="absolute inset-0 bg-black opacity-40"></div>
 
@@ -77,7 +79,7 @@
                                     class="mt-2 rounded max-h-40 object-contain">
                             @elseif ($existingBackgroundImageUrl)
                                 <p class="text-xs text-gray-400 mt-2">Imagen actual:</p>
-                                <img src="{{ Storage::url($existingBackgroundImageUrl) }}" alt="Imagen actual"
+                                <img src="{{ Storage::disk('page-headers')->url($existingBackgroundImageUrl) }}" alt="Imagen actual"
                                     class="mt-2 rounded max-h-40 object-contain">
                             @else
                                 <p class="text-xs text-gray-400 mt-2">No hay imagen de fondo configurada.</p>
@@ -127,5 +129,5 @@
         </div>
     @endif
 
-    
+
 </div>

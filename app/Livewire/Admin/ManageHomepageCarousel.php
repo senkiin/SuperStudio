@@ -17,6 +17,7 @@ use Illuminate\Support\Collection; // Importar Collection para $carouselImages
 use Illuminate\Pagination\LengthAwarePaginator; // Importar Paginator
 use Illuminate\Support\Str;
 use Livewire\Attributes\On; // Importar el atributo On para listeners
+use Illuminate\Filesystem\FilesystemAdapter;
 
 class ManageHomepageCarousel extends Component
 {
@@ -68,9 +69,9 @@ class ManageHomepageCarousel extends Component
         $this->carouselImages = CarouselImage::orderBy('order', 'asc')->get();
     }
 
-     // Propiedad computada para obtener fotos favoritas del admin (paginadas)
-     // Se recalcula cuando cambia una dependencia (como $showModal si se usa)
-     // O simplemente cuando Livewire renderiza de nuevo.
+    // Propiedad computada para obtener fotos favoritas del admin (paginadas)
+    // Se recalcula cuando cambia una dependencia (como $showModal si se usa)
+    // O simplemente cuando Livewire renderiza de nuevo.
     public function getLikedPhotosProperty(): LengthAwarePaginator | Collection
     {
         $admin = Auth::user();
@@ -120,68 +121,70 @@ class ManageHomepageCarousel extends Component
     public function uploadImage()
     {
         $this->validate([
-            'newImage' => 'required|image|max:5120',
-            'newCaption' => 'nullable|string|max:255',
-            'newLinkUrl' => 'nullable|url|max:255',
+            'newImage'      => 'required|image|max:5120',
+            'newCaption'    => 'nullable|string|max:255',
+            'newLinkUrl'    => 'nullable|url|max:255',
         ]);
 
-        $disk = 'public';
-        $directory = 'carousel_images';
-
+        $disk    = 'photos';
         try {
-            $path = $this->newImage->store($directory, $disk);
-            $thumbnailPath = null; // Lógica de thumbnail omitida por simplicidad aquí
+            /** @var FilesystemAdapter $s3 */
+            $s3  = Storage::disk('s3');
+            $path = $this->newImage->store('carousel_images', 's3');
 
+            $url = $s3->url($path);
+
+            // 3) Guardar en BD
             $maxOrder = CarouselImage::max('order') ?? -1;
-
             CarouselImage::create([
-                'photo_id' => null,
-                'image_path' => $path,
-                'thumbnail_path' => $thumbnailPath,
-                'caption' => $this->newCaption,
-                'link_url' => $this->newLinkUrl,
-                'order' => $maxOrder + 1,
-                'is_active' => true,
+                'photo_id'       => null,
+                'image_path'     => $path,
+                'thumbnail_path' => null,            // thumbnail si aplica
+                'caption'        => $this->newCaption,
+                'link_url'       => $this->newLinkUrl,
+                'order'          => $maxOrder + 1,
+                'is_active'      => true,
             ]);
 
-            session()->flash('message', 'Imagen añadida al carrusel.');
+            session()->flash('message', 'Imagen añadida al carrusel en S3.');
             $this->reset(['newImage', 'newCaption', 'newLinkUrl']);
-            $this->loadCarouselImages(); // Recargar
+            $this->loadCarouselImages();
             $this->dispatch('carouselUpdated')->to(HomepageCarousel::class);
-
         } catch (\Exception $e) {
-            Log::error("Error al subir imagen carrusel: " . $e->getMessage());
-            session()->flash('error', 'Error al subir la imagen. Inténtalo de nuevo.');
+            Log::error("Error al subir imagen al S3: " . $e->getMessage());
+            session()->flash('error', 'Error al subir la imagen a S3. Inténtalo de nuevo.');
         }
     }
 
-    // Elimina una imagen del carrusel y sus archivos
-    public function deleteImage(int $id)
+    public function deleteImage(int $id): void
     {
-        if ($this->editingImageId === $id) {
-            $this->cancelEditing();
-        }
+        // 1) Recupera el registro o falla
+        $image = CarouselImage::findOrFail($id);
 
-        $image = CarouselImage::find($id);
-        if ($image) {
-            try {
-                // Intentar borrar archivos asociados del disco
-                if ($image->image_path && Storage::disk('public')->exists($image->image_path)) {
-                    Storage::disk('public')->delete($image->image_path);
-                }
-                if ($image->thumbnail_path && Storage::disk('public')->exists($image->thumbnail_path)) {
-                    Storage::disk('public')->delete($image->thumbnail_path);
-                }
+        try {
+            /** @var \Illuminate\Filesystem\FilesystemAdapter $s3 */
+            $s3 = Storage::disk('s3');
 
-                $image->delete(); // Eliminar registro de la BD
-                session()->flash('message', 'Imagen eliminada del carrusel.');
-                $this->loadCarouselImages(); // Recargar
-                $this->dispatch('carouselUpdated')->to(HomepageCarousel::class);
-
-            } catch (\Exception $e) {
-                Log::error("Error al eliminar imagen carrusel ID {$id}: " . $e->getMessage());
-                session()->flash('error', 'Error al eliminar la imagen.');
+            // 2) Prepara los paths a borrar
+            $toDelete = [$image->image_path];
+            if ($image->thumbnail_path) {
+                $toDelete[] = $image->thumbnail_path;
             }
+
+            // 3) Borra de S3
+            $s3->delete($toDelete);
+
+            // 4) Borra el registro en BBDD
+            $image->delete();
+
+            // 5) Feedback al usuario y refresco
+            session()->flash('message', 'Imagen eliminada correctamente.');
+            $this->loadCarouselImages();
+            // Dispara evento para refrescar el HomepageCarousel
+            $this->dispatch('carouselUpdated')->to(HomepageCarousel::class);
+        } catch (\Exception $e) {
+            Log::error("Error al eliminar imagen S3 [ID:{$id}]: {$e->getMessage()}");
+            session()->flash('error', 'No se pudo eliminar la imagen. Inténtalo de nuevo.');
         }
     }
 
@@ -189,10 +192,14 @@ class ManageHomepageCarousel extends Component
     public function addFromFavorite(int $photoId)
     {
         $admin = Auth::user();
-        if (!$admin) { return; }
+        if (!$admin) {
+            return;
+        }
 
         $photo = Photo::with('album:id,name')->find($photoId);
-        if (!$photo) { return; }
+        if (!$photo) {
+            return;
+        }
 
         // Opcional: Verificar si el admin realmente le dio like
         // $isAdminLiked = DB::table('photo_user_likes')->where('user_id', $admin->id)->where('photo_id', $photoId)->exists();
@@ -240,13 +247,16 @@ class ManageHomepageCarousel extends Component
             session()->flash('message', 'Imagen favorita añadida (copiada) al carrusel.');
             $this->loadCarouselImages(); // Recargar
             $this->dispatch('carouselUpdated')->to(HomepageCarousel::class);
-
         } catch (\Exception $e) {
-             Log::error("Error copiando o guardando favorita {$photoId} al carrusel: " . $e->getMessage());
-             session()->flash('error', 'Error al añadir la imagen favorita al carrusel.');
-             // Limpieza de archivos copiados si falla la BD
-             if (isset($newImagePath) && Storage::disk($disk)->exists($newImagePath)) { Storage::disk($disk)->delete($newImagePath); }
-             if (isset($newThumbPath) && $newThumbPath && Storage::disk($disk)->exists($newThumbPath)) { Storage::disk($disk)->delete($newThumbPath); }
+            Log::error("Error copiando o guardando favorita {$photoId} al carrusel: " . $e->getMessage());
+            session()->flash('error', 'Error al añadir la imagen favorita al carrusel.');
+            // Limpieza de archivos copiados si falla la BD
+            if (isset($newImagePath) && Storage::disk($disk)->exists($newImagePath)) {
+                Storage::disk($disk)->delete($newImagePath);
+            }
+            if (isset($newThumbPath) && $newThumbPath && Storage::disk($disk)->exists($newThumbPath)) {
+                Storage::disk($disk)->delete($newThumbPath);
+            }
         }
     }
 
@@ -258,7 +268,6 @@ class ManageHomepageCarousel extends Component
             $image->update(['is_active' => !$image->is_active]);
             $this->loadCarouselImages();
             $this->dispatch('carouselUpdated')->to(HomepageCarousel::class);
-
         }
     }
 
@@ -280,19 +289,17 @@ class ManageHomepageCarousel extends Component
         try {
             // Itera sobre el array de objetos [{ order: index, value: id }, ...]
             foreach ($orderedItems as $item) {
-                 // Verifica que el item tenga 'value' (ID) y 'order' (nuevo índice)
-                 if (isset($item['value']) && isset($item['order'])) {
-                     CarouselImage::where('id', $item['value'])->update(['order' => $item['order']]);
-                 } else {
-                     Log::warning('Item inválido en updateImageOrder:', $item);
-                 }
+                // Verifica que el item tenga 'value' (ID) y 'order' (nuevo índice)
+                if (isset($item['value']) && isset($item['order'])) {
+                    CarouselImage::where('id', $item['value'])->update(['order' => $item['order']]);
+                } else {
+                    Log::warning('Item inválido en updateImageOrder:', $item);
+                }
             }
 
             $this->loadCarouselImages(); // Recargar con el nuevo orden
             session()->flash('message', 'Orden de imágenes actualizado.');
             $this->dispatch('carouselUpdated')->to(HomepageCarousel::class);
-
-
         } catch (\Exception $e) {
             Log::error("Error actualizando orden carrusel: " . $e->getMessage());
             session()->flash('error', 'Error al actualizar el orden.');
@@ -336,8 +343,8 @@ class ManageHomepageCarousel extends Component
                 session()->flash('error', 'Error al guardar los cambios.');
             }
         } else {
-             session()->flash('error', 'No se encontró la imagen para guardar.');
-             $this->cancelEditing();
+            session()->flash('error', 'No se encontró la imagen para guardar.');
+            $this->cancelEditing();
         }
     }
 

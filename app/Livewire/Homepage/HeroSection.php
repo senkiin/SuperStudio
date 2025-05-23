@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Homepage;
 
-use App\Livewire\Forms\HeroBlockForm; // Importar Form Object
+use App\Livewire\Forms\HeroBlockForm;
 use App\Models\HeroBlock;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -10,44 +10,56 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
-use Livewire\WithFileUploads; // Añadir Trait
+use Livewire\WithFileUploads;
 
 class HeroSection extends Component
 {
-    use WithFileUploads; // Usar Trait
+    use WithFileUploads;
 
+    /** Bloque activo (o null) */
     public ?HeroBlock $heroBlock = null;
-    public HeroBlockForm $form; // Inyectar Form Object
 
-    // Estado del Modal
+    /** Form object para validación y guardado */
+    public HeroBlockForm $form;
+
+    /** Control de modal */
     public bool $showModal = false;
     public bool $isEditing = false;
 
-    // Para subida de imagen
-    #[Rule('nullable|image|max:4096', as: 'imagen')] // Aumentado a 4MB, nullable para editar sin cambiar imagen
+    /** Imagen subida con Livewire */
+    #[Rule('nullable|image|max:4096', as: 'imagen')]
     public $photo = null;
+
+    /** Ruta de la imagen previa */
     public ?string $current_image_path = null;
+
+    /** <-- Disco configurable para S3 -->
+     *  Asegúrate de que "s3" esté definido en config/filesystems.php
+     */
+    protected string $disk = 'hero-home';
 
     public function mount(): void
     {
-        $this->loadHeroBlock();
-    }
+ $this->loadHeroBlock();
+    // Si existe un bloque activo, guarda su ruta en current_image_path
+    if ($this->heroBlock?->image_path) {
+        $this->current_image_path = $this->heroBlock->image_path;
+    }    }
 
+    /** Carga el bloque hero activo */
     public function loadHeroBlock(): void
     {
         $this->heroBlock = HeroBlock::where('is_active', true)
                                     ->latest()
                                     ->first();
-        // Establecer datos en el form si estamos editando el bloque actual
-        // Esto es útil si queremos que al abrir editar ya tenga los datos
-        // Pero lo haremos explícitamente en openEditModal
     }
-
-    // --- Operaciones del Modal ---
 
     public function openCreateModal()
     {
-        if (!Auth::check() || Auth::user()->role !== 'admin') return;
+        if (! Auth::check() || Auth::user()->role !== 'admin') {
+            return;
+        }
+
         $this->resetValidation();
         $this->form->resetForm();
         $this->isEditing = false;
@@ -58,12 +70,15 @@ class HeroSection extends Component
 
     public function openEditModal()
     {
-        if (!Auth::check() || Auth::user()->role !== 'admin' || !$this->heroBlock) return;
+        if (! Auth::check() || Auth::user()->role !== 'admin' || ! $this->heroBlock) {
+            return;
+        }
+
         $this->resetValidation();
-        $this->form->setHeroBlock($this->heroBlock); // Cargar datos del bloque actual en el form
+        $this->form->setHeroBlock($this->heroBlock);
         $this->isEditing = true;
-        $this->photo = null; // Resetear campo de subida
-        $this->current_image_path = $this->heroBlock->image_path; // Mostrar imagen actual
+        $this->photo = null;
+        $this->current_image_path = $this->heroBlock->image_path;
         $this->showModal = true;
     }
 
@@ -78,78 +93,75 @@ class HeroSection extends Component
 
     public function saveHeroBlock()
     {
-        if (!Auth::check() || Auth::user()->role !== 'admin') {
+        if (! Auth::check() || Auth::user()->role !== 'admin') {
             session()->flash('error', 'Acción no autorizada.');
             return;
         }
 
-        // Regla de validación para la foto: requerida si se crea, opcional si se edita
+        // Foto requerida solo al crear
         $photoRule = $this->isEditing ? 'nullable' : 'required';
-        $this->validateOnly('photo', ['photo' => [$photoRule, 'image', 'max:4096']]); // Validar foto aquí
+        $this->validateOnly('photo', ['photo' => [$photoRule, 'image', 'max:4096']]);
 
         $newImagePath = null;
-        // Obtener path antiguo ANTES de intentar guardar/actualizar el form
-        $oldImagePath = $this->isEditing ? HeroBlock::find($this->form->id)?->image_path : null;
+        $oldImagePath = $this->isEditing
+            ? HeroBlock::find($this->form->id)?->image_path
+            : null;
 
         DB::beginTransaction();
         try {
-            // 1. Manejar subida de imagen (si aplica)
+            // Subida/borrado en S3
             if ($this->photo) {
-                // Borrar imagen antigua si se está editando y existe
-                if ($this->isEditing && $oldImagePath && Storage::disk('public')->exists($oldImagePath)) {
-                    Storage::disk('public')->delete($oldImagePath);
+                if ($this->isEditing && $oldImagePath && Storage::disk($this->disk)->exists($oldImagePath)) {
+                    Storage::disk($this->disk)->delete($oldImagePath);
                 }
-                $newImagePath = $this->photo->store('hero-block-images', 'public');
-                $this->form->image_path = $newImagePath; // Asignar nuevo path al form object
-            } elseif (!$this->isEditing) {
-                 // Creando y no hay foto (la validación inicial debería haber fallado)
-                 session()->flash('error', 'La imagen es requerida para crear el bloque.');
-                 DB::rollBack();
-                 return;
+                $newImagePath = $this->photo->store('hero-block-images', $this->disk);
+                $this->form->image_path = $newImagePath;
+            } elseif (! $this->isEditing) {
+                session()->flash('error', 'La imagen es requerida.');
+                DB::rollBack();
+                return;
             } else {
-                // Editando sin foto nueva: asegurarse que el form object mantiene el path antiguo
+                // Mantener la ruta antigua
                 $this->form->image_path = $oldImagePath;
             }
 
-            // 2. Guardar/Actualizar usando el Form Object
-            $result = $this->isEditing ? $this->form->update() : $this->form->store();
+            $result = $this->isEditing
+                ? $this->form->update()
+                : $this->form->store();
 
             if ($result) {
                 DB::commit();
                 session()->flash('message', 'Bloque Hero ' . ($this->isEditing ? 'actualizado' : 'creado') . ' correctamente.');
                 $this->closeModal();
-                $this->loadHeroBlock(); // Recargar para mostrar el bloque actualizado/nuevo
+                $this->loadHeroBlock();
             } else {
                 DB::rollBack();
-                // Limpiar imagen nueva si la transacción falló
-                if ($newImagePath && Storage::disk('public')->exists($newImagePath)) {
-                    Storage::disk('public')->delete($newImagePath);
+                if ($newImagePath && Storage::disk($this->disk)->exists($newImagePath)) {
+                    Storage::disk($this->disk)->delete($newImagePath);
                 }
-                session()->flash('error', session('form_error', 'No se pudo guardar el bloque.'));
-                session()->forget('form_error');
+                session()->flash('error', 'No se pudo guardar el bloque.');
             }
+
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
-            if ($newImagePath && Storage::disk('public')->exists($newImagePath)) { Storage::disk('public')->delete($newImagePath); }
-            Log::warning("ValidationException en saveHeroBlock: " . $e->getMessage());
-            session()->flash('error', 'Error de validación. Revisa los campos.');
+            if ($newImagePath && Storage::disk($this->disk)->exists($newImagePath)) {
+                Storage::disk($this->disk)->delete($newImagePath);
+            }
+            Log::warning("ValidationException en HeroSection: {$e->getMessage()}");
+            session()->flash('error', 'Error de validación.');
         } catch (\Exception $e) {
             DB::rollBack();
-            if ($newImagePath && Storage::disk('public')->exists($newImagePath)) { Storage::disk('public')->delete($newImagePath); }
-            Log::error("Error general guardando HeroBlock: " . $e->getMessage());
+            if ($newImagePath && Storage::disk($this->disk)->exists($newImagePath)) {
+                Storage::disk($this->disk)->delete($newImagePath);
+            }
+            Log::error("Error general guardando HeroBlock: {$e->getMessage()}");
             session()->flash('error', 'Error inesperado al guardar.');
-        } finally {
-             if ($this->photo && method_exists($this->photo, 'delete')) { try { $this->photo->delete(); } catch (\Exception $e) {} }
         }
     }
 
     public function render()
     {
         $isAdmin = Auth::check() && Auth::user()->role === 'admin';
-        // Pasamos isAdmin a la vista para mostrar/ocultar botones
-        return view('livewire.homepage.hero-section', [
-            'isAdmin' => $isAdmin
-        ]);
-        // $this->heroBlock ya está disponible en la vista porque es una propiedad pública
+        return view('livewire.homepage.hero-section', compact('isAdmin'));
     }
 }

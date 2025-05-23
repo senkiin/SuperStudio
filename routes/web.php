@@ -16,6 +16,8 @@ use App\Livewire\Admin\ManageUsers;
 use App\Http\Middleware\IsAdmin;
 use App\Livewire\AlbumDetailPage;
 use App\Livewire\WeddingsPage;
+use App\Http\Controllers\S3UploadController;
+
 
 // --- Ruta Pública Principal ---
 Route::get('/', HomepageController::class)->name('home');
@@ -45,6 +47,13 @@ Route::get('/fotografia-recien-nacidos', function () {
     ]);
 })->name('newborn.index');
 
+Route::get('/studio', function () {
+    return view('studio', [ // Nombre del archivo Blade que crearemos: resources/views/studio.blade.php
+        'pageTitle'       => 'Studio | Fotovalera' ,
+        'metaDescription' => 'Explora Studio: tu espacio creativo para contenidos multimedia, tutoriales y más.',
+    ]);
+})->name('studio.index');
+
 // --- Rutas Autenticadas ---
 Route::middleware([
     'auth:sanctum',
@@ -63,6 +72,7 @@ Route::middleware([
     // Rutas de Cliente Normal
     Route::get('/albums', Albums::class)->name('albums');
     Route::get('/mis-favoritos', LikedPhotos::class)->name('photos.liked');
+
     // Añade aquí otras rutas específicas de cliente
 
     // --- Rutas de Administración ---
@@ -90,6 +100,8 @@ Route::middleware([
     Route::get('/impersonate/leave', [ImpersonationController::class, 'leave'])
              ->name('impersonate.leave');
 }); // --- Fin Grupo Autenticado ---
-
+Route::get('/s3/presign', [S3UploadController::class, 'presign'])
+     ->name('s3.presign')
+     ->middleware('auth');
 // Las rutas de Login, Register, Password Reset, etc., son manejadas por Fortify/Jetstream
 // No necesitas definirlas aquí normalmente.

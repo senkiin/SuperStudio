@@ -85,8 +85,8 @@
                 <div wire:key="card-{{ $card->id }}" x-data x-init="$el.classList.add('{{ $randomClass }}')" data-aos
                     class="relative group/card bg-gray-800 aspect-square overflow-hidden shadow-md transition transform hover:scale-110 hover:shadow-2xl duration-75">
                     {{-- Imagen de Fondo --}}
-                    @if ($card->image_path && Storage::disk('public')->exists($card->image_path))
-                        <img src="{{ Storage::url($card->image_path) }}" alt="{{ $card->title }}"
+                    @if ($card->image_path && Storage::disk('content-cards')->exists($card->image_path))
+                        <img src="{{ Storage::disk('content-cards')->url($card->image_path) }}" alt="{{ $card->title }}"
                             class="absolute inset-0 w-full h-full object-cover object-center" />
                     @else
                         <div class="absolute inset-0 bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
@@ -233,7 +233,7 @@
                         @elseif ($current_image_path)
                             <span class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Imagen
                                 Actual:</span>
-                            <img src="{{ Storage::url($current_image_path) }}"
+                            <img src="{{ Storage::disk('content-cards')->url($current_image_path) }}"
                                 class="w-full h-auto rounded-md border border-gray-200 dark:border-gray-700 object-contain max-h-40">
                         @else
                             <div

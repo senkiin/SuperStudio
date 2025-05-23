@@ -13,7 +13,7 @@
 
     {{-- Album Section --}}
 
-    @livewire('configurable-album-section', ['identifier' => 'home_featured_albums_2025'])
+    @livewire('configurable-album-section', ['identifier' => 'home_albums'])
 
 
     {{-- Placeholder for potential admin modal to edit header --}}

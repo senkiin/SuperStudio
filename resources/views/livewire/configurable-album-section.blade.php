@@ -24,9 +24,9 @@
                 {{-- Imagen cuadrada pequeña --}}
                 <a href="{{ route('album.show', $album) }}"
                     class="block relative w-full aspect-square overflow-hidden rounded shadow-lg">
-                    @if ($album->cover_image)
-                        <img src="{{ Storage::url($album->cover_image) }}" alt="{{ $album->name }}"
-                            class="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-85">
+                    @if ($album->cover_image && Storage::disk($disk)->exists($album->cover_image))
+                        <img src="{{ Storage::disk($disk)->url($album->cover_image) }}" alt="{{ $album->name }}"
+                            class="absolute inset-0 w-full h-full object-cover">
                     @else
                         <div class="w-full h-full bg-gray-800 flex items-center justify-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-600" fill="none"
@@ -114,8 +114,8 @@
                                     {{-- Removido hover:bg-gray-600 si ya no es interactivo para drag --}}
                                     <div class="flex items-center min-w-0">
                                         {{-- ELIMINADO el div del config-drag-handle --}}
-                                        @if ($album->cover_image)
-                                            <img src="{{ Storage::url($album->cover_image) }}"
+                                        @if ($album->cover_image && Storage::disk($disk)->exists($album->cover_image))
+                                            <img src="{{ Storage::disk($disk)->url($album->cover_image) }}"
                                                 alt="{{ $album->name }}"
                                                 class="w-12 h-10 object-cover rounded mr-3 flex-shrink-0">
                                         @else

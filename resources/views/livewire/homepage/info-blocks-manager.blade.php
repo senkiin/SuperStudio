@@ -114,7 +114,7 @@
                     )" data-aos
                         class="transition-all duration-[1500ms] w-full md:w-1/2 order-1 md:order-none">
                         @if ($block->image_path)
-                            <img src="{{ Storage::url($block->image_path) }}" alt="{{ $block->title }}"
+                            <img src="{{ Storage::disk('info-blocks')->url($block->image_path) }}" alt="{{ $block->title }}"
                                 class="block w-full h-80 md:h-full object-cover">
                         @else
                             <div
@@ -229,7 +229,7 @@
                                         <span
                                             class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Imagen
                                             Actual:</span>
-                                        <img src="{{ Storage::url($current_image_path) }}"
+                                        <img src="{{ Storage::disk('info-blocks')->url($current_image_path) }}"
                                             class="w-full h-auto rounded-md border border-gray-200 dark:border-gray-700 object-contain max-h-40">
                                     @else
                                         <div

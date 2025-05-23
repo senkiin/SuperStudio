@@ -94,8 +94,12 @@
 
                     {{-- Google Logo and Text --}}
                     <div class="flex items-center space-x-2">
-                        <img src="{{ Storage::url('media/logos/logoGoogle.png') }}" alt="Google Logo"
-                            class="h-5 w-auto">
+                         @php
+                                                        $url = Storage::disk('logos')->temporaryUrl(
+                                                    'logoGoogle.png',
+                                                    now()->addMinutes(30)
+                                                ); @endphp
+                        <img src="{{ $url }}" class="h-5 w-auto">
                         <span class="text-white text-base font-semibold">Excelente en Google</span>
                     </div>
 
@@ -175,9 +179,9 @@
                                     <div class="min-w-0">
                                         <div class="flex items-center space-x-2 truncate">
                                             <span
+                            
                                                 class="font-semibold text-white text-sm truncate">{{ $review->author_name }}</span>
-                                            <img src="{{ Storage::url('media/logos/logoGoogle.png') }}"
-                                                class="w-4 h-4" alt="Google">
+                                            <img src="{{ $url }}" class="w-4 h-4" alt="Google">
                                             <svg class="w-4 h-4 text-blue-400" xmlns="http://www.w3.org/2000/svg"
                                                 fill="currentColor" viewBox="0 0 24 24">
                                                 <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />

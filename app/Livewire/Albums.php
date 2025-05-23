@@ -2,595 +2,523 @@
 
 namespace App\Livewire;
 
-// --- Importaciones de Clases y Facades Necesarios ---
-use App\Jobs\ProcessPhotoThumbnail; // Job para procesar miniaturas en segundo plano
-use App\Models\Album;               // Modelo Eloquent para Álbumes
-use App\Models\Photo;               // Modelo Eloquent para Fotos
-use App\Models\User;                // Modelo Eloquent para Usuarios
-use Illuminate\Support\Facades\Auth; // Facade para interactuar con el sistema de autenticación
-use Illuminate\Support\Facades\Log;  // Facade para escribir en los logs de Laravel (útil para depuración)
-use Illuminate\Support\Facades\Storage; // Facade para interactuar con el sistema de archivos (local, s3, etc.)
-use Illuminate\Support\Facades\DB;      // Facade para interactuar con la base de datos
-use Illuminate\Validation\Rule;      // Clase para construir reglas de validación avanzadas
-use Livewire\Attributes\Computed;    // Atributo para propiedades computadas (cacheables)
-use Livewire\Attributes\On;          // Atributo para escuchar eventos de Livewire/JS
-use Livewire\Attributes\Validate;    // Atributo para validación de propiedades (PHP 8+)
-use Livewire\Component;             // Clase base para componentes Livewire
-use Livewire\WithFileUploads;       // Trait que habilita la subida de archivos en Livewire
-use Livewire\WithPagination;        // Trait que habilita la paginación automática de Livewire
+use App\Jobs\ProcessPhotoThumbnail;
+use App\Models\Album;
+use App\Models\Photo;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
+use Livewire\Attributes\Validate;
+use Livewire\Component;
+use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 
-// --- Definición del Componente Livewire 'Albums' ---
 class Albums extends Component
 {
-    // --- Uso de Traits ---
-    use WithPagination;    // Añade funcionalidad de paginación
-    use WithFileUploads;   // Añade funcionalidad para subir archivos
+    use WithPagination;
+    use WithFileUploads;
 
-    // ============================================================
-    // Propiedades Públicas (El "Estado" del Componente)
-    // Estas propiedades están disponibles en la vista Blade y se sincronizan.
-    // ============================================================
-    // -- Para Modal Editar Álbum --
-    public bool $showEditAlbumModal = false; // Controla visibilidad modal edición
-    public ?Album $editingAlbum = null; // Guarda el álbum que se está editando
-    // Propiedades para los campos del formulario de edición
-    #[Validate] // Usaremos el método rulesForUpdate() para las reglas
-    public string $editAlbumName = '';
-    #[Validate]
-    public string $editAlbumDescription = '';
-    #[Validate]
-    public string $editAlbumType = '';
-    #[Validate]
-    public ?string $editAlbumClientId = '';
-    #[Validate('nullable|image|max:5120')] // Validación para nueva portada
-    public $editAlbumNewCover = null; // Para el nuevo archivo de portada
-    public ?string $editAlbumCurrentCover = null; // Para mostrar la portada actual
+    // --- Edit Album Modal ---
+    public bool $showEditAlbumModal = false;
+    public ?Album $editingAlbum = null;
+    #[Validate] public string $editAlbumName = '';
+    #[Validate] public string $editAlbumDescription = '';
+    #[Validate] public string $editAlbumType = '';
+    #[Validate] public ?string $editAlbumClientId = '';
+    #[Validate('nullable|image|max:5120')] public $editAlbumNewCover = null;
+    public ?string $editAlbumCurrentCover = null;
 
+    // --- Search & Sort ---
+    public string $cadena = '';
+    public string $campo  = 'created_at';
+    public string $order  = 'desc';
 
-    // -- Para Búsqueda y Ordenación de la lista principal de Álbumes --
-    public string $cadena = '';         // Vinculada al input de búsqueda. Guarda el término a buscar.
-    public string $campo = 'created_at'; // Columna por la que se ordenan los álbumes por defecto.
-    public string $order = 'desc';      // Dirección ('asc' o 'desc') de ordenación por defecto.
+    // --- Gallery Modal ---
+    public bool $showModal = false;
+    public ?Album $selectedAlbum = null;
 
-    // -- Para el Modal Principal (Galería de Fotos de un Álbum) --
-    public bool $showModal = false;       // true si el modal de la galería está visible, false si no.
-    public ?Album $selectedAlbum = null; // Guarda el objeto Album completo que se está viendo en el modal. Es Nullable.
+    // --- Multi-select photos ---
+    public array $selectedPhotos = [];
+    public bool $selectionMode = false;
 
-    // -- Para Selección Múltiple de Fotos dentro del Modal de Galería --
-    public array $selectedPhotos = [];  // Array que guarda los IDs de las fotos que el usuario marca.
-    public bool $selectionMode = false; // true si el modo "Seleccionar Fotos" está activo, false si no.
+    // --- Upload Photos ---
+    #[Validate(['uploadedPhotos.*' => 'image|max:51200'])]
+    public $uploadedPhotos = [];
 
-    // -- Para Subida de Fotos dentro del Modal de Galería --
-    // Reglas de validación para los archivos subidos (usando atributos PHP 8+)
-    #[Validate(['uploadedPhotos.*' => 'image|max:51200'])] // Cada archivo debe ser imagen, max 50MB (¡Ajustar!)
-    public $uploadedPhotos = [];       // Array temporal donde Livewire guarda los archivos seleccionados en el input 'file'.
+    // --- Photo Viewer Modal ---
+    public ?Photo $viewingPhoto = null;
+    public bool $showPhotoViewer = false;
 
-    // -- Para Visor de Foto Grande (segundo modal) --
-    public ?Photo $viewingPhoto = null;  // Guarda el objeto Photo que se está mostrando en el visor grande. Nullable.
-    public bool $showPhotoViewer = false; // Controla si el visor grande está visible.
+    // --- Create Album Modal ---
+    public bool $showCreateAlbumModal = false;
+    #[Validate('required|string|max:191')]  public string $newAlbumName = '';
+    #[Validate('nullable|string|max:1000')] public string $newAlbumDescription = '';
+    #[Validate('required|in:public,private,client')] public string $newAlbumType = 'public';
+    #[Validate('nullable|image|max:5120')]  public $newAlbumCover = null;
+    public ?string $newAlbumClientId = '';
+    public $clients = [];
 
-    // -- Para Modal de Creación de Nuevo Álbum --
-    public bool $showCreateAlbumModal = false; // Controla si el modal de creación es visible.
-    // Propiedades vinculadas a los campos del formulario de creación, con validación
-    #[Validate('required|string|max:191')]
-    public string $newAlbumName = '';
-    #[Validate('nullable|string|max:1000')]
-    public string $newAlbumDescription = '';
-    #[Validate('required|in:public,private,client')] // ¡Asegúrate que estos tipos coincidan con tu BD!
-    public string $newAlbumType = 'public';
-    #[Validate('nullable|image|max:5120')] // Portada opcional, 5MB max (¡Ajustar!)
-    public $newAlbumCover = null;          // Para el archivo de portada subido
-    public ?string $newAlbumClientId = '';    // ID del cliente seleccionado (si type='client'). Nullable string.
-    public $clients = [];                   // Array para guardar la lista de clientes (para el select).
-
-    // --- Reglas de Validación para Edición ---
-    protected function rulesForUpdate()
+    protected function rulesForUpdate(): array
     {
-        // Muy similar a 'rules', pero adaptado para edición
         return [
-            'editAlbumName' => 'required|string|max:191',
+            'editAlbumName'        => 'required|string|max:191',
             'editAlbumDescription' => 'nullable|string|max:1000',
-            'editAlbumType' => 'required|in:public,private,client', // Ajusta tipos
-            'editAlbumNewCover' => 'nullable|image|max:5120', // 5MB Max para nueva imagen
-            'editAlbumClientId' => [
+            'editAlbumType'        => 'required|in:public,private,client',
+            'editAlbumNewCover'    => 'nullable|image|max:5120',
+            'editAlbumClientId'    => [
                 Rule::requiredIf($this->editAlbumType === 'client'),
-                'nullable',
-                'integer',
-                'exists:users,id'
+                'nullable','integer','exists:users,id'
             ],
         ];
     }
-    // ============================================================
-    // Reglas de Validación (Método para validación más compleja)
-    // ============================================================
-    protected function rules()
+
+    protected function rules(): array
     {
-        // Define las reglas para el formulario de creación de álbum.
-        // Este método permite definir reglas más complejas, como las condicionales.
         return [
-            'newAlbumName' => 'required|string|max:191', // Nombre requerido, máx 191 caracteres
-            'newAlbumDescription' => 'nullable|string|max:1000', // Descripción opcional, máx 1000
-            'newAlbumType' => 'required|in:public,private,client', // Tipo requerido, debe ser uno de estos
-            'newAlbumCover' => 'nullable|image|max:5120', // Portada opcional, debe ser imagen, máx 5MB
-            // Regla para el ID del cliente
-            'newAlbumClientId' => [
-                // Es requerido SOLO SI el tipo de álbum es 'client'
+            'newAlbumName'        => 'required|string|max:191',
+            'newAlbumDescription' => 'nullable|string|max:1000',
+            'newAlbumType'        => 'required|in:public,private,client',
+            'newAlbumCover'       => 'nullable|image|max:5120',
+            'newAlbumClientId'    => [
                 Rule::requiredIf($this->newAlbumType === 'client'),
-                'nullable', // Permitir que sea nulo (si el tipo no es client)
-                'integer', // Debe ser un número entero
-                'exists:users,id' // El ID debe existir en la tabla 'users'
+                'nullable','integer','exists:users,id'
             ],
         ];
     }
 
-    // ============================================================
-    // Métodos Públicos (Acciones llamadas desde la Vista Blade)
-    // ============================================================
-
-    // --- Lógica de Ordenación (Álbumes) ---
-    // Se llama desde la vista para cambiar la columna o dirección de ordenación
+    // --- Sorting & Searching ---
     public function sortBy(string $field): void
     {
-        $allowedSorts = ['name', 'created_at', 'type']; // Columnas permitidas para ordenar (¡Ajustar!)
-        if (!in_array($field, $allowedSorts)) return; // Ignorar si no es válida
-
-        if ($this->campo === $field) { // Si se pulsa en la misma columna, invertir orden
+        $allowed = ['name','created_at','type'];
+        if (! in_array($field, $allowed)) return;
+        if ($this->campo === $field) {
             $this->order = $this->order === 'asc' ? 'desc' : 'asc';
-        } else { // Si se pulsa en otra columna, usarla y poner orden ascendente
+        } else {
             $this->campo = $field;
             $this->order = 'asc';
         }
-        $this->resetPage('albumsPage'); // Volver a la página 1 de la lista de álbumes
+        $this->resetPage('albumsPage');
     }
 
-    // --- Lógica de Búsqueda ---
-    // Este es un "hook" de Livewire. Se ejecuta JUSTO ANTES de que se actualice la propiedad $cadena.
     public function updatingCadena(): void
     {
-        // Resetea la paginación de ambas listas para evitar problemas al filtrar
         $this->resetPage('albumsPage');
         $this->resetPage('photosPage');
     }
 
-    // --- Lógica del Modal Principal (Galería) ---
-    // Se llama al hacer clic en una tarjeta de álbum en la rejilla principal
-    public function openModal(int $albumId)
+    // --- Open / Close Gallery Modal ---
+    public function openModal(int $albumId): void
     {
-        $this->selectedAlbum = Album::with('user')->find($albumId); // Busca el álbum y carga su usuario
-        $this->closePhotoViewer(); // Asegura que el visor de fotos grande esté cerrado
-        $this->reset(['selectedPhotos', 'uploadedPhotos', 'selectionMode']); // Limpia estados previos del modal
-        $this->showModal = true; // Marca el modal como visible (lo mostrará en la vista)
-        $this->resetPage('photosPage'); // Resetea la paginación de las fotos DENTRO del modal
-    }
-    // Se llama al hacer clic en el botón 'X' o fuera del modal de galería
-    public function closeModal()
-    {
-        $this->closePhotoViewer(); // Cierra también el visor de fotos por si acaso
-        $this->showModal = false; // Oculta el modal
-        // Dispara un evento JS después de un pequeño retraso para permitir la animación de cierre de Alpine
-        // y luego llama al método resetModalState() de este componente.
-        $this->js('setTimeout(() => { Livewire.dispatch(\'resetModalState\') }, 300)');
-    }
-    // Escucha el evento 'resetModalState' disparado por JS y resetea propiedades
-    #[On('resetModalState')]
-    public function resetModalState()
-    {
-        $this->reset(['selectedAlbum', 'selectedPhotos', 'uploadedPhotos', 'selectionMode']);
+        $this->selectedAlbum = Album::with('user')->find($albumId);
+        $this->closePhotoViewer();
+        $this->reset(['selectedPhotos','uploadedPhotos','selectionMode']);
+        $this->showModal = true;
+        $this->resetPage('photosPage');
     }
 
-    // --- Lógica de Selección Múltiple de Fotos ---
-    // Se llama al pulsar el botón "Seleccionar Fotos" / "Cancelar Selección"
-    public function toggleSelectionMode()
+    public function closeModal(): void
     {
-        $this->selectionMode = !$this->selectionMode; // Invierte el estado del modo selección
-        if (!$this->selectionMode) {
-            $this->reset('selectedPhotos');
-        } // Limpia selección si se desactiva
+        $this->closePhotoViewer();
+        $this->showModal = false;
+        $this->js("setTimeout(() => Livewire.dispatch('resetModalState'), 300)");
     }
-    // Se llama al hacer clic en una foto SI $selectionMode es true
-    public function toggleSelection(int $photoId)
+
+    #[On('resetModalState')]
+    public function resetModalState(): void
     {
-        if (!$this->selectionMode) return; // No hace nada si no está en modo selección
-        // Comprueba si el ID ya está en el array
+        $this->reset(['selectedAlbum','selectedPhotos','uploadedPhotos','selectionMode']);
+    }
+
+    // --- Photo Selection ---
+    public function toggleSelectionMode(): void
+    {
+        $this->selectionMode = ! $this->selectionMode;
+        if (! $this->selectionMode) {
+            $this->reset('selectedPhotos');
+        }
+    }
+
+    public function toggleSelection(int $photoId): void
+    {
+        if (! $this->selectionMode) return;
         if (in_array($photoId, $this->selectedPhotos)) {
-            // Si está, lo quita del array
             $this->selectedPhotos = array_diff($this->selectedPhotos, [$photoId]);
         } else {
-            // Si no está, lo añade
             $this->selectedPhotos[] = $photoId;
         }
-        $this->selectedPhotos = array_values($this->selectedPhotos); // Reindexa el array
+        $this->selectedPhotos = array_values($this->selectedPhotos);
     }
 
-    // --- Lógica de Subida de Fotos ---
-    // Se llama al enviar el formulario de subida de fotos
-    public function savePhotos()
+    // --- Save Uploaded Photos ---
+    public function savePhotos(): void
     {
-        $this->validateOnly('uploadedPhotos'); // Valida solo la propiedad $uploadedPhotos con su regla definida arriba
-        $user = Auth::user(); // Obtiene el usuario autenticado
-
-        // Comprobación de Permisos (Usando la columna 'role' directamente)
-        // ¡ASEGÚRATE que $user->role existe y que 'admin' es el valor correcto!
-        if (!$user || !$this->selectedAlbum || ($user->role != 'admin' && $this->selectedAlbum->user_id !== $user->id)) {
-            session()->flash('error', 'No tienes permiso para añadir fotos a este álbum.'); // Mensaje de error
-            $this->reset('uploadedPhotos'); // Limpiar los archivos seleccionados
-            return; // Detener ejecución
-        }
-
-        // Si hay álbum seleccionado y archivos subidos válidos
-        if (!empty($this->uploadedPhotos)) {
-            $disk = 'public'; // Define el disco de Storage a usar (o 's3')
-            $albumPathBase = "albums/{$this->selectedAlbum->id}"; // Define la carpeta base para este álbum
-
-            // Asegura que los directorios de destino existan
-            Storage::disk($disk)->makeDirectory("{$albumPathBase}/photos");
-            Storage::disk($disk)->makeDirectory("{$albumPathBase}/thumbnails");
-
-            // Itera sobre cada archivo subido
-            foreach ($this->uploadedPhotos as $photoFile) {
-                // Guarda el archivo original en 'storage/app/public/albums/{id}/photos'
-                // El nombre del archivo será generado automáticamente por Laravel para ser único
-                $path = $photoFile->store("{$albumPathBase}/photos", $disk);
-
-                // Crea el registro en la tabla 'photos'
-                $photo = Photo::create([
-                    'album_id' => $this->selectedAlbum->id, // ID del álbum actual
-                    'file_path' => $path, // Ruta del archivo original guardado
-                    'thumbnail_path' => null, // El Job se encargará de esto
-                    'uploaded_by' => $user->id, // ID del usuario que subió
-                    'like' => false, // Valor inicial del 'like'
-                ]);
-
-                // Despacha el Job para generar el thumbnail en segundo plano
-                // Lo envía a la cola llamada 'image-processing' (opcional)
-                ProcessPhotoThumbnail::dispatch($photo)->onQueue('image-processing');
-            }
-            $this->reset('uploadedPhotos'); // Limpia el input de archivos subidos
-            session()->flash('message', 'Fotos subidas. Las miniaturas se están procesando.'); // Mensaje de éxito
-            $this->resetPage('photosPage'); // Vuelve a la página 1 de la galería del modal
-            // $this->selectedAlbum->refresh(); // Opcional: Recargar datos del álbum si es necesario
-        }
-    }
-    // --- Lógica de Borrado de Fotos Seleccionadas ---
-    // Se llama al pulsar el botón 'Eliminar Selección'
-    public function deleteSelectedPhotos()
-    {
-        if (empty($this->selectedPhotos)) return; // Salir si no hay fotos seleccionadas
-
+        $this->validateOnly('uploadedPhotos');
         $user = Auth::user();
-        // Comprobación de Permisos (¡Ajusta según tu lógica!)
-        if (!$user || !$this->selectedAlbum || ($user->role !== 'admin' && $this->selectedAlbum->user_id !== $user->id)) {
-            session()->flash('error', 'No tienes permiso para borrar estas fotos.');
-            $this->reset(['selectedPhotos', 'selectionMode']);
+        if (! $user
+            || ! $this->selectedAlbum
+            || ($user->role !== 'admin' && $this->selectedAlbum->user_id !== $user->id)
+        ) {
+            session()->flash('error','No tienes permiso para añadir fotos.');
+            $this->reset('uploadedPhotos');
+            return;
+        }
+        if (empty($this->uploadedPhotos)) {
             return;
         }
 
-        // Busca los registros de las fotos a borrar (verificando que pertenecen al álbum actual)
-        $photosToDelete = Photo::whereIn('id', $this->selectedPhotos)
-            ->where('album_id', $this->selectedAlbum->id)
+        $disk = 'albums';
+        $base = "{$this->selectedAlbum->id}";
+        Storage::disk($disk)->makeDirectory("$base/photos");
+        Storage::disk($disk)->makeDirectory("$base/thumbnails");
+
+        foreach ($this->uploadedPhotos as $file) {
+            $path = $file->store("$base/photos", $disk);
+            $photo = Photo::create([
+                'album_id'       => $this->selectedAlbum->id,
+                'file_path'      => $path,
+                'thumbnail_path' => null,
+                'uploaded_by'    => $user->id,
+                'like'           => false,
+            ]);
+            ProcessPhotoThumbnail::dispatch($photo)->onQueue('image-processing');
+        }
+
+        $this->reset('uploadedPhotos');
+        session()->flash('message','Fotos subidas. Miniaturas en proceso.');
+        $this->resetPage('photosPage');
+    }
+
+    // --- Delete Selected Photos ---
+    public function deleteSelectedPhotos(): void
+    {
+        if (empty($this->selectedPhotos)) return;
+        $user = Auth::user();
+        if (! $user
+            || ! $this->selectedAlbum
+            || ($user->role !== 'admin' && $this->selectedAlbum->user_id !== $user->id)
+        ) {
+            session()->flash('error','No tienes permiso para borrar fotos.');
+            $this->reset(['selectedPhotos','selectionMode']);
+            return;
+        }
+
+        $photos = Photo::whereIn('id',$this->selectedPhotos)
+            ->where('album_id',$this->selectedAlbum->id)
             ->get();
 
-        if ($photosToDelete->isEmpty()) {
-            $this->reset(['selectedPhotos', 'selectionMode']);
+        if ($photos->isEmpty()) {
+            $this->reset(['selectedPhotos','selectionMode']);
             return;
         }
 
-        // Obtener las rutas de los archivos originales y miniaturas para borrarlos de Storage
-        $pathsToDelete = $photosToDelete->pluck('file_path')->filter()->toArray();
-        $thumbPathsToDelete = $photosToDelete->pluck('thumbnail_path')->filter()->toArray();
-        $disk = 'public'; // O 's3'
-        Storage::disk($disk)->delete($pathsToDelete); // Borra archivos originales
-        Storage::disk($disk)->delete($thumbPathsToDelete); // Borra miniaturas
+        $disk = 'albums';
+        $toDel = collect($photos)->flatMap(fn($p) => [
+            $p->file_path, $p->thumbnail_path
+        ])->filter()->toArray();
 
-        // Borrar los registros de la base de datos usando los IDs
+        Storage::disk($disk)->delete($toDel);
         Photo::destroy($this->selectedPhotos);
 
-        // Limpiar estado y notificar
-        $this->reset(['selectedPhotos', 'selectionMode']);
-        session()->flash('message', 'Fotos eliminadas correctamente.');
-        $this->resetPage('photosPage'); // Resetear paginación del modal
+        $this->reset(['selectedPhotos','selectionMode']);
+        session()->flash('message','Fotos eliminadas.');
+        $this->resetPage('photosPage');
     }
 
-    // --- Lógica Visor de Fotos Grande ---
-    // Propiedades Computadas para obtener IDs de foto anterior/siguiente
-    #[Computed] // Sin persist:true para asegurar recálculo
+    // --- Photo Viewer ---
+    #[Computed]
     public function previousPhotoId(): ?int
     {
-        if (!$this->viewingPhoto || !$this->selectedAlbum) return null;
-        // Busca el ID máximo MÁS PEQUEÑO que el actual, dentro del mismo álbum
-        return $this->selectedAlbum->photos()->where('id', '<', $this->viewingPhoto->id)->max('id');
+        if (! $this->viewingPhoto || ! $this->selectedAlbum) return null;
+        return $this->selectedAlbum
+            ->photos()
+            ->where('id','<',$this->viewingPhoto->id)
+            ->max('id');
     }
-    #[Computed] // Sin persist:true
+
+    #[Computed]
     public function nextPhotoId(): ?int
     {
-        if (!$this->viewingPhoto || !$this->selectedAlbum) return null;
-        // Busca el ID mínimo MÁS GRANDE que el actual, dentro del mismo álbum
-        return $this->selectedAlbum->photos()->where('id', '>', $this->viewingPhoto->id)->min('id');
+        if (! $this->viewingPhoto || ! $this->selectedAlbum) return null;
+        return $this->selectedAlbum
+            ->photos()
+            ->where('id','>',$this->viewingPhoto->id)
+            ->min('id');
     }
-    // Métodos para navegar llamados por los botones '<' y '>'
-    public function viewPreviousPhoto()
+
+    public function viewPreviousPhoto(): void
     {
         if ($id = $this->previousPhotoId) {
             $this->viewPhoto($id);
         }
     }
-    public function viewNextPhoto()
+
+    public function viewNextPhoto(): void
     {
         if ($id = $this->nextPhotoId) {
             $this->viewPhoto($id);
         }
     }
 
-    // Método para abrir el visor (llamado por Doble Clic en una foto de la galería)
-    public function viewPhoto(int $photoId)
+    public function viewPhoto(int $photoId): void
     {
-        $this->viewingPhoto = Photo::find($photoId);
-        // Comprobar pertenencia al álbum actual por seguridad
-        if ($this->viewingPhoto && $this->selectedAlbum && $this->viewingPhoto->album_id === $this->selectedAlbum->id) {
-            $this->showPhotoViewer = true; // Mostrar el visor grande
-        } else {
-            $this->viewingPhoto = null;
-        } // Limpiar si no pertenece
-    }
-    // Método para cerrar el visor grande
-    public function closePhotoViewer()
-    {
-        $this->showPhotoViewer = false;
-        $this->viewingPhoto = null;
+        $photo = Photo::find($photoId);
+        if ($photo && $this->selectedAlbum && $photo->album_id === $this->selectedAlbum->id) {
+            $this->viewingPhoto    = $photo;
+            $this->showPhotoViewer = true;
+        }
     }
 
-    // --- Lógica Modal Crear Álbum ---
-    // Abre el modal de creación y carga la lista de clientes
-    public function openCreateAlbumModal()
+    public function closePhotoViewer(): void
     {
-        $this->resetValidation(); // Limpiar errores de validación previos
-        $this->reset(['newAlbumName', 'newAlbumDescription', 'newAlbumType', 'newAlbumCover', 'newAlbumClientId']);
-        $this->newAlbumType = 'public'; // Resetear tipo a por defecto
-        // Cargar usuarios con rol 'client' (¡Ajusta el rol si es diferente!)
-        $this->clients = User::where('role', 'admin')->orderBy('name')->get(['id', 'name', 'email']); // Añadido email
-        $this->showCreateAlbumModal = true; // Mostrar el modal
+        $this->showPhotoViewer = false;
+        $this->viewingPhoto    = null;
     }
-    // Cierra el modal de creación y limpia los campos y errores
-    public function closeCreateAlbumModal()
+
+    // --- Create Album ---
+    public function openCreateAlbumModal(): void
+    {
+        $this->resetValidation();
+        $this->reset([
+            'newAlbumName','newAlbumDescription',
+            'newAlbumType','newAlbumCover','newAlbumClientId'
+        ]);
+        $this->newAlbumType = 'public';
+        $this->clients = User::where('role','admin')
+            ->orderBy('name')
+            ->get(['id','name','email']);
+        $this->showCreateAlbumModal = true;
+    }
+
+    public function closeCreateAlbumModal(): void
     {
         $this->showCreateAlbumModal = false;
         $this->resetValidation();
-        $this->reset(['newAlbumName', 'newAlbumDescription', 'newAlbumType', 'newAlbumCover', 'newAlbumClientId']);
-        $this->clients = []; // Limpiar lista
-    }
-    // Se llama al enviar el formulario de creación de álbum
-    public function createAlbum()
-    {
-        $user = Auth::user();
-        // Comprobación de permiso (¡Ajusta!)
-        if (!$user || $user->role !== 'admin') { /* ... */
-            return;
-        }
-        // Validar usando las reglas definidas en el método rules()
-        $validatedData = $this->validate($this->rules());
-        $coverPath = null;
-        // Guardar imagen de portada si se subió
-        if ($this->newAlbumCover) {
-            try {
-                $coverPath = $this->newAlbumCover->store('albums/covers', 'public');
-            } catch (\Exception $e) {
-                $this->addError('newAlbumCover', 'Error al subir.');
-                Log::error(...);
-                return;
-            }
-        }
-        // Crear el registro Album en la base de datos
-        Album::create([
-            'name' => $validatedData['newAlbumName'],
-            'description' => $validatedData['newAlbumDescription'],
-            'type' => $validatedData['newAlbumType'],
-            'user_id' => $user->id, // El admin es el creador/dueño
-            'cover_image' => $coverPath,
-            // Asigna client_id si el tipo es 'client' y se seleccionó un cliente válido,
-            // o si el tipo es 'public', asigna el ID del usuario que está creando el álbum
-            'client_id' => ($validatedData['newAlbumType'] === 'client' && !empty($validatedData['newAlbumClientId']))
-                ? $validatedData['newAlbumClientId']
-                : ($validatedData['newAlbumType'] === 'public' ? $user->id : null),
+        $this->reset([
+            'newAlbumName','newAlbumDescription',
+            'newAlbumType','newAlbumCover','newAlbumClientId'
         ]);
-        $this->closeCreateAlbumModal(); // Cerrar el modal
-        session()->flash('message', 'Álbum creado.'); // Mensaje de éxito
-    }
-
-    // --- Método Render (Se ejecuta en cada actualización del componente) ---
-    public function render()
-    {
-        // Obtener usuario autenticado
-        $user = Auth::user();
-        // Iniciar consulta Eloquent para Álbumes
-        $query = Album::query();
-
-        // Aplicar filtro basado en rol
-        if ($user) { // Si hay usuario logueado
-            if ($user->role != 'admin') { // Si NO es admin (asume cliente)
-                // Solo ve sus álbumes (por user_id), los de tipo 'public' o donde es client_id
-                $query->where(function ($q) use ($user) {
-                    $q->where('user_id', $user->id)
-                        ->orWhere('client_id', $user->id) // Ver álbumes donde es client_id
-                        ->orWhere('type', 'public'); // Ver álbumes públicos
-                });
-            }
-            // Si es admin, no se aplica filtro de usuario/tipo (ve todo)
-        } else { // Si es invitado
-            // Solo ve los de tipo 'public'
-            $query->where('type', 'public'); // ¡Ajusta columna/valor si es necesario!
-        }
-
-        // Aplicar filtro de búsqueda si $cadena no está vacía
-        if (!empty($this->cadena)) {
-            $query->where(function ($q) { // Agrupar condiciones OR
-                $searchTerm = '%' . $this->cadena . '%';
-                $q->where('name', 'like', $searchTerm) // Buscar en nombre
-                    ->orWhere('description', 'like', $searchTerm); // Buscar en descripción
-            });
-        }
-
-        // Cargar relaciones necesarias para la vista (Eager Loading)
-        $query->with(['user']); // Cargar el usuario dueño de cada álbum
-
-        // Aplicar ordenación
-        $sortField = in_array($this->campo, ['name', 'created_at', 'type']) ? $this->campo : 'created_at'; // Validar campo
-        $sortDirection = $this->order === 'asc' ? 'asc' : 'desc';
-        $query->orderBy($sortField, $sortDirection);
-
-        // Obtener resultados paginados para la lista de álbumes
-        $albums = $query->paginate(12, ['*'], 'albumsPage'); // 12 álbumes por página
-
-        // Obtener fotos paginadas para el modal (SOLO si el modal está abierto)
-        $photosInModal = null;
-        if ($this->showModal && $this->selectedAlbum) {
-            $photosInModal = $this->selectedAlbum
-                ->photos() // Usa la relación definida en el modelo Album
-                // Añadir subconsulta para verificar si existe relación con el usuario actual
-                ->withExists(['likedByUsers as liked_by_current_user' => function ($query) {
-                    $query->where('user_id', Auth::id()); // Comprueba si el ID del usuario logueado está en la pivot
-                }])
-                ->orderBy('id') // Ordena las fotos por ID (puedes cambiarlo)
-                ->paginate(15, ['*'], 'photosPage'); // 15 fotos por página en el modal
-        }
-
-        // Obtener lista de usuarios (para modal crear álbum) - MOVIDO a openCreateAlbumModal
-
-        // Devolver la vista Blade y pasarle las variables necesarias
-        $usuarios = User::all();
-        return view('livewire.albums', [
-            'albums' => $albums,                // Colección paginada de álbumes para la rejilla principal
-            'photosInModal' => $photosInModal,
-            'usuarios' => $usuarios,
-        ]);
-    }
-
-    //Metodos para editar album
-    public function openEditAlbumModal(int $albumId)
-    {
-        $this->resetValidation(); // Limpiar errores previos
-        $album = Album::find($albumId);
-        if (!$album) return; // Salir si no se encuentra
-
-        // Verificar permiso (solo admin o dueño - ¡Ajusta rol!)
-        if (Auth::user()?->role !== 'admin' && Auth::id() !== $album->user_id) {
-            session()->flash('error', 'No tienes permiso para editar este álbum.');
-            return;
-        }
-
-        $this->editingAlbum = $album; // Guardar el álbum a editar
-
-        // Rellenar las propiedades del formulario con los datos actuales del álbum
-        $this->editAlbumName = $album->name;
-        $this->editAlbumDescription = $album->description ?? '';
-        $this->editAlbumType = $album->type;
-        $this->editAlbumClientId = $album->client_id ? (string)$album->client_id : ''; // Convertir a string para select
-        $this->editAlbumCurrentCover = $album->cover_image; // Guardar ruta actual
-        $this->editAlbumNewCover = null; // Limpiar posible archivo previo
-
-        // Cargar clientes si el tipo actual o potencial es 'client'
-        // (Podría optimizarse cargando solo si type es 'client' al abrir)
-        $this->clients = User::where('role', 'client')->orderBy('name')->get(['id', 'name', 'email']);
-
-        $this->showEditAlbumModal = true; // Mostrar modal
-    }
-
-    public function closeEditAlbumModal()
-    {
-        $this->showEditAlbumModal = false;
-        $this->resetValidation();
-        $this->reset(['editingAlbum', 'editAlbumName', 'editAlbumDescription', 'editAlbumType', 'editAlbumClientId', 'editAlbumNewCover', 'editAlbumCurrentCover']);
         $this->clients = [];
     }
 
-    public function updateAlbum()
+    public function createAlbum(): void
     {
-        if (!$this->editingAlbum) return; // Salir si no hay álbum en edición
-
         $user = Auth::user();
-        // Verificar permiso (¡Ajusta rol!)
-        if (!$user || ($user->role !== 'admin' && $this->editingAlbum->user_id !== $user->id)) {
-            session()->flash('error', 'No tienes permiso para editar este álbum.');
-            $this->closeEditAlbumModal();
+        if (! $user || $user->role !== 'admin') {
             return;
         }
-
-        // Validar usando las reglas específicas para update
-        $validatedData = $this->validate($this->rulesForUpdate());
-
-        $coverPath = $this->editingAlbum->cover_image; // Mantener portada actual por defecto
-
-        // Si se subió una nueva portada
-        if ($this->editAlbumNewCover) {
+        $data = $this->validate($this->rules());
+        $cover = null;
+        if ($this->newAlbumCover) {
             try {
-                // Borrar la portada anterior si existía
-                if ($coverPath) {
-                    Storage::disk('public')->delete($coverPath);
-                }
-                // Guardar la nueva portada
-                $coverPath = $this->editAlbumNewCover->store('albums/covers', 'public');
+                $cover = $this->newAlbumCover->store('covers','albums');
             } catch (\Exception $e) {
-                $this->addError('editAlbumNewCover', 'Error al subir la nueva portada.');
-                Log::error("Error subiendo nueva cover para album {$this->editingAlbum->id}: " . $e->getMessage());
+                $this->addError('newAlbumCover','Error al subir portada.');
+                Log::error("Cover upload error: {$e->getMessage()}");
                 return;
             }
         }
-
-        // Actualizar el álbum en la base de datos
-        $this->editingAlbum->update([
-            'name' => $validatedData['editAlbumName'],
-            'description' => $validatedData['editAlbumDescription'],
-            'type' => $validatedData['editAlbumType'],
-            'cover_image' => $coverPath, // Nueva ruta o la anterior
-            'client_id' => ($validatedData['editAlbumType'] === 'client' && !empty($validatedData['editAlbumClientId']))
-                ? $validatedData['editAlbumClientId']
-                : ($validatedData['editAlbumType'] === 'public' ? $user->id : null), // Asigna el usuario si es público
+        Album::create([
+            'name'        => $data['newAlbumName'],
+            'description' => $data['newAlbumDescription'],
+            'type'        => $data['newAlbumType'],
+            'user_id'     => $user->id,
+            'cover_image' => $cover,
+            'client_id'   => $data['newAlbumType']==='client'
+                ? $data['newAlbumClientId']
+                : ($data['newAlbumType']==='public' ? $user->id : null),
         ]);
-
-        $this->closeEditAlbumModal(); // Cerrar modal
-        session()->flash('message', 'Álbum actualizado correctamente.');
-        // $this->dispatch('$refresh'); // Refrescar componente actual si es necesario
+        $this->closeCreateAlbumModal();
+        session()->flash('message','Álbum creado.');
     }
 
-    //
-    public function toggleLike(int $photoId)
+    // --- Edit Album ---
+    public function openEditAlbumModal(int $albumId): void
     {
+        $this->resetValidation();
+        $album = Album::find($albumId);
+        if (! $album) return;
         $user = Auth::user();
-
-        // Verificar si el usuario está logueado
-        if (!$user) {
+        if (!$user || ($user->role!=='admin' && $album->user_id!==$user->id)) {
+            session()->flash('error','No tienes permiso para editar este álbum.');
             return;
         }
+        $this->editingAlbum         = $album;
+        $this->editAlbumName        = $album->name;
+        $this->editAlbumDescription = $album->description ?? '';
+        $this->editAlbumType        = $album->type;
+        $this->editAlbumClientId    = $album->client_id ? (string)$album->client_id : '';
+        $this->editAlbumCurrentCover= $album->cover_image;
+        $this->editAlbumNewCover    = null;
+        $this->clients = User::where('role','client')
+            ->orderBy('name')
+            ->get(['id','name','email']);
+        $this->showEditAlbumModal   = true;
+    }
 
-        // Verificar si la foto existe y pertenece al álbum actual (seguridad)
-        $photo = Photo::where('id', $photoId)
-            ->where('album_id', $this->selectedAlbum?->id)
-            ->first();
+    public function closeEditAlbumModal(): void
+    {
+        $this->showEditAlbumModal = false;
+        $this->resetValidation();
+        $this->reset([
+            'editingAlbum','editAlbumName','editAlbumDescription',
+            'editAlbumType','editAlbumClientId','editAlbumNewCover',
+            'editAlbumCurrentCover'
+        ]);
+        $this->clients = [];
+    }
 
-        if ($photo) {
-            // Verificar si ya existe un "like" en la tabla pivot
-            $exists = DB::table('photo_user_likes')
-                ->where('user_id', $user->id)
-                ->where('photo_id', $photoId)
-                ->exists();
-
-            if ($exists) {
-                // Si ya existe, eliminar el "like"
-                DB::table('photo_user_likes')
-                    ->where('user_id', $user->id)
-                    ->where('photo_id', $photoId)
-                    ->delete();
-            } else {
-                // Si no existe, agregar el "like"
-                DB::table('photo_user_likes')->insert([
-                    'user_id' => $user->id,
-                    'photo_id' => $photoId,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
+    public function updateAlbum(): void
+    {
+        if (! $this->editingAlbum) return;
+        $user = Auth::user();
+        if (! $user || ($user->role!=='admin' && $this->editingAlbum->user_id!==$user->id)) {
+            session()->flash('error','No tienes permiso para editar este álbum.');
+            $this->closeEditAlbumModal();
+            return;
+        }
+        $data = $this->validate($this->rulesForUpdate());
+        $cover = $this->editingAlbum->cover_image;
+        if ($this->editAlbumNewCover) {
+            try {
+                if ($cover) {
+                    Storage::disk('albums')->delete($cover);
+                }
+                $cover = $this->editAlbumNewCover->store('covers','albums');
+            } catch (\Exception $e) {
+                $this->addError('editAlbumNewCover','Error al subir nueva portada.');
+                Log::error("Cover update error: {$e->getMessage()}");
+                return;
             }
+        }
+        $this->editingAlbum->update([
+            'name'        => $data['editAlbumName'],
+            'description' => $data['editAlbumDescription'],
+            'type'        => $data['editAlbumType'],
+            'cover_image' => $cover,
+            'client_id'   => $data['editAlbumType']==='client'
+                ? $data['editAlbumClientId']
+                : ($data['editAlbumType']==='public' ? $user->id : null),
+        ]);
+        $this->closeEditAlbumModal();
+        session()->flash('message','Álbum actualizado.');
+    }
 
-            // Forzar un refresco del componente para que la vista se actualice
-            $this->dispatch('$refresh');
+    // --- Delete Album ---
+    public function deleteAlbum(int $albumId): void
+    {
+        $album = Album::with('photos')->findOrFail($albumId);
+        $user  = Auth::user();
+        if (! $user || ($user->role!=='admin' && $album->user_id!==$user->id)) {
+            session()->flash('error','No tienes permiso para eliminar.');
+            return;
+        }
+        try {
+            $disk = 'albums';
+            $toDel = [];
+            if ($album->cover_image) {
+                $toDel[] = $album->cover_image;
+            }
+            foreach ($album->photos as $photo) {
+                if ($photo->file_path) {
+                    $toDel[] = $photo->file_path;
+                }
+                if ($photo->thumbnail_path) {
+                    $toDel[] = $photo->thumbnail_path;
+                }
+            }
+            Storage::disk($disk)->delete($toDel);
+            $album->photos()->delete();
+            $album->delete();
+            session()->flash('message','Álbum y fotos eliminados.');
+            $this->resetPage('albumsPage');
+        } catch (\Exception $e) {
+            Log::error("Error eliminando álbum [ID:{$albumId}]: {$e->getMessage()}");
+            session()->flash('error','Error al eliminar álbum.');
         }
     }
-} // Fin de la clase Albums
+
+    // --- Toggle Like on Photo ---
+    public function toggleLike(int $photoId): void
+    {
+        $user = Auth::user();
+        if (! $user || ! $this->selectedAlbum) {
+            return;
+        }
+        $photo = Photo::where('id',$photoId)
+            ->where('album_id',$this->selectedAlbum->id)
+            ->first();
+        if (! $photo) return;
+        $exists = DB::table('photo_user_likes')
+            ->where('user_id',$user->id)
+            ->where('photo_id',$photoId)
+            ->exists();
+        if ($exists) {
+            DB::table('photo_user_likes')
+                ->where('user_id',$user->id)
+                ->where('photo_id',$photoId)
+                ->delete();
+        } else {
+            DB::table('photo_user_likes')->insert([
+                'user_id'    => $user->id,
+                'photo_id'   => $photoId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+        $this->dispatch('$refresh');
+    }
+
+    public function render()
+    {
+        $user  = Auth::user();
+        $query = Album::query();
+
+        if ($user && $user->role!=='admin') {
+            $query->where(fn($q) => $q
+                ->where('user_id',$user->id)
+                ->orWhere('client_id',$user->id)
+                ->orWhere('type','public')
+            );
+        } elseif (! $user) {
+            $query->where('type','public');
+        }
+
+        if (! empty($this->cadena)) {
+            $search = '%'.$this->cadena.'%';
+            $query->where(fn($q) => $q
+                ->where('name','like',$search)
+                ->orWhere('description','like',$search)
+            );
+        }
+
+        $query->with('user')
+              ->orderBy(
+                  in_array($this->campo,['name','created_at','type'])
+                      ? $this->campo
+                      : 'created_at',
+                  $this->order==='asc' ? 'asc' : 'desc'
+              );
+
+        $albums      = $query->paginate(12,['*'],'albumsPage');
+        $photosInModal = null;
+
+        if ($this->showModal && $this->selectedAlbum) {
+            $photosInModal = $this->selectedAlbum
+                ->photos()
+                ->withExists(['likedByUsers as liked_by_current_user'=> fn($q)=>$q->where('user_id',Auth::id())])
+                ->orderBy('id')
+                ->paginate(15,['*'],'photosPage');
+        }
+
+        return view('livewire.albums', [
+            'albums'        => $albums,
+            'photosInModal' => $photosInModal,
+            'usuarios'      => User::all(),
+        ]);
+    }
+}

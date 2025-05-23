@@ -30,7 +30,9 @@
                              role="button"
                              tabindex="0"
                              aria-label="Ver foto {{ $loop->iteration }}">
-                            <img src="{{ $photo->thumbnail_path ? Storage::url($photo->thumbnail_path) : Storage::url($photo->file_path) }}"
+                            <img src="{{ $photo->thumbnail_path
+    ? Storage::disk($disk)->url($photo->thumbnail_path)
+    : Storage::disk($disk)->url($photo->file_path) }}"
                                  alt="Foto del álbum {{ $album->name }}"
                                  loading="lazy"
                                  class="w-full h-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-105 group-hover:opacity-90">
@@ -77,8 +79,10 @@
             >
                 {{-- Imagen Principal --}}
                 <div class="flex-grow flex items-center justify-center overflow-hidden p-2 sm:p-4 md:p-6">
-                    <img src="{{ Storage::url($currentLightboxPhoto->file_path) }}"
-                         alt="{{ $currentLightboxPhoto->filename ?? 'Foto actual' }}"
+                    <img src="{{ $photo->thumbnail_path
+    ? Storage::disk($disk)->url($photo->thumbnail_path)
+    : Storage::disk($disk)->url($photo->file_path) }}"
+                        alt="Foto del álbum {{ $album->name }}"
                          class="block max-w-full max-h-[calc(90vh-100px)] object-contain"> {{-- Ajustar max-h según padding y footer --}}
                 </div>
 

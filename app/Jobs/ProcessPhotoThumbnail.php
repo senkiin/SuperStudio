@@ -10,30 +10,27 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
-use Intervention\Image\Drivers\Gd\Driver;
-use \Intervention\Image\ImageManager as Image;
+
+// Intervention Image v3.x
 use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver as GdDriver; // O usa ImagickDriver si prefieres y lo tienes instalado
+use Intervention\Image\Interfaces\ImageInterface;
+// Si necesitas especificar formatos de codificación de forma avanzada:
+// use Intervention\Image\Encoders\JpegEncoder;
+// use Intervention\Image\Encoders\PngEncoder;
 
 class ProcessPhotoThumbnail implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    /**
-     * El modelo Photo a procesar.
-     * Eloquent se encarga de serializar/deserializar el modelo.
-     * @var \App\Models\Photo
-     */
+    /** @var Photo El modelo Photo a procesar */
     public Photo $photo;
 
-     /**
-     * Número de veces que el job puede ser intentado.
-     *
-     * @var int
-     */
-    public $tries = 3;
+    /** @var int Número máximo de intentos */
+    public int $tries = 3;
 
     /**
-     * Create a new job instance.
+     * Constructor recibe instancia de Photo
      */
     public function __construct(Photo $photo)
     {
@@ -41,75 +38,131 @@ class ProcessPhotoThumbnail implements ShouldQueue
     }
 
     /**
-     * Execute the job.
+     * Ejecuta el procesamiento de la miniatura
      */
     public function handle(): void
     {
-        $disk = 'public'; // Cambia a 's3' u otro si usas almacenamiento diferente
-        $originalPath = $this->photo->file_path;
+        // -------------------------------------------------------------------------
+        // CONFIGURACIÓN IMPORTANTE DEL DISCO S3
+        // -------------------------------------------------------------------------
+        // Especifica el nombre del disco configurado en 'config/filesystems.php'
+        // que utiliza el driver 's3' y tiene tus credenciales de AWS.
+        // Puede ser 's3', 'albums_s3', o 'albums' si 'albums' está configurado como S3.
+        $s3DiskName = 's3'; // <--- ¡¡¡REVISA Y AJUSTA ESTE VALOR!!!
+        // -------------------------------------------------------------------------
 
-        // 1. Verificar si el archivo original existe
-        if (!$originalPath || !Storage::disk($disk)->exists($originalPath)) {
-            Log::error("Archivo original no encontrado para procesar thumbnail (Photo ID: {$this->photo->id}): " . $originalPath);
-            // Opcional: Marcar la foto con un estado de error en la BD
-            // $this->fail("Archivo original no encontrado: " . $originalPath); // Marca el job como fallido
-            return; // Salir si no hay archivo
+        Log::info("[Thumbnail] Job starting for Photo ID: {$this->photo->id}. Attempting to use S3 disk: '{$s3DiskName}'.");
+
+        // Verificar que el disco S3 esté configurado y use el driver 's3'
+        $diskConfig = config("filesystems.disks.{$s3DiskName}");
+        if (!$diskConfig) {
+            $errorMessage = "S3 Disk '{$s3DiskName}' is not configured in filesystems.php.";
+            Log::error("[Thumbnail] {$errorMessage} Photo ID: {$this->photo->id}");
+            $this->fail(new \Exception($errorMessage)); // Fallar el job
+            return;
+        }
+        if ($diskConfig['driver'] !== 's3') {
+            $errorMessage = "Disk '{$s3DiskName}' is NOT configured as an S3 driver. Actual driver: '{$diskConfig['driver']}'.";
+            Log::error("[Thumbnail] {$errorMessage} Photo ID: {$this->photo->id}");
+            $this->fail(new \Exception($errorMessage)); // Fallar el job
+            return;
         }
 
-        Log::info("Procesando thumbnail para Photo ID: {$this->photo->id}, Path: {$originalPath}");
+        $originalFilePath = $this->photo->file_path; // Ruta del archivo original en el disco S3
+
+        Log::info("[Thumbnail] Original S3 file path: s3://{$diskConfig['bucket']}/{$originalFilePath}. Photo ID: {$this->photo->id}");
+
+        if (!$originalFilePath || !Storage::disk($s3DiskName)->exists($originalFilePath)) {
+            Log::error("[Thumbnail] Original file NOT FOUND on S3 disk '{$s3DiskName}' at path '{$originalFilePath}'. Photo ID: {$this->photo->id}");
+            // Considera si fallar el job aquí o simplemente retornar si el original no es estrictamente necesario
+            // $this->fail(new \Exception("Original file not found on S3 at '{$originalFilePath}'."));
+            return;
+        }
 
         try {
-            // 2. Leer el contenido del archivo original
-            $imageContent = Storage::disk($disk)->get($originalPath);
+            Log::info("[Thumbnail] Reading original file from S3 disk '{$s3DiskName}', path '{$originalFilePath}'. Photo ID: {$this->photo->id}");
+            $binaryImageData = Storage::disk($s3DiskName)->get($originalFilePath);
 
-            // 3. Procesar con Intervention Image
-            $manager = new ImageManager(new Driver());
-
-            $image = $manager->read($imageContent);
-
-
-            // 4. Redimensionar (ejemplo: 400px de ancho, mantiene proporción)
-            // Puedes usar otros métodos: fit(), cover(), etc.
-            $image->scaleDown(width: 400);
-
-            // 5. Determinar la ruta y nombre para el thumbnail
-            $directory = pathinfo($originalPath, PATHINFO_DIRNAME);
-            $filename = pathinfo($originalPath, PATHINFO_FILENAME);
-            $extension = pathinfo($originalPath, PATHINFO_EXTENSION);
-            // Crear una subcarpeta 'thumbnails' dentro de la carpeta de fotos del álbum
-            $thumbDirectory = str_replace('/photos', '/thumbnails', $directory); // Ajusta si tu ruta es diferente
-            $thumbFilename = $filename . '_thumb.' . $extension;
-            $thumbnailPath = $thumbDirectory . '/' . $thumbFilename;
-
-            // 6. Asegurarse de que el directorio del thumbnail exista (para disco local)
-             if ($disk === 'public' || $disk === 'local') {
-                Storage::disk($disk)->makeDirectory($thumbDirectory);
+            if ($binaryImageData === null) { // get() puede devolver null si el archivo no se encuentra o hay error
+                $errorMessage = "Failed to read binary data from S3 for '{$originalFilePath}'. File might be missing or permissions issue.";
+                Log::error("[Thumbnail] {$errorMessage} Photo ID: {$this->photo->id}");
+                $this->fail(new \Exception($errorMessage));
+                return;
             }
 
-            // 7. Guardar la imagen procesada (thumbnail) en el disco
-            // encode(null) intenta mantener el formato original o usa uno por defecto
-            Storage::disk($disk)->put($thumbnailPath, (string) $image->encode());
+            // Inicializar ImageManager con driver GD (Intervention Image v3)
+            $manager = ImageManager::withDriver(new GdDriver());
 
-            // 8. Actualizar el modelo Photo en la base de datos con la ruta del thumbnail
+            /** @var ImageInterface $image */
+            $image = $manager->read($binaryImageData);
+
+            Log::info("[Thumbnail] Resizing image. Photo ID: {$this->photo->id}");
+            $image->resize(400, null, function ($constraint) {
+                $constraint->aspectRatio();
+                // Nota: En Intervention Image v3, resize() no agranda la imagen por defecto si es más pequeña que las dimensiones dadas.
+                // Si necesitas la funcionalidad de 'upsize', revisa la documentación de v3.
+                // Ejemplo: $constraint->upsize(); // Si está disponible y es necesario.
+            });
+
+            // Definir rutas para la miniatura
+            $originalDir    = pathinfo($originalFilePath, PATHINFO_DIRNAME); // Directorio del original, ej: 'user1/photos'
+            $originalName   = pathinfo($originalFilePath, PATHINFO_FILENAME); // Nombre sin extensión, ej: 'my_image'
+            $originalExt    = pathinfo($originalFilePath, PATHINFO_EXTENSION); // Extensión, ej: 'jpg'
+
+            // Lógica para el directorio de miniaturas. Ejemplo: 'user1/photos/img.jpg' -> 'user1/thumbnails/img_thumb.jpg'
+            // Si $originalDir es '.', significa que el archivo está en la raíz del bucket.
+            // Si $originalDir no contiene 'photos', 'thumbnails' se antepondrá o se colocará en una estructura definida.
+            if ($originalDir === '.' || empty($originalDir)) {
+                $thumbnailDir = 'thumbnails'; // Miniaturas de archivos en raíz van a 'thumbnails/'
+            } else {
+                // Reemplaza 'photos' con 'thumbnails'. Si 'photos' no está, considera otra lógica.
+                $thumbnailDir  = str_replace('photos', 'thumbnails', $originalDir);
+                // Si 'photos' no estaba en $originalDir y no hubo reemplazo, decide una estructura.
+                // Por ejemplo, anteponer 'thumbnails/' al directorio original.
+                if ($thumbnailDir === $originalDir && strpos($originalDir, 'thumbnails') === false) {
+                     $thumbnailDir = 'thumbnails/' . $originalDir;
+                }
+            }
+            // Limpiar slashes duplicados por si acaso
+            $thumbnailDir = rtrim(str_replace('//', '/', $thumbnailDir), '/');
+
+
+            $thumbnailName = "{$originalName}_thumb.{$originalExt}";
+            $thumbnailPath = ($thumbnailDir === '.' || empty($thumbnailDir)) ? $thumbnailName : "{$thumbnailDir}/{$thumbnailName}";
+            // Asegurar que no haya una barra inicial si $thumbnailPath se forma sin $thumbnailDir
+            $thumbnailPath = ltrim($thumbnailPath, '/');
+
+
+            Log::info("[Thumbnail] Attempting to save thumbnail to S3 disk '{$s3DiskName}' at path '{$thumbnailPath}'. Photo ID: {$this->photo->id}");
+
+            // Codificar imagen. Intervention Image v3 devuelve un objeto EncodedImage.
+            // Puedes especificar el formato y calidad si es necesario, ejemplo:
+            // $encodedOutput = $image->encode(new JpegEncoder(quality: 80));
+            $encodedOutput = $image->encode(); // Usa el formato por defecto o el que infiera
+
+            Storage::disk($s3DiskName)->put($thumbnailPath, (string) $encodedOutput);
+
+            Log::info("[Thumbnail] Thumbnail successfully saved to S3 at 's3://{$diskConfig['bucket']}/{$thumbnailPath}'. Photo ID: {$this->photo->id}");
+
+            // Actualizar modelo en base de datos
             $this->photo->update(['thumbnail_path' => $thumbnailPath]);
+            Log::info("[Thumbnail] Photo model updated with thumbnail_path: '{$thumbnailPath}'. Photo ID: {$this->photo->id}");
 
-            Log::info("Thumbnail creado y guardado para Photo ID: {$this->photo->id} en: " . $thumbnailPath);
-
-        } catch (\Exception $e) {
-            Log::error("Error al crear thumbnail para Photo ID: {$this->photo->id} - Path: {$originalPath} - Error: " . $e->getMessage());
-            // Lanzar la excepción para que la cola maneje reintentos / failed_jobs
-            $this->fail($e); // Opcional: marcar como fallido inmediatamente
-            // throw $e;
+        } catch (\Throwable $e) {
+            Log::error("[Thumbnail] CRITICAL ERROR during thumbnail processing for Photo ID: {$this->photo->id}. Message: " . $e->getMessage() . ". File: " . $e->getFile() . ". Line: " . $e->getLine());
+            // Para un log más completo en caso de error (puede ser muy largo):
+            // Log::debug("[Thumbnail] Full Trace: " . $e->getTraceAsString());
+            $this->fail($e); // Esto llamará al método failed() y reencolará el job si $tries lo permite
         }
     }
 
-     /**
-     * Handle a job failure.
+    /**
+     * Manejar falla del job
+     * Este método se llama si el job falla después de todos sus intentos.
      */
     public function failed(\Throwable $exception): void
     {
-        // Opcional: Enviar notificación, loggear de forma especial, etc.
-        Log::critical("Job ProcessPhotoThumbnail falló para Photo ID: {$this->photo->id}. Error: " . $exception->getMessage());
-        // Podrías intentar marcar la foto en la BD como 'procesamiento_fallido'
+        Log::critical("[Thumbnail] JOB TOTALLY FAILED after all retries - Photo ID: {$this->photo->id}. Reason: " . $exception->getMessage());
+        // Aquí podrías enviar una notificación, limpiar algo, etc.
     }
 }

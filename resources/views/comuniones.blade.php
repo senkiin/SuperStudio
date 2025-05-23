@@ -19,4 +19,4 @@
             ])
         </div>
         <x-self.superPie></x-self.superPie>
-    </x-app-layout>
+</x-app-layout>
