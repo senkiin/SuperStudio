@@ -8,31 +8,6 @@
                 autoplayInterval: 7000, // Milisegundos
                 intervalId: null,
                 progress: 0,
-                startAutoplay() {
-                    if (this.autoplay && this.totalSlides > 1) {
-                        this.progress = 0; // Reset progress
-                        clearInterval(this.intervalId); // Clear existing interval
-
-                        // Update progress every 100ms
-                        let progressUpdateInterval = 100;
-                        let steps = this.autoplayInterval / progressUpdateInterval;
-                        let currentStep = 0;
-
-                        this.intervalId = setInterval(() => {
-                            currentStep++;
-                            this.progress = (currentStep / steps) * 100;
-                            if (currentStep >= steps) {
-                                this.next();
-                                currentStep = 0; // Reset for next slide
-                                this.progress = 0;
-                            }
-                        }, progressUpdateInterval);
-                    }
-                },
-                stopAutoplay() {
-                    clearInterval(this.intervalId);
-                    this.progress = 0; // Reset progress visually
-                },
                 next() {
                     this.currentSlide = (this.currentSlide + 1) % this.totalSlides;
                     this.$wire.goToSlide(this.currentSlide);
@@ -80,8 +55,8 @@
                     :aria-label="'Slide ' + ({{ $index }} + 1) + ' de ' + totalSlides"
                 >
                     {{-- Imagen de Fondo --}}
-                    <img src="{{ Storage::url($slide->background_image_path) }}"
-                         alt="{{ $slide->title }} fondo"
+                    <img src="{{ Storage::disk('s3')->url($slide->background_image_path) }}"
+     alt="{{ $slide->title }} fondo"
                          class="w-full h-full object-cover">
                     {{-- Overlay Oscuro --}}
                     <div class="absolute inset-0 bg-black opacity-40"></div>
@@ -192,7 +167,7 @@
                             @if ($newSlideImage)
                                 <img src="{{ $newSlideImage->temporaryUrl() }}" alt="Previsualización" class="mt-2 rounded max-h-32 object-contain">
                             @elseif ($existingSlideImagePreview)
-                                <img src="{{ Storage::url($existingSlideImagePreview) }}" alt="Imagen actual" class="mt-2 rounded max-h-32 object-contain">
+                                <img src="{{ Storage::disk('s3')->url($existingSlideImagePreview) }}" alt="Imagen actual" class="mt-2 rounded max-h-32 object-contain">
                             @endif
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -252,7 +227,7 @@
                                             {{-- <span wire:sortable.handle class="cursor-move text-gray-400 hover:text-white pr-2">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m4 6H4" /></svg>
                                             </span> --}}
-                                            <img src="{{ Storage::url($slideItem->background_image_path) }}" alt="" class="w-20 h-12 object-cover rounded-sm">
+                                            <img src="{{ Storage::disk('s3')->url($slideItem->background_image_path) }}" alt="" class="w-20 h-12 object-cover rounded-sm">
                                             <div>
                                                 <span class="font-medium text-gray-100 block">{{ $slideItem->title }}</span>
                                                 <span class="text-xs text-gray-400">Orden: {{ $slideItem->order }} - {{ $slideItem->is_active ? 'Activo' : 'Inactivo' }}</span>

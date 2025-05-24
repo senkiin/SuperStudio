@@ -22,29 +22,27 @@
                     @foreach ($photosForDisplay as $photo)
                         @php
                             // Determinar clase de animación basada en el índice del bucle
-                            // Asegúrate de tener estas clases CSS definidas para AOS o tu librería de animación
                             $animationClass = match ($loop->index % 3) {
-                                0 => 'fade-left', // O la clase que uses para animación desde la izquierda
-                                1 => 'fade-up',   // O la clase para animación desde abajo (como en tu ejemplo original)
-                                2 => 'fade-right',// O la clase para animación desde la derecha
+                                0 => 'fade-left',
+                                1 => 'fade-up',
+                                2 => 'fade-right',
                                 default => 'fade-up',
                             };
-                            // Si no usas AOS y quieres clases más genéricas para controlar con JS/CSS:
-                            // $animationClass = 'animate-on-scroll';
+                            $pathValue = $photo->thumbnail_path ?: $photo->file_path;
                         @endphp
-                        <div x-data x-intersect:enter="$el.classList.add('aos-animate')" {{-- Asume que 'aos-animate' es la clase que dispara la animación --}}
+                        <div x-data x-intersect:enter="$el.classList.add('aos-animate')"
                              class="aspect-w-1 aspect-h-1 relative group bg-gray-800 rounded-md overflow-hidden cursor-pointer {{ $animationClass }}"
                              wire:key="display-collection-photo-{{ $collectionConfig->id ?? 'gallery' }}-{{ $photo->id }}-{{ $loop->index }}"
                              wire:click="openCustomLightbox({{ $photo->id }})"
                              role="button"
                              tabindex="0"
                              aria-label="Ver foto {{ $photo->filename ?? 'Foto ' . ($loop->index + 1) }}">
-                            <img src="{{ Storage::url($photo->thumbnail_path ?: $photo->file_path) }}"
+                            <img src="{{ $pathValue ? Storage::disk($disk)->url($pathValue) : '' }}"
                                  alt="{{ $photo->filename ?? 'Foto de la colección' }}"
                                  loading="lazy"
                                  class="w-full h-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-105">
                             @if ($isAdmin)
-                                <button wire:click.stop="removeFromCollection({{ $photo->id }})" {{-- .stop para evitar que el click propague al div y abra el lightbox --}}
+                                <button wire:click.stop="removeFromCollection({{ $photo->id }})"
                                         wire:confirm="¿Estás seguro de quitar esta foto de la colección?"
                                         title="Quitar foto de la colección"
                                         class="absolute top-1 right-1 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-md text-xs opacity-0 group-hover:opacity-100 transition-opacity z-10">
@@ -56,7 +54,6 @@
                 </div>
             @else
                 <div class="text-center py-12">
-                    {{-- ... (mensaje de galería vacía como lo tenías) ... --}}
                      <svg class="mx-auto h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
                     </svg>
@@ -80,15 +77,13 @@
         </div>
     </section>
 
-    {{-- Modal de Administración (sin cambios aquí, se mantiene como en la respuesta anterior) --}}
-    @if ($isAdmin && $showManagerModal) {{-- Asegurado que el modal de admin solo se renderice si showManagerModal es true --}}
+    {{-- Modal de Administración --}}
+    @if ($isAdmin && $showManagerModal)
         <x-dialog-modal wire:model.live="showManagerModal" maxWidth="4xl">
             <x-slot name="title">
                 Administrar Galería de Retratos: <span class="font-normal italic text-indigo-300">{{ $galleryTitle ?: $identifier }}</span>
             </x-slot>
             <x-slot name="content">
-                {{-- ... Contenido completo del modal de administración ... --}}
-                {{-- (Pegar aquí el contenido del modal de administración de la respuesta anterior) --}}
                 @if (session()->has('cpg_modal_message'))
                     <div class="mb-4 p-3 bg-green-600 text-white rounded-md text-sm">{{ session('cpg_modal_message') }}</div>
                 @endif
@@ -99,7 +94,6 @@
                 <div class="space-y-6 text-gray-200">
                     {{-- Editar Título y Descripción de la Galería --}}
                     <div class="p-4 border border-gray-700 rounded-md bg-gray-800 shadow-sm">
-                        {{-- ... Contenido de Configuración de Galería ... --}}
                         <h4 class="text-lg font-semibold text-gray-100 mb-3">Configuración de la Galería</h4>
                         <div class="space-y-4">
                             <div>
@@ -124,7 +118,6 @@
 
                     {{-- 1. Subir Nuevas Fotos --}}
                     <div class="p-4 border border-gray-700 rounded-md bg-gray-800 shadow-sm">
-                        {{-- ... Contenido de Subir Nuevas Fotos ... --}}
                         <h4 class="text-lg font-semibold text-gray-100 mb-3">1. Subir Nuevas Fotos Directamente</h4>
                         <input type="file" wire:model="newPhotosToUploadModal" multiple id="upload-collection-photos-{{ $this->getId() }}"
                             class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer mb-2">
@@ -149,7 +142,6 @@
 
                     {{-- Pestañas para seleccionar fotos existentes --}}
                     <div x-data="{ currentPhotoTab: 'fromAlbums' }" class="border border-gray-700 rounded-md bg-gray-800 shadow-sm">
-                        {{-- ... Contenido de Pestañas y selección de fotos ... --}}
                         <div class="flex border-b border-gray-600 bg-gray-750 rounded-t-md">
                             @if($allAlbumsModalCollection && $allAlbumsModalCollection->isNotEmpty())
                             <button @click="currentPhotoTab = 'fromAlbums'" :class="{ 'bg-indigo-600 text-white border-indigo-500': currentPhotoTab === 'fromAlbums', 'bg-gray-700 hover:bg-gray-600 text-gray-300 border-transparent': currentPhotoTab !== 'fromAlbums' }" class="flex-1 px-3 py-2.5 text-sm font-medium focus:outline-none border-b-2 transition-colors">Desde Álbumes</button>
@@ -163,7 +155,6 @@
                             {{-- Contenido de cada pestaña --}}
                             @if($allAlbumsModalCollection && $allAlbumsModalCollection->isNotEmpty())
                             <div x-show="currentPhotoTab === 'fromAlbums'" x-transition.opacity.duration.300ms class="space-y-3">
-                                {{-- ... Contenido de la pestaña Álbumes ... --}}
                                 <h4 class="text-lg font-semibold text-gray-100">2. Añadir desde Álbum</h4>
                                 <select wire:model.live="selectedAlbumIdModal" class="form-select bg-gray-700 border-gray-600 text-gray-300 w-full rounded-md shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500">
                                     <option value="">-- Selecciona un álbum --</option>
@@ -172,9 +163,10 @@
                                 @if ($photosFromAlbumModal->isNotEmpty())
                                     <div class="max-h-60 overflow-y-auto grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 p-2 bg-gray-700/70 rounded-md border border-gray-600">
                                         @foreach ($photosFromAlbumModal as $photo)
+                                            @php $pathValueModalAlbum = $photo->thumbnail_path ?: $photo->file_path; @endphp
                                             <label for="modal_collection_album_photo_{{ $photo->id }}" class="cursor-pointer relative aspect-square block">
                                                 <input type="checkbox" id="modal_collection_album_photo_{{ $photo->id }}" value="{{ $photo->id }}" wire:model.defer="selectedPhotosFromAlbumModalArray" class="sr-only peer">
-                                                <img src="{{ Storage::url($photo->thumbnail_path ?: $photo->file_path) }}" alt="{{ $photo->filename }}" class="w-full h-full object-cover rounded-md transition-all duration-150 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-offset-gray-800 peer-checked:ring-indigo-500 peer-checked:opacity-60">
+                                                <img src="{{ $pathValueModalAlbum ? Storage::disk($disk)->url($pathValueModalAlbum) : '' }}" alt="{{ $photo->filename }}" class="w-full h-full object-cover rounded-md transition-all duration-150 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-offset-gray-800 peer-checked:ring-indigo-500 peer-checked:opacity-60">
                                                 <div class="absolute inset-0 bg-indigo-700 opacity-0 peer-checked:opacity-40 rounded-md transition-opacity flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></div>
                                             </label>
                                         @endforeach
@@ -185,13 +177,13 @@
                             @endif
                             @if($likedPhotosForUserModal && $likedPhotosForUserModal->isNotEmpty())
                             <div x-show="currentPhotoTab === 'fromLiked'" x-transition.opacity.duration.300ms class="space-y-3">
-                                {{-- ... Contenido de la pestaña Favoritas ... --}}
                                 <h4 class="text-lg font-semibold text-gray-100">3. Añadir desde "Mis Favoritas" (Admin)</h4>
                                 <div class="max-h-60 overflow-y-auto grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 p-2 bg-gray-700/70 rounded-md border border-gray-600">
                                     @foreach ($likedPhotosForUserModal as $photo)
+                                        @php $pathValueModalLiked = $photo->thumbnail_path ?: $photo->file_path; @endphp
                                         <label for="modal_collection_liked_photo_{{ $photo->id }}" class="cursor-pointer relative aspect-square block">
                                             <input type="checkbox" id="modal_collection_liked_photo_{{ $photo->id }}" value="{{ $photo->id }}" wire:model.defer="selectedLikedPhotosModalArray" class="sr-only peer">
-                                            <img src="{{ Storage::url($photo->thumbnail_path ?: $photo->file_path) }}" alt="{{ $photo->filename }}" class="w-full h-full object-cover rounded-md transition-all duration-150 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-offset-gray-800 peer-checked:ring-indigo-500 peer-checked:opacity-60">
+                                            <img src="{{ $pathValueModalLiked ? Storage::disk($disk)->url($pathValueModalLiked) : '' }}" alt="{{ $photo->filename }}" class="w-full h-full object-cover rounded-md transition-all duration-150 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-offset-gray-800 peer-checked:ring-indigo-500 peer-checked:opacity-60">
                                             <div class="absolute inset-0 bg-indigo-700 opacity-0 peer-checked:opacity-40 rounded-md transition-opacity flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></div>
                                         </label>
                                     @endforeach
@@ -199,7 +191,6 @@
                             </div>
                             @endif
                             <div x-show="currentPhotoTab === 'fromSearch'" x-transition.opacity.duration.300ms class="space-y-3">
-                                {{-- ... Contenido de la pestaña Buscar ... --}}
                                 <h4 class="text-lg font-semibold text-gray-100">4. Buscar Foto Existente</h4>
                                 <div class="flex">
                                     <input type="search" wire:model.lazy="searchQueryModal" placeholder="Buscar por nombre de archivo..." class="flex-grow p-2.5 text-sm rounded-l-md bg-gray-700 text-white border border-gray-600 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
@@ -207,17 +198,18 @@
                                 </div>
                                 <div wire:loading wire:target="searchPhotosInModal, searchQueryModal" class="text-indigo-400 text-xs mt-1">Buscando...</div>
 
-                                @if ($currentModalSearchedPhotosPaginator && $currentModalSearchedPhotosPaginator->isNotEmpty())
+                                @if ($searchedPhotosModalPaginator && $searchedPhotosModalPaginator->isNotEmpty())
                                     <div class="max-h-60 overflow-y-auto grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 p-2 mt-2 bg-gray-700/70 rounded-md border border-gray-600">
-                                        @foreach ($currentModalSearchedPhotosPaginator as $photo)
+                                        @foreach ($searchedPhotosModalPaginator as $photo)
+                                            @php $pathValueModalSearch = $photo->thumbnail_path ?: $photo->file_path; @endphp
                                             <label for="modal_collection_searched_photo_{{ $photo->id }}" class="cursor-pointer relative aspect-square block">
                                                 <input type="checkbox" id="modal_collection_searched_photo_{{ $photo->id }}" value="{{ $photo->id }}" wire:model.defer="selectedExistingPhotosModalArray" class="sr-only peer">
-                                                <img src="{{ Storage::url($photo->thumbnail_path ?: $photo->file_path) }}" alt="{{ $photo->filename }}" class="w-full h-full object-cover rounded-md transition-all duration-150 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-offset-gray-800 peer-checked:ring-indigo-500 peer-checked:opacity-60">
+                                                <img src="{{ $pathValueModalSearch ? Storage::disk($disk)->url($pathValueModalSearch) : '' }}" alt="{{ $photo->filename }}" class="w-full h-full object-cover rounded-md transition-all duration-150 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-offset-gray-800 peer-checked:ring-indigo-500 peer-checked:opacity-60">
                                                 <div class="absolute inset-0 bg-indigo-700 opacity-0 peer-checked:opacity-40 rounded-md transition-opacity flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg></div>
                                             </label>
                                         @endforeach
                                     </div>
-                                    <div class="mt-2 text-xs">{{ $currentModalSearchedPhotosPaginator->links('vendor.livewire.tailwind-dark-small') }}</div>
+                                    <div class="mt-2 text-xs">{{ $searchedPhotosModalPaginator->links('vendor.livewire.tailwind-dark-small') }}</div>
                                 @elseif(strlen($searchQueryModal) >= 3)
                                     <p class="text-sm text-gray-500 italic mt-2">No se encontraron fotos con "{{ $searchQueryModal }}".</p>
                                 @endif
@@ -269,9 +261,25 @@
                         </button>
                     @endif
 
-                    <img src="{{ Storage::url($currentLightboxPhoto->file_path) }}"
-                         alt="{{ $currentLightboxPhoto->filename ?? 'Foto actual en previsualización' }}"
-                         class="block max-w-full max-h-[calc(95vh-120px)] object-contain select-none">
+                    @php
+                        $path = $currentLightboxPhoto->file_path;
+                        // Ensure $disk is available, assuming it's passed or public in Livewire component
+                        $url  = ($path && isset($disk) && Storage::disk($disk)->exists($path))
+                            ? Storage::disk($disk)->url($path)
+                            : '';
+                    @endphp
+
+                    @if($url)
+                        <img
+                          src="{{ $url }}"
+                          alt="{{ $currentLightboxPhoto->filename ?? 'Foto actual en previsualización' }}"
+                          class="block max-w-full max-h-[calc(95vh-120px)] object-contain select-none"
+                        >
+                    @else
+                        <div class="flex items-center justify-center w-full h-full bg-gray-800">
+                           <span class="text-gray-400">Imagen no disponible</span>
+                        </div>
+                    @endif
 
                      {{-- Botón Siguiente --}}
                     @if ($photosForDisplay->count() > 1 && $currentLightboxPhotoIndex < ($photosForDisplay->count() - 1))
@@ -287,7 +295,7 @@
                 {{-- Footer del Modal Lightbox (Caption y Contador) --}}
                 <div class="flex-shrink-0 flex justify-between items-center px-4 py-2 sm:px-6 sm:py-3 border-t border-gray-700 text-xs sm:text-sm">
                     <div>
-                        <span>{{ $currentLightboxPhoto->filename ?? pathinfo($currentLightboxPhoto->file_path, PATHINFO_FILENAME) ?? 'Foto ' . $currentLightboxPhoto->id }}</span>
+                        <span>{{ $currentLightboxPhoto->filename ?? pathinfo($currentLightboxPhoto->file_path ?? '', PATHINFO_FILENAME) ?? 'Foto ' . $currentLightboxPhoto->id }}</span>
                     </div>
                     @if($photosForDisplay->count() > 0)
                     <div>
@@ -330,4 +338,3 @@
     // ... (script de SortableJS como en la respuesta anterior, adaptando selectores si es necesario) ...
 </script>
 @endpush
-

@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Models\GridGallery as PortraitCollection; // Modelo para la configuración de la galería
+use App\Models\GridGallery as PortraitCollection;
 use App\Models\Photo;
 use App\Models\Album;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +18,9 @@ class CuratedPortraitGallery extends Component
 {
     use WithFileUploads, WithPagination;
 
+    // --- Disco S3 donde guardar y leer fotos ----
+    public string $disk = 'albums';
+
     public ?PortraitCollection $collectionConfig = null;
     public string $identifier = 'default_portrait_gallery';
     public ?string $galleryTitle = '';
@@ -28,21 +31,20 @@ class CuratedPortraitGallery extends Component
     public bool $isAdmin = false;
     public bool $showManagerModal = false;
 
-    // --- Propiedades para el Lightbox ---
+    // --- Lightbox ---
     public bool $showCustomLightbox = false;
     public ?Photo $currentLightboxPhoto = null;
     public int $currentLightboxPhotoIndex = 0;
-    // --- Fin Propiedades Lightbox ---
 
-    // Para el modal de gestión (propiedades existentes)
+    // --- Modal de gestión ---
     public $newPhotosToUploadModal = [];
     public $selectedAlbumIdModal = null;
     public Collection $photosFromAlbumModal;
-    public $selectedPhotosFromAlbumModalArray = [];
     public Collection $likedPhotosForUserModal;
-    public $selectedLikedPhotosModalArray = [];
     public string $searchQueryModal = '';
     public $searchedPhotosModalPaginator = null;
+    public $selectedPhotosFromAlbumModalArray = [];
+    public $selectedLikedPhotosModalArray = [];
     public $selectedExistingPhotosModalArray = [];
     public ?Collection $allAlbumsModalCollection = null;
     public string $editableCollectionTitleModal = '';
@@ -55,149 +57,133 @@ class CuratedPortraitGallery extends Component
         return [
             'newPhotosToUploadModal.*' => 'nullable|image|max:2048|mimes:jpeg,png,jpg,webp',
             'selectedPhotosFromAlbumModalArray' => 'array',
-            'selectedLikedPhotosModalArray' => 'array',
+            'selectedLikedPhotosModalArray'    => 'array',
             'selectedExistingPhotosModalArray' => 'array',
-            'editableCollectionTitleModal' => 'nullable|string|max:255',
+            'editableCollectionTitleModal'     => 'nullable|string|max:255',
             'editableCollectionDescriptionModal' => 'nullable|string|max:5000',
         ];
     }
 
     protected $messages = [
         'newPhotosToUploadModal.*.image' => 'Cada archivo debe ser una imagen.',
-        'newPhotosToUploadModal.*.max' => 'Cada imagen no debe superar los 2MB.',
+        'newPhotosToUploadModal.*.max'   => 'Cada imagen no debe superar los 2MB.',
     ];
 
     public function mount(string $identifier, ?string $defaultTitle = "Retratos Seleccionados", ?string $defaultDescription = "")
     {
         $this->identifier = $identifier;
-        $this->isAdmin = Auth::check() && Auth::user()->role === 'admin';
-
-        Log::info("CuratedPortraitGallery Mount: Identifier '{$this->identifier}'");
+        $this->isAdmin   = Auth::check() && Auth::user()->role === 'admin';
 
         $this->collectionConfig = PortraitCollection::firstOrCreate(
             ['identifier' => $this->identifier],
             ['title' => $defaultTitle, 'description' => $defaultDescription]
         );
-        $this->galleryTitle = $this->collectionConfig->title;
+
+        $this->galleryTitle       = $this->collectionConfig->title;
         $this->galleryDescription = $this->collectionConfig->description;
 
-        $this->photosForDisplay = new Collection();
-        $this->photosFromAlbumModal = new Collection();
+        $this->photosForDisplay       = new Collection();
+        $this->photosFromAlbumModal   = new Collection();
         $this->likedPhotosForUserModal = new Collection();
 
         $this->loadPhotosForDisplay();
 
         if ($this->isAdmin) {
-            if (class_exists(Album::class)) {
-                $this->allAlbumsModalCollection = Album::orderBy('name')->withCount('photos')->get();
-            } else {
-                $this->allAlbumsModalCollection = new Collection();
-            }
-            if (Auth::check() && method_exists(Auth::user(), 'likedPhotos')) {
-                $this->likedPhotosForUserModal = Auth::user()->likedPhotos()->orderBy('photo_user_likes.created_at', 'desc')->limit(50)->get();
+            $this->allAlbumsModalCollection = class_exists(Album::class)
+                ? Album::orderBy('name')->withCount('photos')->get()
+                : new Collection();
+
+            if (method_exists(Auth::user(), 'likedPhotos')) {
+                $this->likedPhotosForUserModal = Auth::user()
+                    ->likedPhotos()
+                    ->orderBy('photo_user_likes.created_at', 'desc')
+                    ->limit(50)
+                    ->get();
             }
         }
     }
 
     public function loadPhotosForDisplay()
     {
-        if ($this->collectionConfig) {
-            $this->collectionConfig->refresh();
-            $this->photosForDisplay = $this->collectionConfig->photos;
-            $this->galleryTitle = $this->collectionConfig->title;
-            $this->galleryDescription = $this->collectionConfig->description;
-            Log::info("CuratedPortraitGallery loadPhotosForDisplay: Loaded " . $this->photosForDisplay->count() . " photos for '{$this->identifier}'.");
-        } else {
-            Log::error("CuratedPortraitGallery loadPhotosForDisplay: collectionConfig is null for '{$this->identifier}'.");
+        if (! $this->collectionConfig) {
+            Log::error("CuratedPortraitGallery: configuración '{$this->identifier}' no encontrada");
             $this->photosForDisplay = new Collection();
-            $this->galleryTitle = 'Error: Galería no encontrada';
-            $this->galleryDescription = 'Por favor, verifica la configuración.';
-        }
-    }
-
-    // --- Métodos para el Lightbox ---
-    public function openCustomLightbox(int $photoId)
-    {
-        $this->currentLightboxPhoto = Photo::find($photoId);
-        if (!$this->currentLightboxPhoto) {
-            session()->flash('cpg_error', 'Foto no encontrada para previsualizar.');
+            $this->galleryTitle     = 'Error';
+            $this->galleryDescription = 'Galería no encontrada';
             return;
         }
 
-        // Asegurarse de que photosForDisplay esté actualizada antes de buscar el índice
-        if ($this->photosForDisplay->isEmpty() && $this->collectionConfig && $this->collectionConfig->photos()->exists()) {
+        $this->collectionConfig->refresh();
+        $this->photosForDisplay    = $this->collectionConfig->photos()->orderByPivot('order')->get();
+        $this->galleryTitle        = $this->collectionConfig->title;
+        $this->galleryDescription  = $this->collectionConfig->description;
+    }
+
+    // --- Lightbox ---
+    public function openCustomLightbox(int $photoId)
+    {
+        $this->currentLightboxPhoto = Photo::find($photoId);
+        if (! $this->currentLightboxPhoto) {
+            session()->flash('cpg_error', 'Foto no encontrada.');
+            return;
+        }
+
+        if ($this->photosForDisplay->isEmpty()) {
             $this->loadPhotosForDisplay();
         }
 
-        $this->currentLightboxPhotoIndex = $this->photosForDisplay->search(function ($photo) {
-            return $photo->id === $this->currentLightboxPhoto->id;
-        });
+        $this->currentLightboxPhotoIndex = $this->photosForDisplay
+            ->pluck('id')
+            ->search($photoId);
 
-        if ($this->currentLightboxPhotoIndex === false) {
-            // Si la foto no está en la lista actual (raro, pero posible si la lista se desincronizó)
-            // Por ahora, la mostraremos pero la navegación podría no funcionar como se espera para esta foto.
-            // Considerar añadirla temporalmente a una copia de photosForDisplay para la navegación del lightbox
-            // o simplemente no permitir navegación si no está en la lista principal.
-            Log::warning("CuratedPortraitGallery openCustomLightbox: Photo ID {$photoId} not found in current photosForDisplay for identifier '{$this->identifier}'. Lightbox navigation might be limited.");
-            $this->currentLightboxPhotoIndex = 0; // Default a 0 si no se encuentra.
-            // Para asegurar que al menos la foto actual se pueda ver si la lista está vacía:
-            if ($this->photosForDisplay->isEmpty()) {
-                $this->photosForDisplay = new Collection([$this->currentLightboxPhoto]);
-            }
-        }
         $this->showCustomLightbox = true;
     }
 
     public function closeCustomLightbox()
     {
-        $this->showCustomLightbox = false;
-        $this->currentLightboxPhoto = null;
+        $this->showCustomLightbox        = false;
+        $this->currentLightboxPhoto      = null;
         $this->currentLightboxPhotoIndex = 0;
-
-        // CAMBIO: Volver a cargar las fotos para el display principal
-        // Esto asegura que la galería se muestre correctamente después de cerrar el lightbox.
+        // recarga para que la galería quede bien tras cerrar
         $this->loadPhotosForDisplay();
     }
 
     public function nextPhotoInLightbox()
     {
-        if ($this->photosForDisplay->isEmpty()){
-            $this->closeCustomLightbox();
-            return;
+        if ($this->photosForDisplay->isEmpty()) {
+            return $this->closeCustomLightbox();
         }
-        if ($this->currentLightboxPhotoIndex < ($this->photosForDisplay->count() - 1)) {
-            $this->currentLightboxPhotoIndex++;
-        } else {
-            $this->currentLightboxPhotoIndex = 0; // Loop al inicio
-        }
-        $this->currentLightboxPhoto = $this->photosForDisplay->get($this->currentLightboxPhotoIndex);
+
+        $count = $this->photosForDisplay->count();
+        $this->currentLightboxPhotoIndex = ($this->currentLightboxPhotoIndex + 1) % $count;
+        $this->currentLightboxPhoto      = $this->photosForDisplay[$this->currentLightboxPhotoIndex];
     }
 
     public function previousPhotoInLightbox()
     {
-        if ($this->photosForDisplay->isEmpty()){
-            $this->closeCustomLightbox();
-            return;
+        if ($this->photosForDisplay->isEmpty()) {
+            return $this->closeCustomLightbox();
         }
-        if ($this->currentLightboxPhotoIndex > 0) {
-            $this->currentLightboxPhotoIndex--;
-        } else {
-            $this->currentLightboxPhotoIndex = $this->photosForDisplay->count() - 1; // Loop al final
-        }
-        $this->currentLightboxPhoto = $this->photosForDisplay->get($this->currentLightboxPhotoIndex);
-    }
-    // --- Fin Métodos Lightbox ---
 
-    // --- Métodos de Gestión de Galería ---
+        $count = $this->photosForDisplay->count();
+        $this->currentLightboxPhotoIndex = ($this->currentLightboxPhotoIndex - 1 + $count) % $count;
+        $this->currentLightboxPhoto      = $this->photosForDisplay[$this->currentLightboxPhotoIndex];
+    }
+
+    // --- Gestión de galería ---
     public function openManagerModal()
     {
-        if (!$this->isAdmin || !$this->collectionConfig) return;
+        if (! $this->isAdmin) return;
         $this->collectionConfig->refresh();
-        $this->editableCollectionTitleModal = $this->galleryTitle ?? '';
-        $this->editableCollectionDescriptionModal = $this->galleryDescription ?? '';
+        $this->editableCollectionTitleModal       = $this->galleryTitle;
+        $this->editableCollectionDescriptionModal = $this->galleryDescription;
         $this->resetManagerModalFields();
-        if (Auth::check() && method_exists(Auth::user(), 'likedPhotos')) {
-            $this->likedPhotosForUserModal = Auth::user()->likedPhotos()->orderBy('photo_user_likes.created_at', 'desc')->limit(50)->get();
+        if (method_exists(Auth::user(), 'likedPhotos')) {
+            $this->likedPhotosForUserModal = Auth::user()
+                ->likedPhotos()
+                ->orderBy('photo_user_likes.created_at', 'desc')
+                ->limit(50)
+                ->get();
         }
         $this->showManagerModal = true;
     }
@@ -210,14 +196,14 @@ class CuratedPortraitGallery extends Component
 
     private function resetManagerModalFields()
     {
-        $this->newPhotosToUploadModal = [];
-        $this->selectedAlbumIdModal = null;
-        $this->photosFromAlbumModal = new Collection();
+        $this->newPhotosToUploadModal            = [];
+        $this->selectedAlbumIdModal              = null;
+        $this->photosFromAlbumModal              = new Collection();
         $this->selectedPhotosFromAlbumModalArray = [];
-        $this->selectedLikedPhotosModalArray = [];
-        $this->searchQueryModal = '';
-        $this->searchedPhotosModalPaginator = null;
-        $this->selectedExistingPhotosModalArray = [];
+        $this->selectedLikedPhotosModalArray     = [];
+        $this->searchQueryModal                  = '';
+        $this->searchedPhotosModalPaginator      = null;
+        $this->selectedExistingPhotosModalArray  = [];
         $this->resetErrorBag();
         $this->resetValidation();
     }
@@ -228,7 +214,7 @@ class CuratedPortraitGallery extends Component
         $this->selectedPhotosFromAlbumModalArray = [];
         if ($albumId && class_exists(Album::class)) {
             $album = Album::find($albumId);
-            if ($album && method_exists($album, 'photos')) {
+            if ($album) {
                 $this->photosFromAlbumModal = $album->photos()->orderBy('created_at', 'desc')->get();
             }
         }
@@ -237,7 +223,7 @@ class CuratedPortraitGallery extends Component
     public function searchPhotosInModal()
     {
         $this->resetPage('managerSearchedPhotosPage');
-        if (strlen($this->searchQueryModal) >= 3 && method_exists(Photo::class, 'where')) {
+        if (strlen($this->searchQueryModal) >= 3) {
             $this->searchedPhotosModalPaginator = Photo::where('filename', 'like', '%' . $this->searchQueryModal . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(10, ['*'], 'managerSearchedPhotosPage');
@@ -246,9 +232,10 @@ class CuratedPortraitGallery extends Component
         }
     }
 
-    public function updatedSearchQueryModal() {
-         if (strlen($this->searchQueryModal) < 3) {
-             $this->searchedPhotosModalPaginator = null;
+    public function updatedSearchQueryModal()
+    {
+        if (strlen($this->searchQueryModal) < 3) {
+            $this->searchedPhotosModalPaginator = null;
         } else {
             $this->searchPhotosInModal();
         }
@@ -256,137 +243,111 @@ class CuratedPortraitGallery extends Component
 
     public function saveGalleryMetadata()
     {
-        if (!$this->isAdmin || !$this->collectionConfig) return;
-        $this->validate([
-            'editableCollectionTitleModal' => 'nullable|string|max:255',
-            'editableCollectionDescriptionModal' => 'nullable|string|max:5000',
-        ]);
-        $this->collectionConfig->title = $this->editableCollectionTitleModal;
-        $this->collectionConfig->description = $this->editableCollectionDescriptionModal;
-        $this->collectionConfig->save();
+        if (! $this->isAdmin) return;
+        $this->validateOnly('editableCollectionTitleModal');
+        $this->validateOnly('editableCollectionDescriptionModal');
 
-        $this->galleryTitle = $this->collectionConfig->title;
+        $this->collectionConfig->update([
+            'title'       => $this->editableCollectionTitleModal,
+            'description' => $this->editableCollectionDescriptionModal,
+        ]);
+
+        $this->galleryTitle       = $this->collectionConfig->title;
         $this->galleryDescription = $this->collectionConfig->description;
-        session()->flash('cpg_modal_message', 'Información de la galería actualizada.');
+        session()->flash('cpg_modal_message', 'Información actualizada.');
     }
 
     public function uploadAndAttachToCollection()
     {
-        if (!$this->isAdmin || !$this->collectionConfig) return;
+        if (! $this->isAdmin) return;
         $this->validateOnly('newPhotosToUploadModal.*');
-
         if (empty($this->newPhotosToUploadModal)) {
-            session()->flash('cpg_modal_error', 'No hay fotos seleccionadas para subir.');
-            return;
+            return session()->flash('cpg_modal_error', 'No hay fotos para subir.');
         }
 
-        $orderStart = ($this->collectionConfig->photos()->count() > 0 ? $this->collectionConfig->photos()->max('order') : 0) + 1;
-        $newPhotoIdsWithOrder = [];
+        $orderStart = ($this->collectionConfig->photos()->max('order') ?: 0) + 1;
+        $toAttach   = [];
 
-        foreach ($this->newPhotosToUploadModal as $photoFile) {
-            $originalFilename = pathinfo($photoFile->getClientOriginalName(), PATHINFO_FILENAME);
-            $filename = Str::slug($originalFilename) . '-' . uniqid() . '.' . $photoFile->extension();
-            $path = $photoFile->storeAs('curated_portrait_galleries/' . $this->identifier, $filename, 'public');
+        foreach ($this->newPhotosToUploadModal as $file) {
+            $slug     = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+            $name     = $slug . '-' . uniqid() . '.' . $file->extension();
+            // 👉 aquí pasamos el disco S3
+            $path     = $file->storeAs("curated_portrait_galleries/{$this->identifier}", $name, $this->disk);
 
             $photo = Photo::create([
-                'file_path' => $path,
+                'file_path'      => $path,
                 'thumbnail_path' => $path,
-                'filename' => $photoFile->getClientOriginalName(),
-                'album_id' => null,
-                'usuario_id' => Auth::id(),
+                'filename'       => $file->getClientOriginalName(),
+                'album_id'       => null,
+                'uploaded_by'     => Auth::id(),
             ]);
-            $newPhotoIdsWithOrder[$photo->id] = ['order' => $orderStart++];
+
+            $toAttach[$photo->id] = ['order' => $orderStart++];
         }
 
-        if (!empty($newPhotoIdsWithOrder)) {
-            $this->collectionConfig->photos()->attach($newPhotoIdsWithOrder);
+        if ($toAttach) {
+            $this->collectionConfig->photos()->attach($toAttach);
         }
 
         $this->newPhotosToUploadModal = [];
         $this->loadPhotosForDisplay();
-        session()->flash('cpg_modal_message', count($newPhotoIdsWithOrder) . ' nuevas fotos subidas y añadidas.');
+        session()->flash('cpg_modal_message', count($toAttach).' fotos subidas y añadidas.');
     }
 
     public function attachExistingPhotosToCollection()
     {
-        if (!$this->isAdmin || !$this->collectionConfig) return;
-
-        $allSelectedIds = array_unique(array_filter(array_merge(
-            array_map('intval', $this->selectedPhotosFromAlbumModalArray),
-            array_map('intval', $this->selectedLikedPhotosModalArray),
-            array_map('intval', $this->selectedExistingPhotosModalArray)
+        if (! $this->isAdmin) return;
+        $ids = array_unique(array_filter(array_merge(
+            $this->selectedPhotosFromAlbumModalArray,
+            $this->selectedLikedPhotosModalArray,
+            $this->selectedExistingPhotosModalArray
         )));
 
-        if (empty($allSelectedIds)) {
-            session()->flash('cpg_modal_error', 'No seleccionaste ninguna foto existente para añadir.');
-            return;
+        if (empty($ids)) {
+            return session()->flash('cpg_modal_error', 'No seleccionaste ninguna foto.');
         }
 
-        $orderStart = ($this->collectionConfig->photos()->count() > 0 ? $this->collectionConfig->photos()->max('order') : 0) + 1;
-        $photosToAttach = [];
-        foreach ($allSelectedIds as $photoId) {
-            if (!$this->collectionConfig->photos()->where('photo_id', $photoId)->exists()) {
-                $photosToAttach[$photoId] = ['order' => $orderStart++];
+        $orderStart = ($this->collectionConfig->photos()->max('order') ?: 0) + 1;
+        $attach     = [];
+
+        foreach ($ids as $id) {
+            if (! $this->collectionConfig->photos()->where('photo_id', $id)->exists()) {
+                $attach[$id] = ['order' => $orderStart++];
             }
         }
 
-        if (!empty($photosToAttach)) {
-            $this->collectionConfig->photos()->attach($photosToAttach);
+        if ($attach) {
+            $this->collectionConfig->photos()->attach($attach);
             $this->loadPhotosForDisplay();
             $this->selectedPhotosFromAlbumModalArray = [];
-            $this->selectedLikedPhotosModalArray = [];
-            $this->selectedExistingPhotosModalArray = [];
-            session()->flash('cpg_modal_message', count($photosToAttach) . ' fotos existentes añadidas.');
+            $this->selectedLikedPhotosModalArray     = [];
+            $this->selectedExistingPhotosModalArray  = [];
+            session()->flash('cpg_modal_message', count($attach).' fotos añadidas.');
         } else {
-            session()->flash('cpg_modal_error', 'Las fotos seleccionadas ya están en la colección o no se seleccionó ninguna nueva.');
+            session()->flash('cpg_modal_error', 'Las fotos ya estaban en la colección.');
         }
     }
 
     public function removeFromCollection(int $photoId)
     {
-        if (!$this->isAdmin || !$this->collectionConfig) return;
+        if (! $this->isAdmin) return;
         $this->collectionConfig->photos()->detach($photoId);
         $this->loadPhotosForDisplay();
-        session()->flash('cpg_message', 'Foto eliminada de esta colección.');
+        session()->flash('cpg_message', 'Foto eliminada.');
     }
 
     public function updateCollectionPhotoOrder($orderedItems)
     {
-        if (!$this->isAdmin || !$this->collectionConfig) return;
+        if (! $this->isAdmin) return;
         foreach ($orderedItems as $item) {
             $this->collectionConfig->photos()->updateExistingPivot($item['value'], ['order' => $item['order']]);
         }
         $this->loadPhotosForDisplay();
-        session()->flash('cpg_message', 'Orden de fotos actualizado.');
+        session()->flash('cpg_message', 'Orden actualizado.');
     }
-    // --- Fin Métodos de Gestión ---
 
     public function render()
     {
-        // Asegurar que photosForDisplay esté siempre inicializada como una Collection
-        if (!$this->photosForDisplay instanceof Collection) {
-            // Esto podría ocurrir si loadPhotosForDisplay falla o collectionConfig es null
-            Log::warning("CuratedPortraitGallery - render: photosForDisplay no era una colección. Re-inicializando. Identifier: '{$this->identifier}'");
-            $this->photosForDisplay = new Collection();
-            // Intentar recargar si es posible, aunque mount debería haberlo hecho
-            if ($this->collectionConfig) {
-                 $this->loadPhotosForDisplay();
-            }
-        }
-
-        $currentModalSearchedPhotosPaginator = null;
-        if ($this->isAdmin && $this->showManagerModal) {
-             if (strlen($this->searchQueryModal) >= 3 && !$this->searchedPhotosModalPaginator) {
-                $this->searchPhotosInModal();
-            }
-            $currentModalSearchedPhotosPaginator = $this->searchedPhotosModalPaginator;
-        }
-
-        return view('livewire.curated-portrait-gallery', [
-            // Las propiedades públicas como $galleryTitle, $galleryDescription, $photosForDisplay,
-            // $isAdmin, $showCustomLightbox, $currentLightboxPhoto, $currentLightboxPhotoIndex
-            // están disponibles automáticamente en la vista. No es estrictamente necesario pasarlas aquí.
-            'currentModalSearchedPhotosPaginator' => $currentModalSearchedPhotosPaginator
-        ]);
+        return view('livewire.curated-portrait-gallery');
     }
 }
