@@ -69,8 +69,11 @@ return [
     'disk'      => env('LIVEWIRE_TEMPORARY_UPLOAD_DISK', 'livewire_temp'),
 
     // Reglas de validación
-    'rules'     => ['file','mimes:png,jpg,jpeg,gif,webp','max:5120'],
-
+'rules'     => [
+        'file', // Regla genérica para archivo
+        'mimes:png,jpg,jpeg,gif,webp,mp4,mov,ogg,qt,m4v,avi,wmv,flv', // Permite imágenes Y videos
+        'max:102400' // 100MB - Ajusta el máximo global si es necesario
+    ],
     // Deja vacío o pon subcarpeta si lo deseas
     'directory' => env('LIVEWIRE_TEMPORARY_UPLOAD_DIRECTORY', ''),
 

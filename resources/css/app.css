@@ -219,3 +219,33 @@
     opacity: 1 !important;
     transform: translate(0, 0) !important;
   }
+.zoom-in {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+}
+.zoom-in.aos-animate {
+  opacity: 1 !important;
+  transform: scale(1) !important;
+}
+
+.fade-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.fade-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.fade-bottom {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+/* Esta regla hace que todas las animaciones vuelvan a estado final */
+.aos-animate {
+  opacity: 1 !important;
+  transform: translate(0, 0) scale(1) !important;
+}

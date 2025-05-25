@@ -17,11 +17,14 @@ use App\Http\Middleware\IsAdmin;
 use App\Livewire\AlbumDetailPage;
 use App\Livewire\WeddingsPage;
 use App\Http\Controllers\S3UploadController;
-
+use App\Livewire\Videospage;
+use App\Models\Video;
 
 // --- Ruta Pública Principal ---
 Route::get('/', HomepageController::class)->name('home');
 Route::get('/bodas', WeddingsPage::class)->name('weddings');
+Route::get('/videos', Videospage::class)->name('videos');
+
 Route::get('/album/{album}', AlbumDetailPage::class)->name('album.show');
 Route::get('/comuniones', function () {
     return view('comuniones', [

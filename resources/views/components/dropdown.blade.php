@@ -1,4 +1,9 @@
-@props([ 'align' => 'right', 'width' => '48', 'contentClasses' => 'py-1 bg-white', 'dropdownClasses' => '' ])
+@props([
+    'align'          => 'right',
+    'width'          => '48',
+    'contentClasses' => 'py-1 bg-white',
+    'dropdownClasses'=> '',
+])
 
 @php
     $alignmentClasses = match ($align) {
@@ -20,18 +25,19 @@
   @mouseenter="open = true"
   @mouseleave="open = false"
 >
-  {{-- TRIGGER: más fino, fondo blanco, texto negro y negrita --}}
- <div
-   class="inline-flex justify-center items-center text-sm font-bold px-1.5 py-0.5 bg-white text-black rounded-full cursor-pointer transition-colors duration-150 ease-in-out"
-     @click.prevent
-   >
+  {{-- TRIGGER: le metemos normal-case aquí --}}
+  <div
+    @click.prevent
+    class="inline-flex justify-center items-center text-sm font-bold normal-case px-1.5 py-0.5 bg-white text-black rounded-full cursor-pointer transition-colors duration-150 ease-in-out"
+  >
     {{ $trigger }}
-    {{-- si tu $trigger NO incluye la flecha, añádela aquí: --}}
     <svg class="ml-1 h-3 w-3 fill-current" viewBox="0 0 20 20">
-      <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10
-           10.586l3.293-3.293a1 1 0 111.414
-           1.414l-4 4a1 1 0 01-1.414
-           0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+      <path fill-rule="evenodd"
+            d="M5.293 7.293a1 1 0 011.414 0L10
+               10.586l3.293-3.293a1 1 0 111.414
+               1.414l-4 4a1 1 0 01-1.414
+               0l-4-4a1 1 0 010-1.414z"
+            clip-rule="evenodd" />
     </svg>
   </div>
 

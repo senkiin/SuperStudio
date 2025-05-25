@@ -4,16 +4,8 @@
 
     {{-- @livewire('header-component') --}}
  @livewire('configurable-page-header', [
-        'identifier' => 'bodas_header', // ¡Nuevo identificador!
-        'defaultTitle' => 'Bodas de Ensueño',
-        'defaultSubtitle' => 'Vuestro día más especial, contado a través de imágenes que emocionan.',
-        'defaultImage' => null // O '/images/bodas_default_bg.jpg'
+        'identifier' => 'videos_header', // ¡Nuevo identificador!
     ])
-
-
-    {{-- Album Section --}}
-
-    @livewire('configurable-album-section', ['identifier' => 'home_albums'])
 
     @livewire('video-gallery-manager', [
         'identifier' => 'homepage-tour-videos',
@@ -24,7 +16,7 @@
     {{-- You would create a separate Livewire component or Alpine modal for this --}}
     {{-- @livewire('admin.edit-section-modal') --}}
 
-   
-        <x-self.superPie></x-self.superPie>
+
+    <x-self.superPie></x-self.superPie>
 
 </div>

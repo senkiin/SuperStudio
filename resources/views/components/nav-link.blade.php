@@ -4,7 +4,7 @@
 @php
 // --- CLASES PARA EL CONTENEDOR <a> EXTERIOR ---
 // Layout, borde, interacción general
-$outerBaseClasses = 'inline-flex items-center border-b-2 text-sm font-bold uppercase tracking-wider leading-5 focus:outline-none transition duration-150 ease-in-out';
+$outerBaseClasses = 'inline-flex items-center border-b-2 text-sm font-bold tracking-wider leading-5 focus:outline-none transition duration-150 ease-in-out';
 $outerBorderClasses = '';
 $outerHoverFocusClasses = '';
 

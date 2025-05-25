@@ -3,7 +3,13 @@
     @section('metaDescription', $metaDescription)
 
     <div class="bg-black text-gray-300 min-h-screen pt-8 md:pt-12 pb-16">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+            <div class="mb-8 md:mb-12 text-center">
+                <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-3 text-white">{{ $album->name ?? $album->title }}</h1>
+                @if ($album->description)
+                    <p class="text-lg text-gray-400 max-w-3xl mx-auto">{{ $album->description }}</p>
+                @endif
+            </div>
             <div class="mb-6 md:mb-8">
                 <a href="{{ route('weddings') }}" {{-- Ajusta 'weddings.index' a tu nombre de ruta real --}}
                    class="inline-flex items-center px-4 py-2 border border-gray-600 text-sm font-medium rounded-md text-gray-300 bg-gray-700 hover:bg-gray-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-indigo-500 transition ease-in-out duration-150">
@@ -12,12 +18,6 @@
                     </svg>
                     Volver a Bodas
                 </a>
-            </div>
-            <div class="mb-8 md:mb-12 text-center">
-                <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-3 text-white">{{ $album->name ?? $album->title }}</h1>
-                @if ($album->description)
-                    <p class="text-lg text-gray-400 max-w-3xl mx-auto">{{ $album->description }}</p>
-                @endif
             </div>
 
             @if ($photos->isNotEmpty())
@@ -74,7 +74,7 @@
                 x-transition:leave="ease-in duration-200"
                 x-transition:leave-start="opacity-100 scale-100"
                 x-transition:leave-end="opacity-0 scale-95"
-                class="relative bg-white w-full max-w-4xl max-h-[90vh] shadow-xl flex flex-col" {{-- Fondo blanco para el contenido del modal --}}
+                class="relative bg-black w-full max-w-4xl max-h-[90vh] shadow-xl flex flex-col" {{-- Fondo blanco para el contenido del modal --}}
                 @click.stop {{-- Evita que el clic dentro del modal lo cierre --}}
             >
                 {{-- Imagen Principal --}}

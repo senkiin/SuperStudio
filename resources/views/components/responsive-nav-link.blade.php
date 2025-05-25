@@ -3,9 +3,11 @@
 @php
     $base = 'block w-full text-base font-medium focus:outline-none transition duration-150 ease-in-out';
     if ($active) {
-        $classes = $base.' bg-indigo-900 text-white';
+        // Enlace activo: ligeramente más claro que el fondo general
+        $classes = $base.' bg-gray-800 text-white';
     } else {
-        $classes = $base.' bg-gray-900 text-gray-300 hover:bg-gray-700 hover:text-white';
+        // Enlace normal: fondo negro, texto blanco; hover en gris oscuro
+        $classes = $base.' bg-black text-white hover:bg-gray-700';
     }
 @endphp
 

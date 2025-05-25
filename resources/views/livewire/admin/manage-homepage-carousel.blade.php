@@ -277,7 +277,7 @@
                                     alt="Favorita: {{ $favPhoto->album->name ?? '' }}"
                                     class="w-full h-full object-cover rounded-md border">
                                 <button wire:click="addFromFavorite({{ $favPhoto->id }})"
-                                    wire:loading.attr="disabled" wire:target="addFromFavorite({{ $favPhoto->id }})"
+                                    wire:loading.attr="disabled" wire:target="addFromFavorite({{ $favPhoto->id}})"
                                     title="Añadir al Carrusel"
                                     class="absolute top-1 right-1 z-10 p-1.5 bg-blue-600 text-white rounded-full shadow opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     <svg wire:loading wire:target="addFromFavorite({{ $favPhoto->id }})"

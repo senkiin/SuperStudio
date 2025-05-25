@@ -43,26 +43,22 @@
                         x-transition:enter-start="opacity-0 -translate-y-10"
                         x-transition:enter-end="opacity-100 translate-y-0" class="shrink-0 flex items-center">
                         @php
-                                                        $logoUrlScrolled = Storage::disk('logos')->temporaryUrl(
-                                                    'logo2.png',
-                                                    now()->addMinutes(30)
-                        ); @endphp
+                        $logoUrlScrolled = Storage::disk('logos')->temporaryUrl('logo2.png', now()->addMinutes(30)); @endphp
                         @auth
                             @if (Auth::user()->role === 'admin' && !session('original_admin_id'))
                                 <a href="{{ route('admin.dashboard') }}">
-                                    <img src="{{ $logoUrlScrolled }} "  class="mt-2" alt="Logo"
-                                        style="display: block; height: 14rem; width: auto;" />
+                                    <img src="{{ $logoUrlScrolled }} " class="mt-2 block h-36 w-auto lg:h-56" alt="Logo"/>
                                 </a>
                             @else
                                 <a href="{{ route('home') }}">
-                                    <img src="{{ $logoUrlScrolled }}" alt="Logo"
-                                        style="display: block; height: 14rem; width: auto;" />
+                                    <img src="{{ $logoUrlScrolled }}" class="mt-2 block h-36 w-auto lg:h-56" alt="Logo"
+                                         />
                                 </a>
                             @endif
                         @else
                             <a href="{{ route('home') }}">
                                 <img src="{{ $logoUrlScrolled }}" alt="Logo"
-                                    style="display: block; height: 14rem; width: auto;" />
+                                   class="mt-2 block h-36 w-auto lg:h-56" />
                                 {{-- <img :src="scrolled ? '{{ $logoUrlScrolled }}' : '{{ $logoUrlDefault }}'" alt="Logo"
                                     style="display: block; height: 14rem; width: auto;" /> --}}
                             </a>
@@ -87,8 +83,8 @@
                                 <div class="hidden sm:flex sm:items-center">
                                     <x-dropdown align="left" width="48">
                                         <x-slot name="trigger">
-                                            <div class="pl-2">
-                                                BEBES
+                                            <div class="pl-2 normal-case">
+                                               {{ __('Bebés') }}
                                             </div>
                                         </x-slot>
                                         <x-slot name="content">
@@ -134,8 +130,11 @@
                                             <x-dropdown-link href="{{ route('admin.user.likes') }}" :active="request()->routeIs('admin.user.likes')">
                                                 {{ __('Likes Cliente') }} </x-dropdown-link>
                                             <div class="border-t border-gray-200 dark:border-gray-600"></div>
+                                            <x-dropdown-link href="{{ route('videos') }}" target="_blank">
+                                                {{ __('Videos') }} </x-dropdown-link>
                                             <x-dropdown-link href="{{ route('home') }}" target="_blank">
                                                 {{ __('Ver Sitio') }} </x-dropdown-link>
+
                                         </x-slot>
                                     </x-dropdown>
                                 </div>
@@ -152,7 +151,7 @@
                                     <x-dropdown align="left" width="48">
                                         <x-slot name="trigger">
                                             <div class="pl-2">
-                                                BEBES
+                                                {{ __('Bebés') }}
                                             </div>
                                         </x-slot>
                                         <x-slot name="content">
@@ -169,6 +168,8 @@
                                 </x-nav-link>
                                 <x-nav-link href="{{ route('studio.index') }}"
                                     :active="request()->routeIs('studio.index')">{{ __('Studio') }}</x-nav-link>
+                                <x-nav-link href="{{ route('videos') }}" :active="request()->routeIs('videos')">
+                                    {{ __('Reportajes de Video') }}</x-nav-link>
                             @endif
                         @else
                             {{-- Invitados --}}
@@ -182,7 +183,7 @@
                                 <x-dropdown align="left" width="48">
                                     <x-slot name="trigger">
                                         <div class="pl-2">
-                                            BEBES
+                                            {{ __('Bebés') }}
                                         </div>
                                     </x-slot>
                                     <x-slot name="content">
@@ -199,6 +200,8 @@
                             </x-nav-link>
                             <x-nav-link href="{{ route('studio.index') }}"
                                 :active="request()->routeIs('studio.index')">{{ __('Studio') }}</x-nav-link>
+                            <x-nav-link href="{{ route('videos') }}" :active="request()->routeIs('videos')">
+                                {{ __('Reportajes') }}</x-nav-link>
 
                         @endauth
                     </div>
@@ -283,7 +286,7 @@
         </div>
 
         {{-- Menú Responsive --}}
-        <div :class="{ 'block': openNav, 'hidden': !openNav }" class="hidden lg:hidden bg-black text-gray-300">
+        <div :class="{ 'block': openNav, 'hidden': !openNav }" class="hidden lg:hidden bg-black text-white">
 
             {{-- Agrupamos todo en un divide-y para las líneas horizontales --}}
             <div class="divide-y divide-gray-700">
@@ -301,18 +304,25 @@
                             {{ __('Bodas') }}
                         </div>
                     </x-responsive-nav-link>
-                </div>
-                {{-- --- Comuniones (sin submenú) --- --}}
-                <div class="pt-2 pb-3">
                     <x-responsive-nav-link href="{{ route('comuniones') }}" :active="request()->routeIs('comuniones')" class="px-4 py-3">
                         <div class="flex justify-between items-center">
                             {{ __('Comuniones') }}
                         </div>
                     </x-responsive-nav-link>
+                    <x-responsive-nav-link href="{{ route('studio.index') }}" :active="request()->routeIs('studio.index')" class="px-4 py-3">
+                        <div class="flex justify-between items-center">
+                            {{ __('Studio') }}
+                        </div>
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link href="{{ route('videos') }}" :active="request()->routeIs('videos')" class="px-4 py-3">
+                        <div class="flex justify-between items-center">
+                            {{ __('Video Reportajes') }}
+                        </div>
+                    </x-responsive-nav-link>
                 </div>
                 {{-- --- “Servicios Bebés” con título de grupo --- --}}
                 <div class="pt-2 pb-3">
-                    <div class="px-4 py-2 text-xs text-gray-500 uppercase tracking-wide">
+                    <div class="px-4 py-2 text-xs text-gray-500  tracking-wide">
                         {{ __('Servicios Bebés') }}
                     </div>
                     <x-responsive-nav-link href="{{ route('embarazo.index') }}" :active="request()->routeIs('embarazo.index')" class="px-4 py-3">
