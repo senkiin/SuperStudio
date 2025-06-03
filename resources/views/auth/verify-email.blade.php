@@ -1,7 +1,16 @@
 <x-guest-layout>
     <x-authentication-card>
         <x-slot name="logo">
-            <x-authentication-card-logo />
+            @php
+                // No uses la declaración 'use' aquí.
+                // Utiliza el namespace completo para la fachada Storage.
+                $logoUrl = \Illuminate\Support\Facades\Storage::disk('logos')->temporaryUrl(
+                    'SuperLogo.png',
+                    now()->addMinutes(30), // Asegúrate de que la función now() esté disponible o usa Carbon\Carbon::now()
+                );
+            @endphp
+            {{-- Etiqueta img corregida y completada --}}
+            <img src="{{ $logoUrl }}" alt="Logo de la empresa" class="h-48 w-auto" />
         </x-slot>
 
         <div class="mb-4 text-sm text-gray-600">
@@ -26,16 +35,15 @@
             </form>
 
             <div>
-                <a
-                    href="{{ route('profile.show') }}"
-                    class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
+                <a href="{{ route('profile.show') }}"
+                    class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     {{ __('Edit Profile') }}</a>
 
                 <form method="POST" action="{{ route('logout') }}" class="inline">
                     @csrf
 
-                    <button type="submit" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ms-2">
+                    <button type="submit"
+                        class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ms-2">
                         {{ __('Log Out') }}
                     </button>
                 </form>

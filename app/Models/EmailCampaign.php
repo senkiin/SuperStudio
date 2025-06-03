@@ -12,19 +12,23 @@ class EmailCampaign extends Model
     use HasFactory;
 
     protected $fillable = [
+        'campaign_name',
         'offer_id',
+        'email_subject',
+        'email_body_html',
+        'attachment_paths',
         'date_of_send',
+        'recipients_snapshot',
         'status',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'date_of_send' => 'datetime',
+        'attachment_paths' => 'array', // Para guardar múltiples rutas de adjuntos
+            'recipients_snapshot' => 'array',
+
     ];
+
 
     /**
      * La oferta asociada a esta campaña de email.

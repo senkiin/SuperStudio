@@ -1,7 +1,16 @@
 <x-guest-layout>
     <x-authentication-card>
         <x-slot name="logo">
-            <x-authentication-card-logo />
+            @php
+                // No uses la declaración 'use' aquí.
+                // Utiliza el namespace completo para la fachada Storage.
+                $logoUrl = \Illuminate\Support\Facades\Storage::disk('logos')->temporaryUrl(
+                    'SuperLogo.png',
+                    now()->addMinutes(30), // Asegúrate de que la función now() esté disponible o usa Carbon\Carbon::now()
+                );
+            @endphp
+            {{-- Etiqueta img corregida y completada --}}
+            <img src="{{ $logoUrl }}" alt="Logo de la empresa" class="h-48 w-auto" />
         </x-slot>
 
         <div class="mb-4 text-sm text-gray-600">
@@ -21,7 +30,8 @@
 
             <div class="block">
                 <x-label for="email" value="{{ __('Email') }}" />
-                <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
+                <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')"
+                    required autofocus autocomplete="username" />
             </div>
 
             <div class="flex items-center justify-end mt-4">

@@ -1,41 +1,44 @@
 <?php
 
-namespace App\Livewire\Admin; // Namespace correcto
+namespace App\Livewire\Admin;
 
 use App\Models\User;
 use App\Models\Album;
-use App\Models\Order;
+// Quita Order si ya no lo usas aquí directamente: use App\Models\Order;
+use App\Models\Superappointment; // <<< AÑADIR ESTO
+use Carbon\Carbon; // <<< AÑADIR ESTO
 use Livewire\Component;
-use Illuminate\Support\Facades\Auth; // Importar Auth
-use Illuminate\View\View;
-use Livewire\Attributes\Layout; // <<< Importar el atributo
+use Illuminate\Support\Facades\Auth;
+// Quita View y Layout si no los usas directamente aquí
+// use Illuminate\View\View;
+// use Livewire\Attributes\Layout;
 
 
 class Dashboard extends Component
 {
-    // Propiedades para mostrar datos (ejemplo)
     public $userCount;
     public $albumCount;
-    public $orderCount;
+    // public $orderCount; // <<< ELIMINAR ESTO
+    public $pendingAppointmentCount; // <<< AÑADIR ESTO
 
-    // El método mount se ejecuta al cargar el componente
     public function mount()
     {
-        // Otra capa de seguridad (aunque el middleware ya protege la ruta)
-        if (Auth::user()?->role !== 'admin') { // ¡Ajusta comprobación de rol!
+        if (Auth::user()?->role !== 'admin') {
             abort(403, 'Acceso no autorizado');
         }
 
-        // Cargar datos iniciales para el dashboard (ejemplo)
-        $this->userCount = User::where('role', 'user')->count(); // Contar solo clientes
+        $this->userCount = User::where('role', 'user')->count();
         $this->albumCount = Album::count();
-        $this->orderCount = Order::whereIn('status', ['pending', 'processing'])->count(); // Contar pedidos pendientes/procesando
+        // $this->orderCount = Order::whereIn('status', ['pending', 'processing'])->count(); // <<< ELIMINAR ESTO
+
+        // Calcular citas pendientes (fecha futura y estado 'pending' o 'confirmed')
+        $this->pendingAppointmentCount = Superappointment::where('appointment_datetime', '>', Carbon::now())
+                                                       ->whereIn('status', ['pending', 'confirmed'])
+                                                       ->count(); // <<< AÑADIR ESTO
     }
 
-    // El método render simplemente devuelve la vista
     public function render()
     {
-        return view('livewire.admin.dashboard'); // Ya no necesita ->layout()
-
+        return view('livewire.admin.dashboard');
     }
 }

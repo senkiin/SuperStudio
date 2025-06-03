@@ -249,3 +249,26 @@
   opacity: 1 !important;
   transform: translate(0, 0) scale(1) !important;
 }
+.trix-content {
+    min-height: 150px; /* O la altura que prefieras */
+    background-color: #fff; /* Para modo claro */
+}
+.dark .trix-content {
+    background-color: #374151; /* gris-700 de Tailwind para modo oscuro */
+    color: #d1d5db; /* gris-300 de Tailwind para texto en modo oscuro */
+    border-color: #4b5563; /* gris-600 para borde en modo oscuro */
+}
+/* Puedes necesitar más estilos para la barra de herramientas de Trix en modo oscuro */
+.dark .trix-button-group {
+    background-color: #4b5563; /* gris-600 */
+    border-color: #374151; /* gris-700 */
+}
+.dark .trix-button {
+    background-color: #4b5563; /* gris-600 */
+}
+.dark .trix-button:not(:disabled):hover {
+     background-color: #374151; /* gris-700 */
+}
+.dark .trix-button.trix-active {
+    background-color: #1f2937; /* gris-800 */
+}

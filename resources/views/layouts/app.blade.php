@@ -35,6 +35,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
+    @trixassets
     @stack('styles')
 </head>
 

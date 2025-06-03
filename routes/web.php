@@ -33,7 +33,13 @@ Route::get('/comuniones', function () {
         // Puedes añadir más datos para SEO o para la vista aquí
     ]);
 })->name('comuniones');
-
+Route::get('/fotocarnet-almeria', function () {
+    return view('fotocarnet-almeria', [
+        'pageTitle' => 'Fotocarnet Almería - Rápido y Profesional | Fotovalera',
+        'metaDescription' => 'Consigue tu fotocarnet en Almería de forma rápida y con calidad profesional en Fotovalera. Ideal para DNI, pasaporte, carnets y más. Reserva tu cita online.',
+        'metaKeywords' => 'fotocarnet almeria, foto dni almeria, foto pasaporte almeria, fotos carnet almeria, fotovalera, reservar cita fotocarnet',
+    ]);
+})->name('fotocarnet.almeria');
 Route::get('/fotografia-embarazo', function () {
     return view('embarazo', [
         'pageTitle' => 'Fotografía de Embarazo | Fotovalera',

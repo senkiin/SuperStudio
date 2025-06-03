@@ -328,9 +328,9 @@ class Albums extends Component
             'type'        => $data['newAlbumType'],
             'user_id'     => $user->id,
             'cover_image' => $cover,
-            'client_id'   => $data['newAlbumType']==='client'
-                ? $data['newAlbumClientId']
-                : ($data['newAlbumType']==='public' ? $user->id : null),
+            'client_id'   => $data['newAlbumType'] === 'client'
+                                ? $data['newAlbumClientId']  
+                                : $user->id,
         ]);
         $this->closeCreateAlbumModal();
         session()->flash('message','Álbum creado.');
