@@ -32,7 +32,13 @@ class Album extends Model
     {
         return $this->belongsTo(User::class);
     }
-
+    /**
+     * Get the client user associated with the album (if any).
+     */
+    public function clientUser(): BelongsTo // <--- ADD THIS METHOD
+    {
+        return $this->belongsTo(User::class, 'client_id');
+    }
     /**
      * Las fotos contenidas en este álbum.
      * Relación Uno a Muchos: Un Album tiene muchas Photos.

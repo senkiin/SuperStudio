@@ -9,43 +9,44 @@ $outerBorderClasses = '';
 $outerHoverFocusClasses = '';
 
 if ($active ?? false) {
-    // Activo: Borde morado en <a>
-    $outerBorderClasses = 'border-blue-500';
-} else {
-    // Inactivo: Borde transparente en <a>, cambia a gris en hover/focus
+    // Activo: Borde transparente en <a> (sin subrayado azul)
     $outerBorderClasses = 'border-transparent';
-    $outerHoverFocusClasses = 'hover:border-gray-500 focus:border-gray-500 hover:animate-shake'; // Borde gris + animación
+    // Nada en hover/focus: debe seguir igual que cuando está activo
+    $outerHoverFocusClasses = '';
+} else {
+    // Inactivo: Borde transparente siempre (no cambiar en hover)
+    $outerBorderClasses = 'border-transparent';
+    // Aquí dejamos vacío para que no “subraye” en hover/focus
+    $outerHoverFocusClasses = '';
 }
 // Clases combinadas para <a>
 $outerClasses = $outerBaseClasses . ' ' . $outerBorderClasses . ' ' . $outerHoverFocusClasses;
 
 
 // --- CLASES PARA EL <span> INTERIOR ---
-// Fondo (BLANCO), padding, redondeo, color/sombra de texto
-$innerBaseClasses = 'inline-block px-3 py-0.5 rounded-full bg-white'; // <<--- CAMBIO AQUÍ: Fondo ahora blanco
-
-$innerTextClasses = '';         // Color del texto
-$innerTextShadowClasses = ''; // Sombra del texto
+// Estilos base del span (padding, redondeo)
+$innerCoreStyling = 'inline-block px-3 py-0.5 rounded-full';
+$innerBgClass = '';      // Clase para el fondo, se definirá condicionalmente
+$innerTextClasses = '';  // Color del texto
 
 if ($active ?? false) {
-    // Activo: Texto Neón + Sombra. Fondo blanco de $innerBaseClasses.
-    $innerTextClasses = 'text-blue-500';
+    // Activo: Fondo blanco y texto negro
+    $innerBgClass = 'bg-white';
+    $innerTextClasses = 'text-black';
 } else {
-    // Inactivo: Texto negro por defecto, azul en hover/focus. Fondo blanco de $innerBaseClasses.
-    $innerTextClasses = 'text-black hover:text-blue-500 focus:text-blue-500'; // Texto negro -> Azul
-    // Sin sombra si está inactivo
+    // Inactivo: Fondo semitransparente por defecto,
+    // pero en hover/focus pasa a fondo blanco y texto negro.
+    $innerBgClass = 'bg-white/50 hover:bg-white focus:bg-white';
+    $innerTextClasses = 'text-black hover:text-black focus:text-black';
 }
 // Clases combinadas para <span>
-$innerClasses = $innerBaseClasses . ' ' . $innerTextClasses;
-
+$innerClasses = $innerCoreStyling . ' ' . $innerBgClass . ' ' . $innerTextClasses;
 @endphp
 
 {{-- Contenedor <a> exterior --}}
 <a {{ $attributes->merge(['class' => $outerClasses]) }}>
-
     {{-- Contenedor <span> interior --}}
     <span class="{{ $innerClasses }}">
         {{ $slot }}
     </span>
-
 </a>

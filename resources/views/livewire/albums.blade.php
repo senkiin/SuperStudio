@@ -15,7 +15,7 @@
         {{-- Parte Izquierda/Principal: Búsqueda y Ordenación --}}
         <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 gap-4 sm:gap-0 flex-grow min-w-0">
 
-            {{-- Barra de Búsqueda --}}
+            {{-- Barra de Búsqueda de Álbumes --}}
             <div class="relative flex-shrink-0 w-full sm:w-72 md:w-80">
                 <label for="albumSearchModern" class="sr-only">Buscar álbumes</label>
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none" aria-hidden="true">
@@ -74,6 +74,7 @@
             @endif
         </div>
     </div>
+
     {{-- Global Flash Messages --}}
     <div class="my-4 px-5 sm:px-6 space-y-3">
         @if (session()->has('message'))
@@ -113,6 +114,7 @@
             </div>
         @endif
     </div>
+
     {{-- --------------------------------------------------------------------- --}}
     {{-- Rejilla de Álbumes (DISEÑO DE TARJETA CUADRADA CON PIE TRANSLÚCIDO)   --}}
     {{-- --------------------------------------------------------------------- --}}
@@ -122,7 +124,7 @@
                  class="group aspect-square relative cursor-pointer overflow-hidden rounded-xl shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-indigo-500 transition-all duration-300 ease-in-out hover:shadow-indigo-500/50 transform hover:-translate-y-1.5 hover:scale-[1.02]">
 
                 {{-- Imagen de Fondo --}}
-                @if ($album->cover_image)
+                @if ($album->cover_image && Storage::disk('albums')->exists($album->cover_image))
                     <img class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-110"
                         src="{{ Storage::disk('albums')->url($album->cover_image) }}"
                         alt="Portada del álbum {{ $album->name }}" loading="lazy">
@@ -157,12 +159,12 @@
                         {{ $album->name }}
                     </h4>
                     <p class="text-xs text-gray-300 mt-0.5 truncate" title="{{ $album->description ?: ($album->photos_count . ' Fotos') }}">
-                        {{ $album->description ? Str::limit($album->description, 35) : ($album->photos_count . ' Fotos  ·  ' . $album->created_at->format('d M Y')) }}
+                        {{ $album->description ? Str::limit($album->description, 35) : ($album->photos_count . ' Foto(s)  ·  ' . $album->created_at->translatedFormat('d M Y')) }}
                     </p>
                 </div>
 
-                {{-- Botón de Editar (Aparece al pasar el cursor sobre la tarjeta completa) --}}
-                 <div class="absolute top-2.5 right-2.5 z-30 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-300 pointer-events-none group-focus-within:opacity-100">
+                {{-- Contenedor para botones de acción (Editar y Eliminar) --}}
+                <div class="absolute top-2.5 right-2.5 z-30 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-300 pointer-events-none group-focus-within:opacity-100">
                     {{-- Botón de Editar --}}
                     @if (auth()->user() && (auth()->user()->role == 'admin' || $album->user_id == auth()->id()))
                         <button wire:click.stop="openEditAlbumModal({{ $album->id }})"
@@ -176,8 +178,8 @@
                         </button>
                     @endif
 
-                    {{-- Botón de Eliminar (Solo Admin) --}}
-                    @if (auth()->user()?->role == 'admin')
+                    {{-- Botón de Eliminar (Solo Admin o dueño, según lógica en PHP) --}}
+                    @if (auth()->user() && (auth()->user()->role == 'admin' || $album->user_id == auth()->id()))
                         <button wire:click.stop="deleteAlbum({{ $album->id }})"
                                 wire:confirm.prompt="¿Estás SEGURO de eliminar el álbum '{{ addslashes(htmlspecialchars($album->name)) }}' y TODAS sus fotos?\n\n¡Esta acción NO SE PUEDE DESHACER!\n\nEscribe 'ELIMINAR' para confirmar.|ELIMINAR"
                                 type="button"
@@ -216,7 +218,7 @@
     {{--           MODAL PARA GALERÍA DE FOTOS               --}}
     {{-- =================================================== --}}
     @if ($showModal && $selectedAlbum)
-        <div x-data="{ show: @entangle('showModal') }" x-init="$watch('show', value => { if (!value) { @this.call('closeModal') } })" x-show="show"
+        <div x-data="{ show: @entangle('showModal').live }" x-init="$watch('show', value => { if (!value) { @this.call('closeModal') } })" x-show="show"
             @keydown.escape.window="show = false; @this.call('closeModal')" x-transition:enter="ease-out duration-300"
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100"
@@ -236,7 +238,7 @@
                         {{ $selectedAlbum->name }}
                     </h3>
                     <div class="flex items-center space-x-3">
-                        @if (Auth::user()->role === 'admin')
+                        @if (Auth::check() && Auth::user()->role === 'admin') {{-- Auth::check() para seguridad --}}
                             <button wire:click="toggleSelectionMode"
                                 class="px-3.5 py-1.5 text-xs font-semibold rounded-lg shadow-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-850
                                 {{ $selectionMode ? 'bg-gray-600 hover:bg-gray-500 focus:ring-gray-400 text-white' : 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 text-white' }}"
@@ -257,28 +259,28 @@
                 <div class="p-6 overflow-y-auto flex-grow">
                     <div class="mb-4 space-y-3">
                         @if (session()->has('message'))
-                            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3500)"
+                            <div x-data="{ showMsg: true }" x-show="showMsg" x-init="setTimeout(() => showMsg = false, 3500)"
                                 class="bg-green-500/20 border border-green-500/50 text-green-300 px-4 py-2.5 rounded-lg relative text-sm shadow-md" role="alert">
                                 <strong class="font-semibold">✓ Éxito:</strong> {{ session('message') }}
                             </div>
                         @endif
                         @if (session()->has('error'))
-                            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5500)"
+                            <div x-data="{ showError: true }" x-show="showError" x-init="setTimeout(() => showError = false, 5500)"
                                 class="bg-red-500/20 border border-red-500/50 text-red-300 px-4 py-2.5 rounded-lg relative text-sm shadow-md" role="alert">
                                 <strong class="font-semibold">✗ Error:</strong> {{ session('error') }}
                             </div>
                         @endif
-                        @error('delete_error')
+                        @error('delete_error') {{-- Asumiendo que podrías tener un error específico de borrado --}}
                             <div class="bg-red-500/20 border border-red-500/50 text-red-300 px-4 py-2.5 rounded-lg relative text-sm shadow-md" role="alert">
                                 <strong class="font-semibold">✗ Error de Borrado:</strong> {{ $message }}
                             </div>
                         @enderror
                     </div>
 
-                    @if (Auth::user()->role === 'admin')
+                    @if (Auth::check() && Auth::user()->role === 'admin')
                         <div class="mb-6 border-b border-gray-700 pb-6">
                             <h4 class="text-lg font-semibold text-gray-100 mb-3">Añadir Nuevas Fotos</h4>
-                            <form wire:submit.prevent="savePhotos">
+                            <form wire:submit="savePhotos"> {{-- Quitamos .prevent si no es necesario --}}
                                 <input type="file" wire:model="uploadedPhotos" multiple
                                     class="block w-full text-sm text-gray-400 file:mr-4 file:py-2.5 file:px-5 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer file:cursor-pointer mb-3 border border-gray-600 bg-gray-750 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm">
 
@@ -290,7 +292,9 @@
                                     <div class="mt-3 text-sm text-gray-300">Previsualización:</div>
                                     <div class="flex flex-wrap gap-3 mt-2">
                                         @foreach ($uploadedPhotos as $uploadedPhoto)
-                                            <img src="{{ $uploadedPhoto->temporaryUrl() }}" class="h-20 w-20 object-cover rounded-md shadow-md border border-gray-700">
+                                            @if(method_exists($uploadedPhoto, 'temporaryUrl'))
+                                                <img src="{{ $uploadedPhoto->temporaryUrl() }}" class="h-20 w-20 object-cover rounded-md shadow-md border border-gray-700" alt="Previsualización">
+                                            @endif
                                         @endforeach
                                     </div>
                                 @endif
@@ -300,7 +304,7 @@
                                 @if ($uploadedPhotos && !$errors->has('uploadedPhotos.*'))
                                     <button type="submit"
                                         class="mt-4 px-5 py-2 bg-green-600 text-white text-sm font-medium rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-850 focus:ring-green-500 disabled:opacity-60 transition-colors"
-                                        wire:loading.attr="disabled" wire:target="savePhotos">
+                                        wire:loading.attr="disabled" wire:target="savePhotos, uploadedPhotos">
                                         <span wire:loading wire:target="savePhotos">Guardando...</span>
                                         <span wire:loading.remove wire:target="savePhotos">Guardar Fotos</span>
                                     </button>
@@ -332,7 +336,7 @@
                                         transition-all duration-200"
                                     wire:key="modal-photo-{{ $photo->id }}"
                                     wire:dblclick="viewPhoto({{ $photo->id }})"
-                                    wire:click="{{ $selectionMode ? 'toggleSelection(' . $photo->id . ')' : 'toggleLike(' . $photo->id . ')' }}">
+                                    wire:click="{{ $selectionMode ? 'toggleSelection(' . $photo->id . ')' : (Auth::check() ? 'toggleLike(' . $photo->id . ')' : '') }}"> {{-- Solo permitir like si está logueado --}}
                                     <img src="{{ $photo->thumbnail_path && Storage::disk('albums')->exists($photo->thumbnail_path)
                                         ? Storage::disk('albums')->url($photo->thumbnail_path)
                                         : ($photo->file_path && Storage::disk('albums')->exists($photo->file_path)
@@ -347,7 +351,7 @@
                                         </div>
                                     @endif
 
-                                    @if ($photo->liked_by_current_user)
+                                    @if (Auth::check() && $photo->liked_by_current_user) {{-- Solo mostrar si está logueado --}}
                                         <div class="absolute bottom-1.5 left-1.5 z-10 p-1.5 bg-black/60 backdrop-blur-sm rounded-full pointer-events-none" title="Te gusta">
                                             <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" /></svg>
                                         </div>
@@ -383,7 +387,7 @@
     {{--           MODAL PARA CREAR ÁLBUM                    --}}
     {{-- =================================================== --}}
     @if ($showCreateAlbumModal)
-        <div x-data="{ showCreate: @entangle('showCreateAlbumModal') }" x-show="showCreate"
+        <div x-data="{ showCreate: @entangle('showCreateAlbumModal').live }" x-show="showCreate"
             @keydown.escape.window="showCreate = false; @this.call('closeCreateAlbumModal')"
             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
@@ -397,7 +401,7 @@
                 x-transition:leave="ease-in duration-200"
                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
-                <form wire:submit.prevent="createAlbum">
+                <form wire:submit="createAlbum">
                     <div class="flex justify-between items-center border-b border-gray-700 p-5 flex-shrink-0">
                         <h3 class="text-xl font-semibold text-white" id="modal-create-album-title">Crear Nuevo Álbum</h3>
                         <button type="button" wire:click="closeCreateAlbumModal"
@@ -434,13 +438,33 @@
                         @if ($newAlbumType === 'client')
                             <div x-data x-transition.opacity.duration.300ms>
                                 <label for="newAlbumClientId" class="block text-sm font-medium text-gray-300 mb-1">Asignar a Cliente</label>
+
+                                {{-- Barra de Búsqueda de Clientes --}}
+                                <div class="mt-1 mb-2 relative">
+                                    <input type="text" wire:model.live.debounce.300ms="clientSearchEmail"
+                                           placeholder="Buscar cliente por nombre o email..."
+                                           class="block w-full bg-gray-700 border-gray-600 text-gray-200 rounded-lg shadow-sm py-2.5 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    <div wire:loading wire:target="clientSearchEmail" class="absolute right-3 top-1/2 -translate-y-1/2">
+                                        <svg class="animate-spin h-5 w-5 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+
                                 <select id="newAlbumClientId" wire:model.defer="newAlbumClientId"
                                     class="mt-1 block w-full bg-gray-700 border-gray-600 text-gray-200 rounded-lg shadow-sm py-2.5 px-3 focus:ring-indigo-500 focus:border-indigo-500 @error('newAlbumClientId') border-red-500 @enderror">
                                     <option value="">-- Selecciona un cliente --</option>
-                                    @forelse($usuarios as $client)
+                                    @forelse($clients as $client)
                                         <option value="{{ $client->id }}">{{ $client->name }} ({{ $client->email }})</option>
                                     @empty
-                                        <option value="" disabled>No hay clientes disponibles</option>
+                                        <option value="" disabled>
+                                            @if(empty($clientSearchEmail))
+                                                No hay clientes (rol 'client'). Escribe para buscar.
+                                            @else
+                                                Ningún cliente encontrado para "{{ $clientSearchEmail }}".
+                                            @endif
+                                        </option>
                                     @endforelse
                                 </select>
                                 @error('newAlbumClientId') <span class="text-xs text-red-400 mt-1">{{ $message }}</span> @enderror
@@ -452,7 +476,7 @@
                             <input type="file" id="newAlbumCover" wire:model="newAlbumCover"
                                 class="mt-1 block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer file:cursor-pointer border border-gray-600 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm">
                             <div wire:loading wire:target="newAlbumCover" class="mt-1 text-xs text-indigo-400 animate-pulse">Cargando portada...</div>
-                            @if ($newAlbumCover && !$errors->has('newAlbumCover'))
+                            @if ($newAlbumCover && !$errors->has('newAlbumCover') && method_exists($newAlbumCover, 'temporaryUrl'))
                                 <div class="mt-3">
                                     <img src="{{ $newAlbumCover->temporaryUrl() }}" alt="Previsualización Portada" class="h-24 w-auto object-cover rounded-md border border-gray-700 shadow-md">
                                 </div>
@@ -466,10 +490,10 @@
                             class="px-5 py-2 bg-gray-600 text-gray-200 rounded-lg border border-gray-500 shadow-sm hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500 transition-colors text-sm font-medium">Cancelar</button>
                         <button type="submit"
                             class="inline-flex items-center px-5 py-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500 transition-all ease-in-out duration-200 transform hover:scale-105 disabled:opacity-70"
-                            wire:loading.attr="disabled" wire:target="createAlbum">
-                            <svg wire:loading wire:target="createAlbum" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            <span wire:loading wire:target="createAlbum">Creando...</span>
-                            <span wire:loading.remove wire:target="createAlbum">Crear Álbum</span>
+                            wire:loading.attr="disabled" wire:target="createAlbum, newAlbumCover">
+                            <svg wire:loading wire:target="createAlbum, newAlbumCover" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            <span wire:loading wire:target="createAlbum, newAlbumCover">Creando...</span>
+                            <span wire:loading.remove wire:target="createAlbum, newAlbumCover">Crear Álbum</span>
                         </button>
                     </div>
                 </form>
@@ -481,26 +505,31 @@
     {{--        MODAL VISOR FOTO GRANDE (MODIFICADO)         --}}
     {{-- =================================================== --}}
     @if ($showPhotoViewer && $viewingPhoto)
-        <div x-data="{ showPhotoViewerState: @entangle('showPhotoViewer') }" x-show="showPhotoViewerState"
+        <div x-data="{ showPhotoViewerState: @entangle('showPhotoViewer').live }" x-show="showPhotoViewerState"
             @keydown.escape.window="if(showPhotoViewerState) { showPhotoViewerState = false; @this.call('closePhotoViewer') }"
-            @keydown.arrow-left.window="if(showPhotoViewerState) { @this.call('viewPreviousPhoto') }"
-            @keydown.arrow-right.window="if(showPhotoViewerState) { @this.call('viewNextPhoto') }"
+            @keydown.arrow-left.window="if(showPhotoViewerState && @this.previousPhotoId) { @this.call('viewPreviousPhoto') }"
+            @keydown.arrow-right.window="if(showPhotoViewerState && @this.nextPhotoId) { @this.call('viewNextPhoto') }"
             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
             class="fixed inset-0 bg-black/95 backdrop-blur-lg z-[60] flex items-center justify-center p-3 sm:p-6"
             wire:click.self="closePhotoViewer" role="dialog" aria-modal="true" aria-label="Visor de Fotos">
 
             <div class="relative max-w-full max-h-full bg-transparent flex items-center justify-center"
-                @click.stop
+                @click.stop {{-- Evita que el click en la imagen cierre el modal --}}
                 x-show="showPhotoViewerState"
                 x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100"
                 x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-90">
 
-                <img src="{{ $viewingPhoto->file_path && Storage::disk('albums')->exists($viewingPhoto->file_path)
-                    ? Storage::disk('albums')->url($viewingPhoto->file_path)
-                    : asset('images/placeholder-photo-large-dark.png') }}"
-                    alt="Foto {{ $viewingPhoto->id }} del álbum {{ $selectedAlbum->name }}"
-                    class="block max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl shadow-black/50 pointer-events-none">
+                @if ($viewingPhoto->file_path && Storage::disk('albums')->exists($viewingPhoto->file_path))
+                    <img src="{{ Storage::disk('albums')->url($viewingPhoto->file_path) }}"
+                        alt="Foto {{ $viewingPhoto->id }} del álbum {{ $selectedAlbum?->name }}"
+                        class="block max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl shadow-black/50 pointer-events-none">
+                @else
+                     <img src="{{ asset('images/placeholder-photo-large-dark.png') }}"
+                        alt="Imagen no disponible"
+                        class="block max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl shadow-black/50 pointer-events-none">
+                @endif
+
 
                 <button wire:click="closePhotoViewer" wire:loading.attr="disabled"
                     class="absolute top-2 right-2 sm:top-4 sm:right-4 z-[70] p-2.5 rounded-full text-white/80 bg-black/50 hover:bg-black/70 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all duration-200"
@@ -533,7 +562,7 @@
     {{--           MODAL PARA EDITAR ÁLBUM (MEJORADO)        --}}
     {{-- =================================================== --}}
     @if ($showEditAlbumModal && $editingAlbum)
-        <div x-data="{ showEdit: @entangle('showEditAlbumModal') }" x-show="showEdit"
+        <div x-data="{ showEdit: @entangle('showEditAlbumModal').live }" x-show="showEdit"
             @keydown.escape.window="showEdit = false; @this.call('closeEditAlbumModal')"
             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
@@ -547,7 +576,7 @@
                 x-transition:leave="ease-in duration-200"
                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
-                <form wire:submit.prevent="updateAlbum">
+                <form wire:submit="updateAlbum">
                     <div class="flex justify-between items-center border-b border-gray-700 p-5 flex-shrink-0">
                         <h3 class="text-xl font-semibold text-white" id="modal-edit-album-title">Editar Álbum</h3>
                         <button type="button" wire:click="closeEditAlbumModal"
@@ -586,13 +615,33 @@
                         @if ($editAlbumType === 'client')
                             <div x-data x-transition.opacity.duration.300ms>
                                 <label for="editAlbumClientId" class="block text-sm font-medium text-gray-300 mb-1">Asignar a Cliente</label>
+
+                                {{-- Barra de Búsqueda de Clientes --}}
+                                <div class="mt-1 mb-2 relative">
+                                    <input type="text" wire:model.live.debounce.300ms="clientSearchEmail"
+                                           placeholder="Buscar cliente por nombre o email..."
+                                           class="block w-full bg-gray-700 border-gray-600 text-gray-200 rounded-lg shadow-sm py-2.5 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                     <div wire:loading wire:target="clientSearchEmail" class="absolute right-3 top-1/2 -translate-y-1/2">
+                                        <svg class="animate-spin h-5 w-5 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+
                                 <select id="editAlbumClientId" wire:model.defer="editAlbumClientId"
                                     class="mt-1 block w-full bg-gray-700 border-gray-600 text-gray-200 rounded-lg shadow-sm py-2.5 px-3 focus:ring-indigo-500 focus:border-indigo-500 @error('editAlbumClientId') border-red-500 @enderror">
                                     <option value="">-- Selecciona un cliente --</option>
-                                    @forelse($usuarios as $client) {{-- Asegúrate que $usuarios esté disponible y sea la colección correcta --}}
-                                        <option value="{{ $client->id }}">{{ $client->name }} ({{ $client->email }})</option>
+                                    @forelse($clients as $client)
+                                        <option value="{{ $client->id }}" @if( (string) $client->id === (string) $editAlbumClientId) selected @endif>{{ $client->name }} ({{ $client->email }})</option>
                                     @empty
-                                        <option value="" disabled>No hay clientes disponibles</option>
+                                        <option value="" disabled>
+                                             @if(empty($clientSearchEmail))
+                                                No hay clientes (rol 'client'). Escribe para buscar.
+                                            @else
+                                                Ningún cliente encontrado para "{{ $clientSearchEmail }}".
+                                            @endif
+                                        </option>
                                     @endforelse
                                 </select>
                                 @error('editAlbumClientId') <span class="text-xs text-red-400 mt-1">{{ $message }}</span> @enderror
@@ -603,9 +652,12 @@
                             <label class="block text-sm font-medium text-gray-300 mb-1">Imagen de Portada Actual</label>
                             <div class="mt-2 flex items-center gap-x-4">
                                 @php
-                                    $coverPreviewUrl = $editAlbumNewCover && !$errors->has('editAlbumNewCover')
-                                        ? $editAlbumNewCover->temporaryUrl()
-                                        : ($editAlbumCurrentCover ? Storage::url($editAlbumCurrentCover) : null);
+                                    $coverPreviewUrl = null;
+                                    if ($editAlbumNewCover && !$errors->has('editAlbumNewCover') && method_exists($editAlbumNewCover, 'temporaryUrl')) {
+                                        $coverPreviewUrl = $editAlbumNewCover->temporaryUrl();
+                                    } elseif ($editAlbumCurrentCover && Storage::disk('albums')->exists($editAlbumCurrentCover)) {
+                                        $coverPreviewUrl = Storage::disk('albums')->url($editAlbumCurrentCover);
+                                    }
                                 @endphp
                                 @if ($coverPreviewUrl)
                                     <img src="{{ $coverPreviewUrl }}" alt="Portada" class="h-20 w-20 object-cover rounded-lg border border-gray-700 shadow-md">
@@ -636,10 +688,10 @@
                         </button>
                         <button type="submit"
                             class="inline-flex items-center justify-center px-5 py-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-indigo-500 transition-all ease-in-out duration-200 transform hover:scale-105 disabled:opacity-70"
-                            wire:loading.attr="disabled" wire:target="updateAlbum">
-                            <svg wire:loading wire:target="updateAlbum" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            <span wire:loading wire:target="updateAlbum">Actualizando...</span>
-                            <span wire:loading.remove wire:target="updateAlbum">Actualizar Álbum</span>
+                            wire:loading.attr="disabled" wire:target="updateAlbum, editAlbumNewCover">
+                            <svg wire:loading wire:target="updateAlbum, editAlbumNewCover" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            <span wire:loading wire:target="updateAlbum, editAlbumNewCover">Actualizando...</span>
+                            <span wire:loading.remove wire:target="updateAlbum, editAlbumNewCover">Actualizar Álbum</span>
                         </button>
                     </div>
                 </form>

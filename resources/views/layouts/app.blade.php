@@ -59,6 +59,7 @@
             {{ $slot }}
         </main>
     </div>
+    <livewire:contact-fab />
 
 
     @stack('modals') {{-- Si usas esto --}}

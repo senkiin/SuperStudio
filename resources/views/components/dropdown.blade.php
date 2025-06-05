@@ -25,10 +25,18 @@
   @mouseenter="open = true"
   @mouseleave="open = false"
 >
-  {{-- TRIGGER: le metemos normal-case aquí --}}
+  {{-- TRIGGER: ahora con fondo semitransparente + hover a fondo blanco/texto negro --}}
   <div
     @click.prevent
-    class="inline-flex justify-center items-center text-sm font-bold normal-case px-1.5 py-0.5 bg-white text-black rounded-full cursor-pointer transition-colors duration-150 ease-in-out"
+    class="
+      inline-flex justify-center items-center
+      text-sm font-bold normal-case
+      px-1.5 py-0.5 rounded-full
+      bg-white/50 hover:bg-white focus:bg-white
+      text-black hover:text-black focus:text-black
+      cursor-pointer
+      transition-colors duration-150 ease-in-out
+    "
   >
     {{ $trigger }}
     <svg class="ml-1 h-3 w-3 fill-current" viewBox="0 0 20 20">
