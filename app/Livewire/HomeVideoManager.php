@@ -35,7 +35,7 @@ class HomeVideoManager extends Component
     {
         $this->validate([
             // Ajusta las reglas según necesites (e.g., max size en KB)
-            'video' => 'required|file|mimetypes:video/mp4,video/mpeg,video/quicktime|max:51200', // Max 50MB
+            'video' => 'required|file|mimetypes:video/mp4,video/mpeg,video/quicktime|max:5120000000',
         ]);
 
         // Borrar video anterior si existe

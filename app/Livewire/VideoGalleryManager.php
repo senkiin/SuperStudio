@@ -48,7 +48,7 @@ class VideoGalleryManager extends Component
             'video_source_type' => ['required', Rule::in(['vimeo', 's3', 'youtube'])],
             'source_identifier' => Rule::requiredIf(fn () => $this->video_source_type !== 's3' || ($this->video_source_type === 's3' && !$this->newVideoFile && !$this->editingVideoEntryId)),
             'newVideoFile' => Rule::requiredIf($this->video_source_type === 's3' && !$this->editingVideoEntryId && !$this->source_identifier)
-                .'|nullable|file|mimes:mp4,mov,ogg,qt,m4v,avi,wmv,flv|max:102400', // 100MB max, adjust as needed
+                .'|nullable|file|mimes:mp4,mov,ogg,qt,m4v,avi,wmv,flv|max:102400000', // 100MB max, adjust as needed
         ];
     }
 
