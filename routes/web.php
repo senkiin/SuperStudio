@@ -33,6 +33,9 @@ Route::get('/comuniones', function () {
         // Puedes añadir más datos para SEO o para la vista aquí
     ]);
 })->name('comuniones');
+Route::get('/s3/presign', [S3UploadController::class, 'presign'])
+     ->name('s3.presign')
+     ->middleware('auth');
 Route::get('/fotocarnet-almeria', function () {
     return view('fotocarnet-almeria', [
         'pageTitle' => 'Fotocarnet Almería - Rápido y Profesional | Fotovalera',
