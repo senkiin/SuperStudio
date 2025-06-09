@@ -7,27 +7,43 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>@yield('title', config('app.name', 'Fotovalera'))</title>
-    <meta name="description" content="@yield('metaDescription', 'Explora nuestros álbumes, comuniones y sesiones únicas en Almeria')">
+    <meta name="keywords" content="@yield('metaKeywords', 'fotografo almeria, video almeria, bodas, comuniones,recien nacidos,fotovalera')">
 
     <meta property="og:title" content="@yield('title', config('app.name'))">
-    <meta property="og:description" content="@yield('metaDescription', 'Explora nuestros álbumes y fotos destacadas')">
+    <meta property="og:description" content="@yield('metaDescription', 'Los mejores fotografos y videografos de Almeria mas de 23 años de experiencia en el sector')">
     <meta property="og:image" content="{{ Storage::url('favicon/apple-touch-icon.png') }}">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url()->current() }}">
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="@yield('title', config('app.name'))">
-    <meta name="twitter:description" content="@yield('metaDescription', 'Explora nuestras sesiones y fotos profesionales')">
+    <meta name="twitter:description" content="@yield('metaDescription', 'Los mejores fotografos y videografos de Almeria mas de 23 años de experiencia en el sector')">
     <meta name="twitter:image" content="{{ Storage::url('favicon/apple-touch-icon.png') }}">
 
     <link rel="canonical" href="{{ url()->current() }}" />
 
-    <!-- Favicons -->
-    <link rel="icon" type="image/png" href="{{ Storage::url('favicon/favicon-96x96.png') }}" sizes="96x96">
-    <link rel="icon" type="image/svg+xml" href="{{ Storage::url('favicon/favicon.svg') }}">
-    <link rel="shortcut icon" href="{{ Storage::url('favicon/favicon.ico') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ Storage::url('favicon/apple-touch-icon.png') }}">
-    <link rel="manifest" href="{{ Storage::url('favicon/site.webmanifest') }}">
+    @php
+    use Illuminate\Support\Facades\Storage;
+
+    $disk   = Storage::disk('favicons');
+    $expires = now()->addMinutes(60); // tiempo de validez de la URL
+
+    $favicon16   = $disk->temporaryUrl('favicon-16x16.png',   $expires);
+    $favicon32   = $disk->temporaryUrl('favicon-32x32.png',   $expires);
+    $chrome192   = $disk->temporaryUrl('android-chrome-192x192.png', $expires);
+    $chrome512   = $disk->temporaryUrl('android-chrome-512x512.png', $expires);
+    $apple180    = $disk->temporaryUrl('apple-touch-icon.png',      $expires);
+    $faviconIco  = $disk->temporaryUrl('favicon.ico',               $expires);
+@endphp
+
+<!-- Favicons con URLs temporales -->
+<link rel="icon" type="image/png" sizes="16x16"   href="{{ $favicon16 }}">
+<link rel="icon" type="image/png" sizes="32x32"   href="{{ $favicon32 }}">
+<link rel="icon" type="image/png" sizes="192x192" href="{{ $chrome192 }}">
+<link rel="icon" type="image/png" sizes="512x512" href="{{ $chrome512 }}">
+<link rel="apple-touch-icon" sizes="180x180"      href="{{ $apple180 }}">
+<link rel="shortcut icon"                         href="{{ $faviconIco }}">
+
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />

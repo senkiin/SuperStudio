@@ -1,15 +1,20 @@
 <x-app-layout> {{-- O tu archivo de layout principal --}}
-    @section('title', 'Studio – ' . config('app.name'))
-    @section('meta_description', 'Explora Studio: tu espacio creativo para contenidos multimedia, tutorials y más.')
-    @section('meta_keywords', 'studio, espacio creativo, multimedia, tutorials, arte')
+    {{-- SEO Meta Tags para la Página de Studio --}}
+    @section('title', 'Estudio Fotográfico Creativo en Almería | Sesiones Temáticas - Fotovalera')
+    @section('meta_description', 'Descubre nuestro estudio fotográfico en Almería. Realizamos sesiones creativas y temáticas como Halloween, Navidad y proyectos artísticos. ¡Ideas originales para tus fotos!')
+    @section('meta_keywords', 'estudio fotografia almeria, sesiones tematicas almeria, fotografia creativa almeria, fotografo estudio almeria, sesiones halloween almeria, sesiones navidad almeria, fotovalera estudio, fotografia artistica almeria')
 
-    @section('og_title', 'Studio – ' . config('app.name'))
-    @section('og_description', 'Visita Studio y descubre nuestro contenido exclusivo de arte y multimedia.')
-    @section('og_image', asset('images/studio-og.jpg'))
+    {{-- Open Graph / Facebook --}}
+    @section('og_title', 'Estudio Fotográfico Creativo en Almería | Fotovalera')
+    @section('og_description', 'Explora nuestras sesiones fotográficas de estudio en Almería: desde retratos artísticos hasta divertidas temáticas de Halloween y Navidad.')
+    @section('og_image', asset('images/default-og-image.jpg')) {{-- Asegúrate que esta imagen exista o usa una específica para el estudio --}}
 
-    @section('twitter_title', 'Studio – ' . config('app.name'))
-    @section('twitter_description', 'Contenido exclusivo en Studio: arte, música, tutoriales y más.')
-    @section('twitter_image', asset('images/studio-twitter.jpg'))
+   {{-- Twitter --}}
+    @section('twitter_title', 'Estudio Fotográfico Creativo en Almería | Fotovalera')
+    @section('twitter_description', 'Sesiones de estudio únicas en Almería: Halloween, Navidad y fotografía artística. ¡Descubre Fotovalera!')
+    @section('twitter_image', asset('images/default-twitter-card-image.jpg')) {{-- Asegúrate que esta imagen exista o usa una específica para el estudio --}}
+
+
 
     @livewire('dynamic-carousel')
     <div>

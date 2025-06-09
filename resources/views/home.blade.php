@@ -1,10 +1,21 @@
 {{-- resources/views/home.blade.php --}}
 <x-app-layout>
+    {{-- SEO Meta Tags --}}
+    <x-slot name="title">
+        Fotógrafos y Videógrafos en Almería | TuNombreDeEmpresa | +23 Años de Experiencia
+    </x-slot>
+    <x-slot name="metaDescription">
+        En TuNombreDeEmpresa, ofrecemos servicios profesionales de fotografía y videografía en Almería. Con más de 23 años de experiencia, capturamos bodas, eventos y momentos únicos. ¡Inmortaliza tus recuerdos con nosotros!
+    </x-slot>
+    <x-slot name="metaKeywords">
+        fotografos almeria, videografos almeria, fotografia bodas almeria, video bodas almeria, fotografo profesional almeria, estudio fotografia almeria, reportajes fotograficos almeria, videos corporativos almeria
+    </x-slot>
     <div class="p-0 m-0 flex flex-col">
 
         @livewire('homepage-carousel')
 
-        @livewire('admin.manage-homepage-carousel') {{-- El modal vive aquí --}}
+        @livewire('admin.manage-homepage-carousel')
+
         @livewire('homepage.info-blocks-manager')
         @livewire('homepage.hero-section')
         @livewire('homepage.content-cards')
@@ -15,7 +26,7 @@
         <script src="https://cdn.lightwidget.com/widgets/lightwidget.js"></script><iframe src="//lightwidget.com/widgets/dc659f761d0e5c979b015e094fe2b18f.html"
             scrolling="no" allowtransparency="true" class="lightwidget-widget"
             style="width:100%;border:0;overflow:hidden;background-color:black;"></iframe>
-
+        @livewire('team-directory')
     </div>
     {{-- Contenido Principal de la Página (Debajo del Carrusel) --}}
     {{-- Este es el punto al que apunta el botón de scroll --}}

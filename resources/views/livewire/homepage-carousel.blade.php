@@ -76,10 +76,10 @@
                         {{-- Este div ya centra el contenido horizontalmente (items-center) y lo alinea abajo (justify-end) --}}
                         <div
                             class="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center justify-end pb-20 md:pb-24 lg:pb-32 text-center text-white px-4 pointer-events-none">
-                            <h2 class="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-wide drop-shadow-md animate-fade-in-up"
+                            <h1 class="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-wide drop-shadow-md animate-fade-in-up"
                                 style="animation-delay: 0.3s; opacity:0; animation-fill-mode: forwards;">
                                 {{ $image->caption }} {{-- Muestra el título --}}
-                            </h2>
+                            </h1>
                             {{-- Indicador visual si es un enlace (centrado) --}}
                             @if ($image->link_url)
                                 <span class="mt-3 text-sm opacity-80 group-hover:opacity-100 transition-opacity">
