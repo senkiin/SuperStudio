@@ -210,7 +210,7 @@
     {{-- Paginación Álbumes --}}
     @if ($albums->hasPages())
     <div class="mt-8 p-5 sm:p-6 rounded-xl bg-gray-700/15 backdrop-blur-md border border-gray-700/50 shadow-lg">
-        {{ $albums->links('vendor.livewire.tailwind-dark') }}
+        {{ $albums->links('vendor.livewire.tailwind') }}
     </div>
     @endif
 
@@ -361,7 +361,7 @@
                         </div>
                         @if ($photosInModal->hasPages())
                         <div class="mt-6">
-                            {{ $photosInModal->links('vendor.livewire.tailwind-dark') }}
+                            {{ $photosInModal->links('vendor.livewire.tailwind') }}
                         </div>
                         @endif
                     @else
