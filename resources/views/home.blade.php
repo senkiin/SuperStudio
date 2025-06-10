@@ -22,7 +22,9 @@
         @livewire('google-reviews-slider')
         {{-- <h2>Gestionar Video de la Home</h2>
         @livewire('home-video-manager') --}}
-       <!-- LightWidget WIDGET --><script src="https://cdn.lightwidget.com/widgets/lightwidget.js"></script><iframe src="https://cdn.lightwidget.com/widgets/dc659f761d0e5c979b015e094fe2b18f.html" scrolling="no" allowtransparency="true" class="lightwidget-widget" style="width:100%;border:0;overflow:hidden;"></iframe>
+       <!-- LightWidget WIDGET --><script src="https://cdn.lightwidget.com/widgets/lightwidget.js"></script><iframe src="https://cdn.lightwidget.com/widgets/dc659f761d0e5c979b015e094fe2b18f.html" scrolling="no" allowtransparency="true" class="darkwidget-widget"
+         style="width:100%;border:0;overflow:hidden;background-color:black;"></iframe>
+
         @livewire('team-directory')
     </div>
     {{-- Contenido Principal de la Página (Debajo del Carrusel) --}}

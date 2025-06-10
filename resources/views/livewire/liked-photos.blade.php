@@ -81,7 +81,7 @@
 
             @if ($likedPhotos->hasPages())
                 <div class="mt-10 md:mt-12">
-                    {{ $likedPhotos->links('vendor.livewire.tailwind-dark') }}
+                    {{ $likedPhotos->links('vendor.livewire.tailwind') }}
                 </div>
             @endif
 

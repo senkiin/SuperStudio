@@ -209,7 +209,7 @@
                                             </label>
                                         @endforeach
                                     </div>
-                                    <div class="mt-2 text-xs">{{ $searchedPhotosModalPaginator->links('vendor.livewire.tailwind-dark-small') }}</div>
+                                    <div class="mt-2 text-xs">{{ $searchedPhotosModalPaginator->links('vendor.livewire.tailwind') }}</div>
                                 @elseif(strlen($searchQueryModal) >= 3)
                                     <p class="text-sm text-gray-500 italic mt-2">No se encontraron fotos con "{{ $searchQueryModal }}".</p>
                                 @endif

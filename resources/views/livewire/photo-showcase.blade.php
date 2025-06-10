@@ -210,7 +210,7 @@
                                     @endforeach
                                 </div>
                                 <div class="mt-3">
-                                    {{ $photosForSearchModal->links('vendor.livewire.tailwind-dark') }}
+                                    {{ $photosForSearchModal->links('vendor.livewire.tailwind') }}
                                 </div>
                             @elseif(strlen($photoSearchQuery) >= 3)
                                 <p class="text-sm text-gray-500 mt-3">No se encontraron fotos con

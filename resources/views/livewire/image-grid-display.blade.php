@@ -203,7 +203,7 @@
                                             </label>
                                         @endforeach
                                     </div>
-                                    <div class="mt-2 text-xs">{{ $currentModalSearchedPhotos->links('vendor.livewire.tailwind-dark-small') }}</div>
+                                    <div class="mt-2 text-xs">{{ $currentModalSearchedPhotos->links('vendor.livewire.tailwind-small') }}</div>
                                 @elseif(strlen($modalPhotoSearchQuery) >= 3)
                                     <p class="text-sm text-gray-500 italic mt-2">No se encontraron fotos con "{{ $modalPhotoSearchQuery }}".</p>
                                 @endif

@@ -47,14 +47,18 @@
                                 </svg>
                             </div>
                         </div>
+
                     @endforeach
+
+
                 </div>
 
-                @if ($photos->hasPages())
-                    <div class="mt-10 md:mt-14">
-                        {{ $photos->links('vendor.livewire.tailwind-dark') }}
-                    </div>
-                @endif
+    @if ($photos->hasPages())
+        {{ $photos->links('vendor.livewire.tailwind') }}
+    @endif
+
+
+
             @else
                 <div class="text-center py-16 sm:py-24">
                     <svg class="mx-auto h-16 w-16 text-gray-700" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
@@ -188,7 +192,7 @@
     }
 
     /* Ejemplo de estilos para paginación oscura de Livewire */
-    /* Asegúrate de tener una vista vendor.livewire.tailwind-dark o personaliza esta sección */
+    /* Asegúrate de tener una vista vendor.livewire. o personaliza esta sección */
     nav[role="navigation"] span[aria-current="page"] span {
         background-color: #4f46e5 !important; /* Indigo-600 */
         color: white !important;

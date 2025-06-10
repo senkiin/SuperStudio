@@ -219,7 +219,7 @@
                 {{-- Paginación para álbumes disponibles --}}
                 @if ($this->availableAlbums && $this->availableAlbums->hasPages())
                     <div class="mt-4">
-                        {{ $this->availableAlbums->links('vendor.livewire.tailwind-dark') }} {{-- Asumiendo que tienes una vista de paginación oscura --}}
+                        {{ $this->availableAlbums->links('vendor.livewire.tailwind') }} {{-- Asumiendo que tienes una vista de paginación oscura --}}
                     </div>
                 @endif
             </div>
