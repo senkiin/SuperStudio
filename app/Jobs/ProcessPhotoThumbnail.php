@@ -48,7 +48,7 @@ class ProcessPhotoThumbnail implements ShouldQueue
         // Especifica el nombre del disco configurado en 'config/filesystems.php'
         // que utiliza el driver 's3' y tiene tus credenciales de AWS.
         // Puede ser 's3', 'albums_s3', o 'albums' si 'albums' está configurado como S3.
-        $s3DiskName = 'albums'; 
+        $s3DiskName = 'albums';
         // -------------------------------------------------------------------------
 
         Log::info("[Thumbnail] Job starting for Photo ID: {$this->photo->id}. Attempting to use S3 disk: '{$s3DiskName}'.");
@@ -96,13 +96,8 @@ class ProcessPhotoThumbnail implements ShouldQueue
             /** @var ImageInterface $image */
             $image = $manager->read($binaryImageData);
 
-            Log::info("[Thumbnail] Resizing image. Photo ID: {$this->photo->id}");
-            $image->resize(400, null, function ($constraint) {
-                $constraint->aspectRatio();
-                // Nota: En Intervention Image v3, resize() no agranda la imagen por defecto si es más pequeña que las dimensiones dadas.
-                // Si necesitas la funcionalidad de 'upsize', revisa la documentación de v3.
-                // Ejemplo: $constraint->upsize(); // Si está disponible y es necesario.
-            });
+            Log::info("[Thumbnail] Cropping image to a 400x400 square. Photo ID: {$this->photo->id}");
+            $image->cover(400, 400);
 
             // Definir rutas para la miniatura
             $originalDir    = pathinfo($originalFilePath, PATHINFO_DIRNAME); // Directorio del original, ej: 'user1/photos'
