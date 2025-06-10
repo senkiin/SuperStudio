@@ -18,6 +18,7 @@ use Livewire\Attributes\Validate;    // Atributo para definir reglas de validaci
 use Livewire\Component;            // Clase base para todos los componentes Livewire.
 use Livewire\WithFileUploads;      // Trait para manejar subida de archivos.
 use Livewire\WithPagination;       // Trait para habilitar la paginación de forma sencilla.
+use Intervention\Image\Laravel\Facades\Image;
 
 class Albums extends Component
 {
@@ -317,6 +318,9 @@ class Albums extends Component
         session()->flash('message','Fotos subidas. Miniaturas en proceso.');
         $this->resetPage('photosPage'); // Resetea la paginación de fotos en el modal.
     }
+
+
+
 
     // --- Eliminar Fotos Seleccionadas ---
 

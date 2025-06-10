@@ -48,7 +48,7 @@ class ProcessPhotoThumbnail implements ShouldQueue
         // Especifica el nombre del disco configurado en 'config/filesystems.php'
         // que utiliza el driver 's3' y tiene tus credenciales de AWS.
         // Puede ser 's3', 'albums_s3', o 'albums' si 'albums' está configurado como S3.
-        $s3DiskName = 's3'; // <--- ¡¡¡REVISA Y AJUSTA ESTE VALOR!!!
+        $s3DiskName = 'albums'; 
         // -------------------------------------------------------------------------
 
         Log::info("[Thumbnail] Job starting for Photo ID: {$this->photo->id}. Attempting to use S3 disk: '{$s3DiskName}'.");
