@@ -41,7 +41,7 @@ class DynamicCarousel extends Component
         return [
             'slideTitle'          => 'required|string|max:255',
             'slideSubtitle'       => 'nullable|string|max:1000',
-            'newSlideImage'       => ($this->editingSlideId ? 'nullable' : 'required') . '|image|max:2048|mimes:jpeg,png,jpg,webp',
+            'newSlideImage'       => ($this->editingSlideId ? 'nullable' : 'required') . '|image|max:200000000048|mimes:jpeg,png,jpg,webp',
             'slideTextColor'      => 'required|string|max:20',
             'slideTextAnimation'  => 'nullable|string|max:50',
             'slideButtonText'     => 'nullable|string|max:50',
@@ -56,7 +56,7 @@ class DynamicCarousel extends Component
         'slideTitle.required'      => 'El título es obligatorio.',
         'newSlideImage.required'   => 'La imagen de fondo es obligatoria al crear un nuevo slide.',
         'newSlideImage.image'      => 'El archivo debe ser una imagen.',
-        'newSlideImage.max'        => 'La imagen no debe superar los 2MB.',
+        'newSlideImage.max'        => 'La imagen no debe superar los 2Gb.',
         'slideButtonLink.url'      => 'El enlace del botón debe ser una URL válida (ej: https://ejemplo.com).',
     ];
 
