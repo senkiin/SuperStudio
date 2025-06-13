@@ -14,7 +14,7 @@ use App\Livewire\Admin\ManageHomepageCarousel;
 use App\Livewire\Admin\UserLikedPhotos;
 use App\Livewire\Admin\ManageUsers;
 use App\Http\Middleware\IsAdmin;
-use App\Livewire\AlbumDetailPage;
+use App\Livewire\AlbumDetailPage; 
 use App\Livewire\WeddingsPage;
 use App\Http\Controllers\S3UploadController;
 use App\Livewire\Videospage;

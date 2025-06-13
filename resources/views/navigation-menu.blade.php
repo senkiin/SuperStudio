@@ -34,8 +34,8 @@
     @endif
 
     <nav x-data="{ openNav: false }" class="w-full">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-20">
+        <div class="max-w-7xl mx-auto pt-7 px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-2">
                 <div class="flex">
                     {{-- Logo --}}
                     <div x-data="{ showMenu: false }" x-init="setTimeout(() => showMenu = true, 400)" x-show="showMenu"
@@ -103,13 +103,10 @@
                                     {{ __('Fotocarnet') }} </x-nav-link>
                                 <x-nav-link href="{{ route('studio.index') }}"
                                     :active="request()->routeIs('studio.index')">{{ __('Studio') }}</x-nav-link>
-                                <x-nav-link href="{{ route('photos.liked') }}" :active="request()->routeIs('photos.liked')"> {{ __('Favoritas') }}
-                                </x-nav-link>
                             @else
                                 {{-- Usuario Normal o Admin Impersonando --}}
                                 <x-nav-link href="{{ route('home') }}" :active="request()->routeIs('home')">{{ __('Inicio') }}</x-nav-link>
-                                <x-nav-link href="{{ route('photos.liked') }}" :active="request()->routeIs('photos.liked')">
-                                    {{ __('Mis Favoritas') }} </x-nav-link>
+
                                 <x-nav-link href="{{ route('weddings') }}" :active="request()->routeIs('weddings')"> {{ __('Bodas') }}
                                 </x-nav-link>
                                 {{-- MENÚ DESPLEGABLE "BEBÉS" --}}
@@ -130,13 +127,29 @@
                                 </div>
                                 <x-nav-link href="{{ route('comuniones') }}" :active="request()->routeIs('comuniones')"> {{ __('Comuniones') }}
                                 </x-nav-link>
-                                {{-- ENLACE CORREGIDO PARA FOTOCARNET (USUARIO NORMAL/IMPERSONADO) --}}
                                 <x-nav-link href="{{ route('fotocarnet.almeria') }}" :active="request()->routeIs('fotocarnet.almeria')">
                                     {{ __('Fotocarnet') }} </x-nav-link>
                                 <x-nav-link href="{{ route('studio.index') }}"
                                     :active="request()->routeIs('studio.index')">{{ __('Studio') }}</x-nav-link>
                                 <x-nav-link href="{{ route('videos') }}" :active="request()->routeIs('videos')">
-                                    {{ __('Reportajes de Video') }}</x-nav-link>
+                                    {{ __('Videos') }}</x-nav-link>
+
+                                <div class="hidden sm:flex sm:items-center">
+                                    <x-dropdown align="left" width="48">
+                                        <x-slot name="trigger">
+                                            <div class="pl-2 normal-case"> {{-- Mantuve normal-case por si lo prefieres para este trigger específico --}}
+                                                {{ __('Albumes/Favoritas') }}
+                                            </div>
+                                        </x-slot>
+                                        <x-slot name="content">
+                                            <x-dropdown-link href="{{ route('photos.liked') }}" :active="request()->routeIs('photos.liked')">
+                                                {{ __('Favoritas') }} </x-dropdown-link>
+                                            <x-dropdown-link href="{{ route('albums') }}" :active="request()->routeIs('albums')">
+                                                {{ __('Álbumes') }}
+                                            </x-dropdown-link>
+                                        </x-slot>
+                                    </x-dropdown>
+                                </div>
                             @endif
                         @else
                             {{-- Invitados --}}
@@ -167,75 +180,109 @@
                             <x-nav-link href="{{ route('studio.index') }}"
                                 :active="request()->routeIs('studio.index')">{{ __('Studio') }}</x-nav-link>
                             <x-nav-link href="{{ route('videos') }}" :active="request()->routeIs('videos')">
-                                {{ __('Reportajes') }}</x-nav-link>
+                                {{ __('Videos') }}</x-nav-link>
+
                         @endauth
                     </div>
                 </div>
 
                 {{-- Menú Usuario (Login/Register o Perfil) --}}
+
                 <div x-data="{ showMenu: false }" x-init="setTimeout(() => showMenu = true, 400)" x-show="showMenu"
                     x-transition:enter="transition ease-out duration-700"
                     x-transition:enter-start="opacity-0 -translate-y-10"
                     x-transition:enter-end="opacity-100 translate-y-0" class="hidden lg:flex lg:items-center lg:ms-6">
                     @auth
+                        {{-- 2) Menú de “Gestión” (engranaje), justo debajo del anterior --}}
+                        @if (Auth::user()->role === 'admin' && !session('original_admin_id'))
+                            <div class="relative ms-3">
+                                <x-dropdown align="right">
+                                    <x-slot name="trigger">
+                                        <button type="button" title="Gestión"
+                                            class="p-2 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition">
+                                        </button>
+                                    </x-slot>
+                                    <x-slot name="content" contentClasses="py-1 bg-white">
+
+                                        {{-- MENÚ PARA ADMINISTRADORES --}}
+                                        <div class="block px-4 py-2 text-xs text-gray-400">
+                                            {{ __('Navegación Admin') }}
+                                        </div>
+                                        <x-dropdown-link href="{{ route('admin.dashboard') }}" :active="request()->routeIs('admin.dashboard')">
+                                            {{ __('Panel Admin') }}
+                                        </x-dropdown-link>
+                                        <div class="border-t border-gray-200 dark:border-gray-600"></div>
+
+                                        <div class="block px-4 py-2 text-xs text-gray-400">
+                                            {{ __('Gestión Contenido') }}
+                                        </div>
+                                        <x-dropdown-link href="{{ route('photos.liked') }}" :active="request()->routeIs('photos.liked')">
+                                            {{ __('Mis Favoritas') }}
+                                        </x-dropdown-link>
+                                        <x-dropdown-link href="{{ route('albums') }}" :active="request()->routeIs('albums')">
+                                            {{ __('Álbumes') }}
+                                        </x-dropdown-link>
+                                        <div class="border-t border-gray-200 dark:border-gray-600"></div>
+
+                                        <div class="block px-4 py-2 text-xs text-gray-400">
+                                            {{ __('Gestión Usuarios') }}
+                                        </div>
+                                        @if (Route::has('admin.users.index'))
+                                            <x-dropdown-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('admin.users.index')">
+                                                {{ __('Lista de Usuarios') }}
+                                            </x-dropdown-link>
+                                        @endif
+                                        <x-dropdown-link href="{{ route('admin.user.likes') }}" :active="request()->routeIs('admin.user.likes')">
+                                            {{ __('Likes Cliente') }}
+                                        </x-dropdown-link>
+                                        <div class="border-t border-gray-200 dark:border-gray-600"></div>
+
+                                        <x-dropdown-link href="{{ route('videos') }}" target="_blank">
+                                            {{ __('Videos') }}
+                                        </x-dropdown-link>
+                                        <x-dropdown-link href="{{ route('home') }}" target="_blank">
+                                            {{ __('Ver Sitio') }}
+                                        </x-dropdown-link>
+
+
+                                    </x-slot>
+
+                                </x-dropdown>
+                            </div>
+                        @endif
+
+
+                        {{-- 1) Menú de usuario (nombre / ADMIN) --}}
                         <div class="relative ms-3">
                             <x-dropdown align="right" width="48"
                                 dropdownClasses="bg-white rounded-full shadow-lg ring-1 ring-black ring-opacity-5">
                                 <x-slot name="trigger">
                                     <button type="button"
-                                        class="inline-flex items-center space-x-1 px-3 py-1 text-xs font-semibold rounded-full text-black whitespace-nowrap transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white">
+                                        class="inline-flex items-center space-x-1 px-3 py-1 text-xs font-semibold rounded-full text-black whitespace-nowrap
+                               transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white">
                                         <span>{{ strtoupper(Auth::user()->name) }}</span>
                                         @if (Auth::user()->role === 'admin' && !session('original_admin_id'))
                                             <span class="text-xs font-medium text-indigo-500">(ADMIN)</span>
                                         @endif
                                     </button>
                                 </x-slot>
+
                                 <x-slot name="content" contentClasses="py-1 bg-white">
-                                    <x-dropdown-link href="{{ route('profile.show') }}"> {{ __('Profile') }}
+                                    <x-dropdown-link href="{{ route('profile.show') }}">
+                                        {{ __('Profile') }}
                                     </x-dropdown-link>
                                     <form method="POST" action="{{ route('logout') }}" x-data class="mt-1">
                                         @csrf
                                         <x-dropdown-link href="{{ route('logout') }}" @click.prevent="$root.submit()">
-                                            {{ __('Log Out') }} </x-dropdown-link>
+                                            {{ __('Log Out') }}
+                                        </x-dropdown-link>
                                     </form>
-                                    {{-- Menú "Gestión" --}}
-                                    <div class="hidden sm:flex sm:items-center">
-                                        <x-dropdown align="left" width="48">
-                                            <x-slot name="trigger">
-                                                {{-- No necesita el div extra si el trigger de x-dropdown ya maneja el estilo --}}
-                                                Gestion
-                                            </x-slot>
-                                            <x-slot name="content">
-                                                <div class="block px-4 py-2 text-xs text-gray-400">
-                                                    {{ __('Navegación Admin') }}</div>
-                                                <x-dropdown-link href="{{ route('admin.dashboard') }}" :active="request()->routeIs('admin.dashboard')">
-                                                    {{ __('Panel Admin') }} </x-dropdown-link>
-                                                <div class="border-t border-gray-200 dark:border-gray-600"></div>
-                                                <div class="block px-4 py-2 text-xs text-gray-400">
-                                                    {{ __('Gestión Contenido') }}</div>
-                                                <x-dropdown-link href="{{ route('albums') }}" :active="request()->routeIs('albums')">
-                                                    {{ __('Álbumes') }} </x-dropdown-link>
-                                                <div class="border-t border-gray-200 dark:border-gray-600"></div>
-                                                <div class="block px-4 py-2 text-xs text-gray-400">
-                                                    {{ __('Gestión Usuarios') }}</div>
-                                                @if (Route::has('admin.users.index'))
-                                                    <x-dropdown-link href="{{ route('admin.users.index') }}"
-                                                        :active="request()->routeIs('admin.users.index')"> {{ __('Lista de Usuarios') }}
-                                                    </x-dropdown-link>
-                                                @endif
-                                                <x-dropdown-link href="{{ route('admin.user.likes') }}"
-                                                    :active="request()->routeIs('admin.user.likes')"> {{ __('Likes Cliente') }} </x-dropdown-link>
-                                                <div class="border-t border-gray-200 dark:border-gray-600"></div>
-                                                <x-dropdown-link href="{{ route('videos') }}" target="_blank">
-                                                    {{ __('Videos') }} </x-dropdown-link>
-                                                <x-dropdown-link href="{{ route('home') }}" target="_blank">
-                                                    {{ __('Ver Sitio') }} </x-dropdown-link>
-                                            </x-slot>
-                                        </x-dropdown>
-                                    </div>
-                                </x-slot>
 
+                                </x-slot>
                             </x-dropdown>
+
+                            {{-- Bolita de estado justo debajo --}}
+
                         </div>
                     @else
                         @if (Route::has('login'))
@@ -253,6 +300,7 @@
                             </nav>
                         @endif
                     @endauth
+
                 </div>
 
                 {{-- Botón Hamburguesa para Móvil --}}
@@ -278,6 +326,9 @@
             </div>
         </div>
 
+
+
+
         {{-- Menú Responsive --}}
         <div :class="{ 'block': openNav, 'hidden': !openNav }" class="hidden lg:hidden bg-black text-white">
             <div class="divide-y divide-gray-700">
@@ -297,44 +348,45 @@
                     <x-responsive-nav-link href="{{ route('videos') }}" :active="request()->routeIs('videos')" class="px-4 py-3">
                         {{ __('Video Reportajes') }} </x-responsive-nav-link>
                 </div> {{-- Menú "Gestión" --}}
-                                    <div class="hidden sm:flex sm:items-center">
-                                        <x-dropdown align="left" width="48">
-                                            <x-slot name="trigger">
-                                                {{-- No necesita el div extra si el trigger de x-dropdown ya maneja el estilo --}}
-                                                Gestion
-                                            </x-slot>
-                                            <x-slot name="content">
-                                                <div class="block px-4 py-2 text-xs text-gray-400">
-                                                    {{ __('Navegación Admin') }}</div>
-                                                <x-dropdown-link href="{{ route('admin.dashboard') }}" :active="request()->routeIs('admin.dashboard')">
-                                                    {{ __('Panel Admin') }} </x-dropdown-link>
-                                                <div class="border-t border-gray-200 dark:border-gray-600"></div>
-                                                <div class="block px-4 py-2 text-xs text-gray-400">
-                                                    {{ __('Gestión Contenido') }}</div>
-                                                <x-dropdown-link href="{{ route('albums') }}" :active="request()->routeIs('albums')">
-                                                    {{ __('Álbumes') }} </x-dropdown-link>
-                                                <div class="border-t border-gray-200 dark:border-gray-600"></div>
-                                                <div class="block px-4 py-2 text-xs text-gray-400">
-                                                    {{ __('Gestión Usuarios') }}</div>
-                                                @if (Route::has('admin.users.index'))
-                                                    <x-dropdown-link href="{{ route('admin.users.index') }}"
-                                                        :active="request()->routeIs('admin.users.index')"> {{ __('Lista de Usuarios') }}
-                                                    </x-dropdown-link>
-                                                @endif
-                                                <x-dropdown-link href="{{ route('admin.user.likes') }}"
-                                                    :active="request()->routeIs('admin.user.likes')"> {{ __('Likes Cliente') }} </x-dropdown-link>
-                                                <div class="border-t border-gray-200 dark:border-gray-600"></div>
-                                                <x-dropdown-link href="{{ route('videos') }}" target="_blank">
-                                                    {{ __('Videos') }} </x-dropdown-link>
-                                                <x-dropdown-link href="{{ route('home') }}" target="_blank">
-                                                    {{ __('Ver Sitio') }} </x-dropdown-link>
-                                            </x-slot>
-                                        </x-dropdown>
-                                    </div>
+                <div class="hidden sm:flex sm:items-center">
+                    <x-dropdown align="left" width="48">
+                        <x-slot name="trigger">
+                            {{-- No necesita el div extra si el trigger de x-dropdown ya maneja el estilo --}}
+                            Gestion
+                        </x-slot>
+                        <x-slot name="content">
+                            <div class="block px-4 py-2 text-xs text-gray-400">
+                                {{ __('Navegación Admin') }}</div>
+                            <x-dropdown-link href="{{ route('admin.dashboard') }}" :active="request()->routeIs('admin.dashboard')">
+                                {{ __('Panel Admin') }} </x-dropdown-link>
+                            <div class="border-t border-gray-200 dark:border-gray-600"></div>
+                            <div class="block px-4 py-2 text-xs text-gray-400">
+                                {{ __('Gestión Contenido') }}</div>
+                            <x-dropdown-link href="{{ route('albums') }}" :active="request()->routeIs('albums')">
+                                {{ __('Álbumes') }} </x-dropdown-link>
+                            <div class="border-t border-gray-200 dark:border-gray-600"></div>
+                            <div class="block px-4 py-2 text-xs text-gray-400">
+                                {{ __('Gestión Usuarios') }}</div>
+                            @if (Route::has('admin.users.index'))
+                                <x-dropdown-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('admin.users.index')">
+                                    {{ __('Lista de Usuarios') }}
+                                </x-dropdown-link>
+                            @endif
+                            <x-dropdown-link href="{{ route('admin.user.likes') }}" :active="request()->routeIs('admin.user.likes')">
+                                {{ __('Likes Cliente') }} </x-dropdown-link>
+                            <div class="border-t border-gray-200 dark:border-gray-600"></div>
+                            <x-dropdown-link href="{{ route('videos') }}" target="_blank">
+                                {{ __('Videos') }} </x-dropdown-link>
+                            <x-dropdown-link href="{{ route('home') }}" target="_blank">
+                                {{ __('Ver Sitio') }} </x-dropdown-link>
+                        </x-slot>
+                    </x-dropdown>
+                </div>
                 {{-- "Servicios Bebés" con título de grupo --}}
                 <div class="pt-2 pb-3">
                     <div class="px-4 py-2 text-xs text-gray-500 tracking-wide"> {{ __('Servicios Bebés') }} </div>
-                    <x-responsive-nav-link href="{{ route('embarazo.index') }}" :active="request()->routeIs('embarazo.index')" class="px-4 py-3">
+                    <x-responsive-nav-link href="{{ route('embarazo.index') }}" :active="request()->routeIs('embarazo.index')"
+                        class="px-4 py-3">
                         <div class="flex justify-between items-center">
                             {{ __('Fotografía Embarazo') }}
                             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2"

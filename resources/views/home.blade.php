@@ -12,7 +12,9 @@
     </x-slot>
     <div class="p-0 m-0 flex flex-col">
 
-        @livewire('homepage-carousel')
+        {{-- @livewire('homepage-carousel') --}}
+            @livewire('dynamic-carousel')
+
 
         @livewire('admin.manage-homepage-carousel')
 
