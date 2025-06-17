@@ -121,8 +121,8 @@
                                     </svg>
                                 </button>
                                 {{-- Miniatura --}}
-                               <img src="{{ Storage::disk('s3')->url($image->thumbnail_path ?? $image->image_path) }}" alt="Miniatura"
-    class="h-16 w-24 object-cover rounded flex-shrink-0">
+                                <img src="{{ Storage::disk('s3')->url($image->thumbnail_path ?? $image->image_path) }}"
+                                    alt="Miniatura" class="h-16 w-24 object-cover rounded flex-shrink-0">
                                 {{-- Contenido: Info Estática o Formulario de Edición --}}
                                 <div class="flex-grow min-w-0">
                                     @if ($editingImageId === $image->id)
@@ -258,7 +258,8 @@
                     <svg class="inline-block w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg> para reordenarlas.</p>
+                    </svg> para reordenarlas.
+                </p>
             </div>
 
             {{-- 3. Sección para Añadir desde Favoritos --}}
@@ -277,7 +278,7 @@
                                     alt="Favorita: {{ $favPhoto->album->name ?? '' }}"
                                     class="w-full h-full object-cover rounded-md border">
                                 <button wire:click="addFromFavorite({{ $favPhoto->id }})"
-                                    wire:loading.attr="disabled" wire:target="addFromFavorite({{ $favPhoto->id}})"
+                                    wire:loading.attr="disabled" wire:target="addFromFavorite({{ $favPhoto->id }})"
                                     title="Añadir al Carrusel"
                                     class="absolute top-1 right-1 z-10 p-1.5 bg-blue-600 text-white rounded-full shadow opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     <svg wire:loading wire:target="addFromFavorite({{ $favPhoto->id }})"
@@ -348,7 +349,7 @@
                 checkCount++;
                 let el = document.getElementById(elementId);
                 console.log(`(Check ${checkCount}/${maxChecks}) Checking for Sortable element: #${elementId}`,
-                el); // Log: Verifica si se encuentra
+                    el); // Log: Verifica si se encuentra
 
                 if (el) {
                     clearInterval(checkInterval); // Detener la verificación una vez encontrado
@@ -365,7 +366,7 @@
                                     value: item.getAttribute('wire:sortable.item')
                                 }));
                                 let componentId = el.closest('[wire\\:id]')?.getAttribute(
-                                'wire:id'); // Safe navigation
+                                    'wire:id'); // Safe navigation
                                 if (componentId) {
                                     let component = Livewire.find(componentId);
                                     if (component) {

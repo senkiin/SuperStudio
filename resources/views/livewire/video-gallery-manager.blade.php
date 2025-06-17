@@ -271,7 +271,21 @@
                                 <option value="s3">Subir Archivo a S3</option>
                             </select>
                         </div>
-
+                        {{-- Campo de texto dinámico para el ID de Vimeo o YouTube --}}
+@if ($video_source_type === 'vimeo' || $video_source_type === 'youtube')
+    <div class="mt-5">
+        <label for="source_identifier_modal" class="block text-sm font-medium text-gray-300 mb-1">
+            ID del Video de {{ ucfirst($video_source_type) }}:
+        </label>
+        <input type="text" wire:model="source_identifier" id="source_identifier_modal"
+               placeholder="Pega aquí el ID del video (ej: dQw4w9WgXcQ)"
+               class="w-full p-2.5 rounded bg-gray-700 text-white border border-gray-600 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+        @error('source_identifier') <span class="text-red-400 text-xs mt-1">{{ $message }}</span> @enderror
+        <p class="text-xs text-gray-500 mt-1.5">
+            Por ejemplo, si la URL es `https://www.youtube.com/watch?v=dQw4w9WgXcQ`, el ID es `dQw4w9WgXcQ`.
+        </p>
+    </div>
+@endif
                         {{-- Lógica de Subida de Archivos --}}
                         @if ($video_source_type === 's3')
 <div>
