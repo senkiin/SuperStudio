@@ -20,7 +20,7 @@ class HomepageCarousel extends Component
     public SupportCollection $images;
 
     /** @var string El slogan o texto que quieras mostrar */
-    public string $slogan = 'IGNITING PASSION';
+    public string $slogan = '';
 
     /**
      * Al montar el componente cargamos las imágenes.

@@ -121,8 +121,8 @@
                                     </svg>
                                 </button>
                                 {{-- Miniatura --}}
-                                <img src="{{ $image->thumbnail_url ?? ($image->image_url ?? asset('images/placeholder-thumb.png')) }}"alt="Miniatura"
-                                    class="h-16 w-24 object-cover rounded flex-shrink-0">
+                               <img src="{{ Storage::disk('s3')->url($image->thumbnail_path ?? $image->image_path) }}" alt="Miniatura"
+    class="h-16 w-24 object-cover rounded flex-shrink-0">
                                 {{-- Contenido: Info Estática o Formulario de Edición --}}
                                 <div class="flex-grow min-w-0">
                                     @if ($editingImageId === $image->id)

@@ -29,7 +29,7 @@ class ManageHomepageCarousel extends Component
     public bool $showModal = false; // Controla la visibilidad del modal de gestión del carrusel
 
     // --- Propiedades para Subir Nuevas Imágenes ---
-    #[Validate('nullable|image|max:5120')] // Regla de validación: opcional, imagen, máx 5MB
+    #[Validate('nullable|image|max:5120000')] // Regla de validación: opcional, imagen, máx 5MB
     public $newImage; // Almacena el archivo de imagen temporal subido
     #[Validate('nullable|string|max:255')]
     public string $newCaption = ''; // Título/leyenda para la nueva imagen
