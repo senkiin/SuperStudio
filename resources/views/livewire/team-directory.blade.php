@@ -1,15 +1,14 @@
-{{-- CAMBIO: Reducido el padding general de la página de p-4 sm:p-8 a p-4 sm:p-6 --}}
-  @php
+  {{-- @php
     use Illuminate\Support\Facades\Storage;
 
     $disk   = Storage::disk('favicons');
     $expires = now()->addMinutes(60); // tiempo de validez de la URL
 
     $fondo   = $disk->temporaryUrl('175227.jpg',   $expires);
+style="background-image: url('{{ $fondo }}')"";
+@endphp --}}
 
-@endphp
-
-<div class=" text-gray-900 sm:p-6 flex items-center justify-center bg-repeat bg-contain" style="background-image: url('{{ $fondo }}');">
+<div class=" text-gray-900 sm:p-6 flex items-center justify-center bg-black">
     <div class="w-full max-w-7xl mx-auto">
 
         <div class="flex justify-between items-center mb-8 px-2 sm:px-0">

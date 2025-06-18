@@ -23,26 +23,26 @@
     <link rel="canonical" href="{{ url()->current() }}" />
 
     @php
-    use Illuminate\Support\Facades\Storage;
+        use Illuminate\Support\Facades\Storage;
 
-    $disk   = Storage::disk('favicons');
-    $expires = now()->addMinutes(60); // tiempo de validez de la URL
+        $disk = Storage::disk('favicons');
+        $expires = now()->addMinutes(60); // tiempo de validez de la URL
 
-    $favicon16   = $disk->temporaryUrl('favicon-16x16.png',   $expires);
-    $favicon32   = $disk->temporaryUrl('favicon-32x32.png',   $expires);
-    $chrome192   = $disk->temporaryUrl('android-chrome-192x192.png', $expires);
-    $chrome512   = $disk->temporaryUrl('android-chrome-512x512.png', $expires);
-    $apple180    = $disk->temporaryUrl('apple-touch-icon.png',      $expires);
-    $faviconIco  = $disk->temporaryUrl('favicon.ico',               $expires);
-@endphp
+        $favicon16 = $disk->temporaryUrl('favicon-16x16.png', $expires);
+        $favicon32 = $disk->temporaryUrl('favicon-32x32.png', $expires);
+        $chrome192 = $disk->temporaryUrl('android-chrome-192x192.png', $expires);
+        $chrome512 = $disk->temporaryUrl('android-chrome-512x512.png', $expires);
+        $apple180 = $disk->temporaryUrl('apple-touch-icon.png', $expires);
+        $faviconIco = $disk->temporaryUrl('favicon.ico', $expires);
+    @endphp
 
-<!-- Favicons con URLs temporales -->
-<link rel="icon" type="image/png" sizes="16x16"   href="{{ $favicon16 }}">
-<link rel="icon" type="image/png" sizes="32x32"   href="{{ $favicon32 }}">
-<link rel="icon" type="image/png" sizes="192x192" href="{{ $chrome192 }}">
-<link rel="icon" type="image/png" sizes="512x512" href="{{ $chrome512 }}">
-<link rel="apple-touch-icon" sizes="180x180"      href="{{ $apple180 }}">
-<link rel="shortcut icon"                         href="{{ $faviconIco }}">
+    <!-- Favicons con URLs temporales -->
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ $favicon16 }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ $favicon32 }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ $chrome192 }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ $chrome512 }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ $apple180 }}">
+    <link rel="shortcut icon" href="{{ $faviconIco }}">
 
 
     <link rel="preconnect" href="https://fonts.bunny.net">
