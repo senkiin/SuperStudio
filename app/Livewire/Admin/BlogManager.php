@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Component;
+use Illuminate\Validation\Rule;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
@@ -35,7 +36,7 @@ class BlogManager extends Component
     {
         return [
             'title' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:blog_posts,slug,' . ($this->editingPost ? $this->editingPost->id : ''),
+            'slug' => ['required', 'string', 'max:255', Rule::unique('blog_posts')->ignore($this->editingPost?->id)],
             'content' => 'required|string|min:20',
             'blog_category_id' => 'required|exists:blog_categories,id',
             'video_url' => 'nullable|string',

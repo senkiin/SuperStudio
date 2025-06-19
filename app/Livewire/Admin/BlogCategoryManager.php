@@ -6,6 +6,7 @@ use App\Models\BlogCategory;
 use Livewire\Component;
 use Illuminate\Support\Str;
 use Livewire\WithPagination;
+use Illuminate\Validation\Rule;
 
 class BlogCategoryManager extends Component
 {
@@ -20,8 +21,12 @@ class BlogCategoryManager extends Component
     protected function rules()
     {
         return [
-            'name' => 'required|string|max:255|unique:blog_categories,name,' . ($this->editingCategory ? $this->editingCategory->id : ''),
-            'slug' => 'required|string|max:255|unique:blog_categories,slug,' . ($this->editingCategory ? $this->editingCategory->id : ''),
+            'name' => 'required|string|max:255|unique:blog_categories,name,',
+            Rule::unique('blog_categories')->ignore($this->editingCategory?->id),
+
+            'slug' => 'required|string|max:255|unique:blog_categories,slug,',
+            Rule::unique('blog_categories')->ignore($this->editingCategory?->id),
+
             'description' => 'nullable|string|max:500',
         ];
     }
