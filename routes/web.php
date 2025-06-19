@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BlogController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,16 +15,23 @@ use App\Livewire\Admin\ManageHomepageCarousel;
 use App\Livewire\Admin\UserLikedPhotos;
 use App\Livewire\Admin\ManageUsers;
 use App\Http\Middleware\IsAdmin;
-use App\Livewire\AlbumDetailPage; 
+use App\Livewire\AlbumDetailPage;
 use App\Livewire\WeddingsPage;
 use App\Http\Controllers\S3UploadController;
+use App\Livewire\Admin\BlogManager;
 use App\Livewire\Videospage;
+use App\Livewire\Admin\BlogCategoryManager;
 use App\Models\Video;
 
 // --- Ruta Pública Principal ---
 Route::get('/', HomepageController::class)->name('home');
 Route::get('/bodas', WeddingsPage::class)->name('weddings');
 Route::get('/videos', Videospage::class)->name('videos');
+// Rutas del Blog Público
+Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/{post:slug}', [BlogController::class, 'show'])->name('blog.show');
+
+// Rutas de Administración (dentro de tu grupo de admin)
 
 Route::get('/album/{album}', AlbumDetailPage::class)->name('album.show');
 Route::get('/comuniones', function () {
@@ -92,8 +100,10 @@ Route::middleware([
          ->middleware(IsAdmin::class) // Middleware para proteger
          ->name('admin.')           // Nombre: admin....
          ->group(function () {
+    Route::get('/blog', BlogManager::class)->name('blog.manager');
+    Route::get('/blog/categories', BlogCategoryManager::class)->name('blog.categories.manager'); // <--- AÑADE ESTA LÍNEA
 
-        // Rutas de gestión
+          // Rutas de gestión
         Route::get('/dashboard', AdminDashboard::class)->name('dashboard');
        // Route::get('/manage-homepage-carousel', ManageHomepageCarousel::class)->name('homepage.carousel');
         Route::get('/user-likes', UserLikedPhotos::class)->name('user.likes');

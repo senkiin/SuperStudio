@@ -34,7 +34,7 @@
     @endif
 
     <nav x-data="{ openNav: false }" class="w-full">
-        <div class="max-w-7xl mx-auto pt-7 px-4 sm:px-6 lg:px-8">
+        <div class="@if (!auth()->check() || (auth()->check() && auth()->user()->role === 'admin' && !session('original_admin_id'))) max-w-7xl @endif mx-auto pt-7 px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-2">
                 <div class="flex">
                     {{-- Logo --}}
@@ -103,6 +103,9 @@
                                     {{ __('Fotocarnet') }} </x-nav-link>
                                 <x-nav-link href="{{ route('studio.index') }}"
                                     :active="request()->routeIs('studio.index')">{{ __('Studio') }}</x-nav-link>
+                                <x-nav-link href="{{ route('blog.index') }}" :active="request()->routeIs('blog.*')">
+                                    {{ __('Blog') }}
+                                </x-nav-link>
                             @else
                                 {{-- Usuario Normal o Admin Impersonando --}}
                                 <x-nav-link href="{{ route('home') }}" :active="request()->routeIs('home')">{{ __('Inicio') }}</x-nav-link>
@@ -133,23 +136,14 @@
                                     :active="request()->routeIs('studio.index')">{{ __('Studio') }}</x-nav-link>
                                 <x-nav-link href="{{ route('videos') }}" :active="request()->routeIs('videos')">
                                     {{ __('Videos') }}</x-nav-link>
-
-                                <div class="hidden sm:flex sm:items-center">
-                                    <x-dropdown align="left" width="48">
-                                        <x-slot name="trigger">
-                                            <div class="pl-2 normal-case"> {{-- Mantuve normal-case por si lo prefieres para este trigger específico --}}
-                                                {{ __('Albumes/Favoritas') }}
-                                            </div>
-                                        </x-slot>
-                                        <x-slot name="content">
-                                            <x-dropdown-link href="{{ route('photos.liked') }}" :active="request()->routeIs('photos.liked')">
-                                                {{ __('Favoritas') }} </x-dropdown-link>
-                                            <x-dropdown-link href="{{ route('albums') }}" :active="request()->routeIs('albums')">
-                                                {{ __('Álbumes') }}
-                                            </x-dropdown-link>
-                                        </x-slot>
-                                    </x-dropdown>
-                                </div>
+                                <x-nav-link href="{{ route('blog.index') }}" :active="request()->routeIs('blog.*')">
+                                    {{ __('Blog') }}
+                                </x-nav-link>
+                                <x-nav-link href="{{ route('albums') }}" :active="request()->routeIs('albums')">
+                                    {{ __('Álbumes') }}
+                                </x-nav-link>
+                                <x-nav-link href="{{ route('photos.liked') }}" :active="request()->routeIs('photos.liked')">
+                                    {{ __('Favoritas') }} </x-nav-link>
                             @endif
                         @else
                             {{-- Invitados --}}
@@ -174,14 +168,15 @@
                             </div>
                             <x-nav-link href="{{ route('comuniones') }}" :active="request()->routeIs('comuniones')"> {{ __('Comuniones') }}
                             </x-nav-link>
-                            {{-- ENLACE CORREGIDO PARA FOTOCARNET (INVITADOS) --}}
                             <x-nav-link href="{{ route('fotocarnet.almeria') }}" :active="request()->routeIs('fotocarnet.almeria')">
                                 {{ __('Fotocarnet') }} </x-nav-link>
                             <x-nav-link href="{{ route('studio.index') }}"
                                 :active="request()->routeIs('studio.index')">{{ __('Studio') }}</x-nav-link>
                             <x-nav-link href="{{ route('videos') }}" :active="request()->routeIs('videos')">
                                 {{ __('Videos') }}</x-nav-link>
-
+                            <x-nav-link href="{{ route('blog.index') }}" :active="request()->routeIs('blog.*')">
+                                {{ __('Blog') }}
+                            </x-nav-link>
                         @endauth
                     </div>
                 </div>
@@ -244,6 +239,17 @@
                                             {{ __('Ver Sitio') }}
                                         </x-dropdown-link>
 
+                                        <x-responsive-nav-link href="{{ route('admin.blog.manager') }}"
+                                            :active="request()->routeIs('blog.*')">
+                                            <svg class="inline-block w-5 h-5 mr-2" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+                                                </path>
+                                            </svg>
+                                            {{ __('Editar Blog') }}
+                                        </x-responsive-nav-link>
+
 
                                     </x-slot>
 
@@ -281,7 +287,6 @@
                                 </x-slot>
                             </x-dropdown>
 
-                            {{-- Bolita de estado justo debajo --}}
 
                         </div>
                     @else
@@ -347,6 +352,9 @@
                         {{ __('Studio') }} </x-responsive-nav-link>
                     <x-responsive-nav-link href="{{ route('videos') }}" :active="request()->routeIs('videos')" class="px-4 py-3">
                         {{ __('Video Reportajes') }} </x-responsive-nav-link>
+                    <x-responsive-nav-link href="{{ route('blog.index') }}" :active="request()->routeIs('blog.*')">
+                        {{ __('Blog') }}
+                    </x-responsive-nav-link>
                 </div> {{-- Menú "Gestión" --}}
                 <div class="hidden sm:flex sm:items-center">
                     <x-dropdown align="left" width="48">
@@ -379,6 +387,7 @@
                                 {{ __('Videos') }} </x-dropdown-link>
                             <x-dropdown-link href="{{ route('home') }}" target="_blank">
                                 {{ __('Ver Sitio') }} </x-dropdown-link>
+
                         </x-slot>
                     </x-dropdown>
                 </div>
