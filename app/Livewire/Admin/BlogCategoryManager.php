@@ -21,14 +21,22 @@ class BlogCategoryManager extends Component
     protected function rules()
     {
         return [
-            'name' => 'required|string|max:255|unique:blog_categories,name,',
+        'name' => [
+            'required',
+            'string',
+            'max:255',
+            // Así es como se usa Rule::unique para ignorar el ID actual al editar
             Rule::unique('blog_categories')->ignore($this->editingCategory?->id),
-
-            'slug' => 'required|string|max:255|unique:blog_categories,slug,',
+        ],
+        'slug' => [
+            'required',
+            'string',
+            'max:255',
+            // Hacemos lo mismo para el slug
             Rule::unique('blog_categories')->ignore($this->editingCategory?->id),
-
-            'description' => 'nullable|string|max:500',
-        ];
+        ],
+        'description' => ['nullable', 'string', 'max:500'],
+    ];
     }
 
     // Generar slug automáticamente al escribir el nombre
