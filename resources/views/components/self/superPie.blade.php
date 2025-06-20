@@ -8,11 +8,11 @@
                     Capturando la esencia del paisaje y la vida salvaje. Explora el mundo a través de mi lente.
                 </p>
                 <div class="flex items-center space-x-4 mt-6">
-                    <a href="https://www.instagram.com/foto_valera/" target="_blank" rel="noopener noreferrer"
+                    <a href="https://www.instagram.com/foto_valera/" title="Ir a Instagram" target="_blank" rel="noopener noreferrer"
                         class="hover:text-white transition-colors duration-300" aria-label="Instagram">
                         <i class="fab fa-instagram fa-lg">Instagram</i>
                     </a>
-                    <a href="https://www.facebook.com/FotoValera" target="_blank" rel="noopener noreferrer"
+                    <a href="https://www.facebook.com/FotoValera" title="Ir a Facebook" target="_blank" rel="noopener noreferrer"
                         class="hover:text-white transition-colors duration-300" aria-label="Facebook">
                         <i class="fab fa-facebook-f fa-lg">Facebook</i>
                     </a>
@@ -39,12 +39,12 @@
                 <ul class="space-y-3 text-sm">
                     <li class="flex items-start">
                         <i class="fas fa-phone mt-1 mr-3 text-white"></i>
-                        <a href="tel:+34660581178" class="hover:text-white transition-colors duration-300">+34 660 581
+                        <a href="tel:+34660581178" title="Llamar" class="hover:text-white transition-colors duration-300">+34 660 581
                             178</a>
                     </li>
                     <li class="flex items-start">
                         <i class="fas fa-envelope mt-1 mr-3 text-white"></i>
-                        <a href="mailto:infofotovalera@gmail.com"
+                        <a href="mailto:infofotovalera@gmail.com" title="Correo electrónico"
                             class="hover:text-white transition-colors duration-300">infofotovalera@gmail.com</a>
                     </li>
                 </ul>
@@ -80,20 +80,20 @@
             <h3 class="text-center text-sm font-semibold tracking-wider text-white uppercase mb-6">Colaboradores y
                 Reconocimientos</h3>
             <div class="flex flex-wrap justify-center items-center gap-8">
-                <a href="https://www.epson.es/" target="_blank" rel="noopener noreferrer">
-                    <img src="{{ $epson }}" alt="Epson"
+                <a href="https://www.epson.es/" title="Ir a Epson" target="_blank" rel="noopener noreferrer">
+                    <img src="{{ $epson }}" alt="Epson" title="Ir a Epson"
                         class="h-8 grayscale hover:grayscale-0 transition-all duration-300">
                 </a>
-                <a href="https://www.nikon.es/" target="_blank" rel="noopener noreferrer">
-                    <img src="{{ $nikon }}" alt="Nikon"
+                <a href="https://www.nikon.es/" title="Ir a Nikon" target="_blank" rel="noopener noreferrer">
+                    <img src="{{ $nikon }}" alt="Nikon" title="Ir a Nikon"
                         class="h-7 grayscale hover:grayscale-0 transition-all duration-300">
                 </a>
-                <a href="https://www.fujifilm.com/es/es-es" target="_blank" rel="noopener noreferrer">
-                    <img src="{{ $fuji }}" alt="Fuji"
+                <a href="https://www.fujifilm.com/es/es-es" title="Ir a Fujifilm" target="_blank" rel="noopener noreferrer">
+                    <img src="{{ $fuji }}" alt="Fuji" title="Ir a Fujifilm"
                         class="h-8 grayscale hover:grayscale-0 transition-all duration-300">
                 </a>
-                <a href="https://www.canon.es/" target="_blank" rel="noopener noreferrer">
-                    <img src="{{ $canon }}" alt="Canon"
+                <a href="https://www.canon.es/" title="Ir a Canon" target="_blank" rel="noopener noreferrer">
+                    <img src="{{ $canon }}" alt="Canon" title="Ir a Canon"
                         class="h-7 grayscale hover:grayscale-0 transition-all duration-300">
                 </a>
             </div>

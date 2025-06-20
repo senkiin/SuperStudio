@@ -63,23 +63,29 @@
 
                     {{-- Contenido de Texto --}}
                     <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-4 md:p-8 z-10">
-                        <div class="{{ $slide->text_animation ?: 'fade-in-up' }}" style="animation-delay: 0.3s; color: {{ $slide->text_color ?? '#FFFFFF' }};">
-                            <h2 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold drop-shadow-md leading-tight">
-                                {{ $slide->title }}
-                            </h2>
-                            @if ($slide->subtitle)
-                                <p class="mt-4 text-lg sm:text-xl md:text-2xl max-w-2xl mx-auto drop-shadow-sm">
-                                    {{ $slide->subtitle }}
-                                </p>
-                            @endif
-                            @if ($slide->button_text && $slide->button_link)
-                                <a href="{{ $slide->button_link }}"
-                                   class="mt-8 inline-block bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-8 py-3 rounded-lg shadow-lg transition-transform transform hover:scale-105">
-                                    {{ $slide->button_text }}
-                                </a>
-                            @endif
-                        </div>
-                    </div>
+    <div class="{{ $slide->text_animation ?: 'fade-in-up' }}" style="animation-delay: 0.3s; color: {{ $slide->text_color ?? '#FFFFFF' }};">
+
+        @php
+            $headingTag = $loop->first ? 'h1' : 'h2';
+        @endphp
+
+        <{{ $headingTag }} class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold drop-shadow-md leading-tight">
+            {{ $slide->title }}
+        </{{ $headingTag }}>
+
+        @if ($slide->subtitle)
+            <p class="mt-4 text-lg sm:text-xl md:text-2xl max-w-2xl mx-auto drop-shadow-sm">
+                {{ $slide->subtitle }}
+            </p>
+        @endif
+        @if ($slide->button_text && $slide->button_link)
+            <a href="{{ $slide->button_link }}"
+               class="mt-8 inline-block bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-8 py-3 rounded-lg shadow-lg transition-transform transform hover:scale-105">
+                {{ $slide->button_text }}
+            </a>
+        @endif
+    </div>
+</div>
                 </div>
             @endforeach
 

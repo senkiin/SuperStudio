@@ -1,16 +1,35 @@
 {{-- resources/views/fotocarnet-almeria.blade.php --}}
 <x-app-layout>
-    {{-- SEO Meta Tags --}}
-    @section('title', $pageTitle ?? 'Fotocarnet Almería | Fotovalera')
-    @section('metaDescription', $metaDescription ?? 'Servicio de fotocarnet profesional en Almería. Rápido y de calidad para DNI, pasaporte y otros documentos. ¡Reserva tu cita!')
-    @push('meta_tags')
-        <meta name="keywords" content="{{ $metaKeywords ?? 'fotocarnet almeria, foto dni, foto pasaporte, fotos carnet, fotovalera' }}">
-        <meta property="og:title" content="{{ $pageTitle ?? 'Fotocarnet Almería | Fotovalera' }}">
-        <meta property="og:description" content="{{ $metaDescription ?? 'Servicio de fotocarnet profesional en Almería.' }}">
-        {{-- <meta property="og:image" content="{{ asset('images/fotocarnet-almeria-og.jpg') }}"> --}} {{-- DEBES CREAR ESTA IMAGEN --}}
-        <meta property="og:url" content="{{ route('fotocarnet.almeria') }}">
-        <meta name="robots" content="index, follow"> {{-- Importante para SEO --}}
-    @endpush
+ <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    {{-- ========================================================== --}}
+    {{--    INICIO: ETIQUETAS META ESPECÍFICAS PARA FOTOCARNET      --}}
+    {{-- ========================================================== --}}
+
+    <title>Fotocarnet al Instante en Almería | DNI, Pasaporte - Fotovalera</title>
+    <meta name="description" content="¿Necesitas fotos de carnet en Almería? En Fotovalera te las hacemos al instante, cumpliendo con la normativa para DNI, pasaporte, carnet de conducir y más. ¡Calidad profesional sin esperas!">
+    <meta name="keywords" content="fotocarnet almeria, foto dni almeria, foto pasaporte almeria, fotos carnet almeria, fotocarnet rapido almeria, fotovalera">
+
+    {{-- Open Graph / Facebook --}}
+    <meta property="og:title" content="Fotos de Carnet al Instante en Almería | Fotovalera">
+    <meta property="og:description" content="Consigue tu fotocarnet para DNI, pasaporte o cualquier otro documento oficial de forma rápida y con calidad profesional en nuestro estudio de Almería.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ route('fotocarnet.almeria') }}">
+    <meta property="og:image" content="{{ asset('images/og_fotocarnet.jpg') }}"> {{-- RECOMENDACIÓN: Crear y subir la imagen public/images/og_fotocarnet.jpg --}}
+
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Fotos de Carnet al Instante en Almería | Fotovalera">
+    <meta name="twitter:description" content="Consigue tu fotocarnet para DNI, pasaporte o cualquier otro documento oficial de forma rápida y con calidad profesional en nuestro estudio de Almería.">
+    <meta name="twitter:image" content="{{ asset('images/twitter_fotocarnet.jpg') }}"> {{-- RECOMENDACIÓN: Crear y subir la imagen public/images/twitter_fotocarnet.jpg --}}
+
+    {{-- Etiquetas Adicionales --}}
+    <link rel="canonical" href="{{ route('fotocarnet.almeria') }}" />
+    <meta name="author" content="Fotovalera">
+    <meta name="publisher" content="Fotovalera">
+    <meta name="robots" content="index, follow">
 
     {{-- Componente para la cabecera de la página --}}
     @livewire('configurable-page-header', [

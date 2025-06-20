@@ -63,8 +63,7 @@
                 {{-- Contenedor interno --}}
                 <div class="relative w-full h-full">
                     {{-- Imagen de fondo --}}
-                    <img src="{{ $image->image_url }}" alt="{{ $image->caption }}"
-                        class="w-full h-full object-cover">
+                    <img src="{{ $image->image_url }}" alt="{{ $image->caption }}" title="{{ $image->caption }}" class="w-full h-full object-cover">
 
                     {{-- Overlay oscuro --}}
                     <div
@@ -76,10 +75,22 @@
                         {{-- Este div ya centra el contenido horizontalmente (items-center) y lo alinea abajo (justify-end) --}}
                         <div
                             class="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center justify-end pb-20 md:pb-24 lg:pb-32 text-center text-white px-4 pointer-events-none">
-                            <h1 class="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-wide drop-shadow-md animate-fade-in-up"
-                                style="animation-delay: 0.3s; opacity:0; animation-fill-mode: forwards;">
-                                {{ $image->caption }} {{-- Muestra el título --}}
-                            </h1>
+
+                            {{-- INICIO DE LA MODIFICACIÓN --}}
+                            @php
+                                // Si es el primer elemento del bucle, la etiqueta será <h1>, si no, será <h2>
+                                $headingTag = $loop->first ? 'h1' : 'h2';
+                            @endphp
+
+                            <div class="{{ $image->text_animation ?? 'fade-in-up' }}"
+                                style="animation-delay: 0.3s; color: {{ $image->text_color ?? '#FFFFFF' }};">
+                                <{{ $headingTag }}
+                                    class="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-wide drop-shadow-md">
+                                    {{ $image->caption }} {{-- Muestra el título --}}
+                                    </{{ $headingTag }}>
+                            </div>
+                            {{-- FIN DE LA MODIFICACIÓN --}}
+
                             {{-- Indicador visual si es un enlace (centrado) --}}
                             @if ($image->link_url)
                                 <span class="mt-3 text-sm opacity-80 group-hover:opacity-100 transition-opacity">

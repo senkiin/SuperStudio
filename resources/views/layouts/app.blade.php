@@ -5,21 +5,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>@yield('title', config('app.name', 'Fotovalera'))</title>
-    <meta name="keywords" content="@yield('metaKeywords', 'fotografo almeria, video almeria, bodas, comuniones,recien nacidos,fotovalera')">
-
-    <meta property="og:title" content="@yield('title', config('app.name'))">
-    <meta property="og:description" content="@yield('metaDescription', 'Los mejores fotografos y videografos de Almeria mas de 23 años de experiencia en el sector')">
-    <meta property="og:image" content="{{ Storage::url('favicon/apple-touch-icon.png') }}">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ url()->current() }}">
-
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="@yield('title', config('app.name'))">
-    <meta name="twitter:description" content="@yield('metaDescription', 'Los mejores fotografos y videografos de Almeria mas de 23 años de experiencia en el sector')">
-    <meta name="twitter:image" content="{{ Storage::url('favicon/apple-touch-icon.png') }}">
-
     <link rel="canonical" href="{{ url()->current() }}" />
 
     @php

@@ -1,19 +1,26 @@
 <x-app-layout> {{-- O tu archivo de layout principal --}}
-    {{-- SEO Meta Tags para la Página de Studio --}}
-    @section('title', 'Estudio Fotográfico Creativo en Almería | Sesiones Temáticas - Fotovalera')
-    @section('meta_description', 'Descubre nuestro estudio fotográfico en Almería. Realizamos sesiones creativas y temáticas como Halloween, Navidad y proyectos artísticos. ¡Ideas originales para tus fotos!')
-    @section('meta_keywords', 'estudio fotografia almeria, sesiones tematicas almeria, fotografia creativa almeria, fotografo estudio almeria, sesiones halloween almeria, sesiones navidad almeria, fotovalera estudio, fotografia artistica almeria')
+    <title>Estudio Fotografico en Almería - Fotovalera</title>
+    <meta name="description" content="Descubre nuestro estudio fotográfico en Almería. Realizamos sesiones creativas y temáticas como Halloween, Navidad y proyectos artísticos. ¡Ideas originales para tus fotos!">
+    <meta name="keywords" content="estudio fotografia almeria, sesiones tematicas almeria, fotografia creativa almeria, fotografo estudio almeria, sesiones halloween almeria, sesiones navidad almeria, fotovalera estudio, fotografia artistica almeria">
 
     {{-- Open Graph / Facebook --}}
-    @section('og_title', 'Estudio Fotográfico Creativo en Almería | Fotovalera')
-    @section('og_description', 'Explora nuestras sesiones fotográficas de estudio en Almería: desde retratos artísticos hasta divertidas temáticas de Halloween y Navidad.')
-    @section('og_image', asset('images/default-og-image.jpg')) {{-- Asegúrate que esta imagen exista o usa una específica para el estudio --}}
+    <meta property="og:title" content="Estudio Fotográfico Creativo en Almería | Fotovalera">
+    <meta property="og:description" content="Explora nuestras sesiones fotográficas de estudio en Almería: desde retratos artísticos hasta divertidas temáticas de Halloween y Navidad.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    {{--<meta property="og:image" content="{{ asset('images/og_estudio.jpg') }}">  Asegúrate que la imagen public/images/og_estudio.jpg exista --}}
 
-   {{-- Twitter --}}
-    @section('twitter_title', 'Estudio Fotográfico Creativo en Almería | Fotovalera')
-    @section('twitter_description', 'Sesiones de estudio únicas en Almería: Halloween, Navidad y fotografía artística. ¡Descubre Fotovalera!')
-    @section('twitter_image', asset('images/default-twitter-card-image.jpg')) {{-- Asegúrate que esta imagen exista o usa una específica para el estudio --}}
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Estudio Fotográfico Creativo en Almería | Fotovalera">
+    <meta name="twitter:description" content="Sesiones de estudio únicas en Almería: Halloween, Navidad y fotografía artística. ¡Descubre Fotovalera!">
+    {{-- <meta name="twitter:image" content="{{ asset('images/twitter_estudio.jpg') }}">  Asegúrate que la imagen public/images/twitter_estudio.jpg exista --}}
 
+    <link rel="canonical" href="{{ url()->current() }}" />
+
+    <meta name="author" content="Fotovalera">
+    <meta name="publisher" content="Fotovalera">
+    <meta name="robots" content="@yield('meta_robots', 'index, follow')"> {{-- Permite la indexación por defecto --}}
 
 
     @livewire('dynamic-carousel')

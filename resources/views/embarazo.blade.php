@@ -1,19 +1,35 @@
 <x-app-layout> {{-- O tu archivo de layout principal --}}
 
-    {{-- Para SEO y el título en la pestaña del navegador --}}
-    {{-- Esta sintaxis @section funciona si tu x-app-layout usa @yield('title') y @yield('metaDescription') --}}
-    {{-- Si x-app-layout usa slots (ej. <x-slot name="title">), deberás ajustar la sintaxis --}}
-    <x-slot name="title">
-        Fotografía de Embarazo en Almería | Sesiones Premamá - Fotovalera
-    </x-slot>
-    <x-slot name="metaDescription">
-        Inmortaliza la belleza de tu embarazo con una sesión de fotos premamá en Almería. Fotógrafos especializados en
-        capturar la dulzura y emoción de esta etapa única.
-    </x-slot>
-    <x-slot name="metaKeywords">
-        fotografia embarazo almeria, sesion premama almeria, fotografo embarazo almeria, fotos embarazada almeria,
-        reportaje embarazo almeria, fotovalera embarazo
-    </x-slot>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    {{-- ========================================================== --}}
+    {{--    INICIO: ETIQUETAS META ESPECÍFICAS PARA EMBARAZO          --}}
+    {{-- ========================================================== --}}
+
+    <title>Fotografía de Embarazo en Almería | Sesiones de Maternidad</title>
+    <meta name="description" content="Captura la magia de tu embarazo con una sesión de fotos profesional en Almería. Creamos recuerdos artísticos y emotivos de tu maternidad. ¡Infórmate ahora!">
+    <meta name="keywords" content="fotografia embarazo almeria, sesion fotos embarazada almeria, fotografo maternidad almeria, fotos de embarazo, reportaje embarazo, fotovalera">
+
+    {{-- Open Graph / Facebook --}}
+    <meta property="og:title" content="Fotografía de Embarazo en Almería | Fotovalera">
+    <meta property="og:description" content="Celebra la dulce espera con una sesión de fotos de maternidad única en Almería. Capturamos la belleza de este momento tan especial para ti.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ route('embarazo.index') }}">
+    <meta property="og:image" content="{{ asset('images/og_embarazo.jpg') }}"> {{-- RECOMENDACIÓN: Crear y subir la imagen public/images/og_embarazo.jpg --}}
+
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Fotografía de Embarazo en Almería | Fotovalera">
+    <meta name="twitter:description" content="Celebra la dulce espera con una sesión de fotos de maternidad única en Almería. Capturamos la belleza de este momento tan especial para ti.">
+    <meta name="twitter:image" content="{{ asset('images/twitter_embarazo.jpg') }}"> {{-- RECOMENDACIÓN: Crear y subir la imagen public/images/twitter_embarazo.jpg --}}
+
+    {{-- Etiquetas Adicionales --}}
+    <link rel="canonical" href="{{ route('embarazo.index') }}" />
+    <meta name="author" content="Fotovalera">
+    <meta name="publisher" content="Fotovalera">
+    <meta name="robots" content="index, follow">
 
     <div>
 

@@ -1,18 +1,34 @@
 <x-app-layout> {{-- O tu archivo de layout principal --}}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    {{-- Para SEO y el título en la pestaña del navegador --}}
-    {{-- Esta sintaxis @section funciona si tu x-app-layout usa @yield('title') y @yield('metaDescription') --}}
-    {{-- Si x-app-layout usa slots (ej. <x-slot name="title">), deberás ajustar la sintaxis --}}
-    <x-slot name="title">
-        Fotografía Newborn en Almería | Sesiones de Recién Nacido - Fotovalera
-    </x-slot>
-    <x-slot name="metaDescription">
-        Capturamos la ternura y los primeros días de tu bebé con sesiones de fotografía newborn en Almería. Fotógrafos especializados en recién nacidos. Recuerdos para toda la vida.
-    </x-slot>
-    <x-slot name="metaKeywords">
-        fotografia newborn almeria, sesion recien nacido almeria, fotografo bebes almeria, fotos de bebes almeria, newborn photography almeria, TuNombreDeEmpresa newborn
-    </x-slot>
+    {{-- ========================================================== --}}
+    {{-- INICIO: ETIQUETAS META ESPECÍFICAS PARA RECIÉN NACIDOS (NEWBORN) --}}
+    {{-- ========================================================== --}}
 
+    <title>Fotografía Newborn en Almería | Sesiones Recién Nacido</title>
+    <meta name="description" content="Especialistas en fotografía newborn en Almería. Sesiones de recién nacido seguras y tiernas para capturar los primeros días de tu bebé. Un recuerdo para toda la vida.">
+    <meta name="keywords" content="fotografia newborn almeria, fotografo recien nacido almeria, sesion de fotos bebe, fotos newborn, estudio fotografia bebes, fotovalera newborn">
+
+    {{-- Open Graph / Facebook --}}
+    <meta property="og:title" content="Fotografía Newborn en Almería | Sesiones para Recién Nacidos">
+    <meta property="og:description" content="Capturamos la magia de los primeros días de tu bebé con sesiones newborn artísticas y llenas de ternura en nuestro estudio de Almería.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ route('newborn.index') }}">
+    <meta property="og:image" content="{{ asset('images/og_newborn.jpg') }}"> {{-- RECOMENDACIÓN: Crear y subir la imagen public/images/og_newborn.jpg --}}
+
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Fotografía Newborn en Almería | Sesiones para Recién Nacidos">
+    <meta name="twitter:description" content="Capturamos la magia de los primeros días de tu bebé con sesiones newborn artísticas y llenas de ternura en nuestro estudio de Almería.">
+    <meta name="twitter:image" content="{{ asset('images/twitter_newborn.jpg') }}"> {{-- RECOMENDACIÓN: Crear y subir la imagen public/images/twitter_newborn.jpg --}}
+
+    {{-- Etiquetas Adicionales --}}
+    <link rel="canonical" href="{{ route('newborn.index') }}" />
+    <meta name="author" content="Fotovalera">
+    <meta name="publisher" content="Fotovalera">
+    <meta name="robots" content="index, follow">
         <div>
 
             @livewire('configurable-page-header', [

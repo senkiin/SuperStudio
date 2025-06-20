@@ -1,14 +1,26 @@
 <div>
-  <x-slot name="title">
-        Fotógrafos de Bodas en Almería | Reportajes Únicos - Fotovalera
-    </x-slot>
-    <x-slot name="metaDescription">
-        Especialistas en fotografía y videografía de bodas en Almería. Capturamos la magia de vuestro día con un estilo natural y emotivo. Más de 23 años creando recuerdos inolvidables. ¡Contacta y cuéntanos tu sueño!
-    </x-slot>
-    <x-slot name="metaKeywords">
-        fotografo bodas almeria, videografo bodas almeria, reportaje boda almeria, fotografia nupcial almeria, video de boda almeria, fotografo profesional bodas almeria, bodas en almeria, Fotovalera bodas
-    </x-slot>
+ <title>Fotógrafo de Bodas en Almería | Reportajes Únicos | Fotovalera</title>
+    <meta name="description" content="Fotógrafo de bodas en Almería especializado en capturar la emoción y la naturalidad de vuestro día. Creamos recuerdos inolvidables con un estilo documental y artístico. ¡Pide presupuesto!">
+    <meta name="keywords" content="fotografo de bodas almeria, fotografo para bodas, reportajes de boda almeria, video de boda, bodas en almeria, fotovalera, fotografia matrimonial">
 
+    {{-- Open Graph / Facebook --}}
+    <meta property="og:title" content="Fotógrafo de Bodas en Almería | Fotovalera">
+    <meta property="og:description" content="Hacemos que los recuerdos de tu boda duren para siempre. Fotografía y vídeo con un enfoque artístico y emocional en Almería y provincia.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ route('weddings') }}">
+    <meta property="og:image" content="{{ asset('images/og_bodas.jpg') }}"> {{-- RECOMENDACIÓN: Crear y subir la imagen public/images/og_bodas.jpg --}}
+
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Fotógrafo de Bodas en Almería | Fotovalera">
+    <meta name="twitter:description" content="Hacemos que los recuerdos de tu boda duren para siempre. Fotografía y vídeo con un enfoque artístico y emocional en Almería y provincia.">
+    <meta name="twitter:image" content="{{ asset('images/twitter_bodas.jpg') }}"> {{-- RECOMENDACIÓN: Crear y subir la imagen public/images/twitter_bodas.jpg --}}
+
+    {{-- Etiquetas Adicionales --}}
+    <link rel="canonical" href="{{ route('weddings') }}" />
+    <meta name="author" content="Fotovalera">
+    <meta name="publisher" content="Fotovalera">
+    <meta name="robots" content="index, follow">
     {{-- @livewire('header-component') --}}
  @livewire('configurable-page-header', [
         'identifier' => 'bodas_header', // ¡Nuevo identificador!

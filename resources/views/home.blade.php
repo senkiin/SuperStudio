@@ -1,15 +1,35 @@
 {{-- resources/views/home.blade.php --}}
 <x-app-layout>
-    {{-- SEO Meta Tags --}}
-    <x-slot name="title">
-        Fotógrafos y Videógrafos en Almería | TuNombreDeEmpresa | +23 Años de Experiencia
-    </x-slot>
-    <x-slot name="metaDescription">
-        En TuNombreDeEmpresa, ofrecemos servicios profesionales de fotografía y videografía en Almería. Con más de 23 años de experiencia, capturamos bodas, eventos y momentos únicos. ¡Inmortaliza tus recuerdos con nosotros!
-    </x-slot>
-    <x-slot name="metaKeywords">
-        fotografos almeria, videografos almeria, fotografia bodas almeria, video bodas almeria, fotografo profesional almeria, estudio fotografia almeria, reportajes fotograficos almeria, videos corporativos almeria
-    </x-slot>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    {{-- ========================================================== --}}
+    {{--    INICIO: ETIQUETAS META PARA LA PÁGINA PRINCIPAL         --}}
+    {{-- ========================================================== --}}
+
+    <title>Fotógrafos en Almería | Reportajes de Boda y Estudio | Fotovalera</title>
+    <meta name="description" content="Fotovalera, fotógrafos profesionales en Almería con más de 23 años de experiencia. Realizamos reportajes de boda, comuniones, sesiones de estudio, embarazo y newborn. Capturamos tus momentos más especiales.">
+    <meta name="keywords" content="fotografo almeria, fotografos en almeria, fotografia de boda, video de boda, estudio fotografico almeria, fotografo comunion, fotovalera">
+
+    {{-- Open Graph / Facebook --}}
+    <meta property="og:title" content="Fotovalera | Fotógrafos Profesionales en Almería">
+    <meta property="og:description" content="Especialistas en reportajes de boda, comunión y sesiones de estudio. Capturamos momentos inolvidables con un estilo único. ¡Contacta con nosotros!">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ route('home') }}">
+    <meta property="og:image" content="{{ Storage::disk('logos')->url('SuperLogo.png') }}">
+
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Fotovalera | Fotógrafos Profesionales en Almería">
+    <meta name="twitter:description" content="Especialistas en reportajes de boda, comunión y sesiones de estudio. Capturamos momentos inolvidables con un estilo único. ¡Contacta con nosotros!">
+    <meta name="twitter:image" content="{{ Storage::disk('logos')->url('SuperLogo.png') }}">
+
+    {{-- Etiquetas Adicionales --}}
+    <link rel="canonical" href="{{ route('home') }}" />
+    <meta name="author" content="Fotovalera">
+    <meta name="publisher" content="Fotovalera">
+    <meta name="robots" content="index, follow">
     <div class="p-0 m-0 flex flex-col">
 
 

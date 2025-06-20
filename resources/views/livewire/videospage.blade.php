@@ -1,23 +1,33 @@
 <div>
-    {{-- SEO Meta Tags para la Página de Videos --}}
-    @section('title', 'Videógrafos en Almería | Vídeos de Boda y Eventos - Fotovalera')
-    @section('metaDescription', 'Servicios profesionales de videografía en Almería. Creamos vídeos emotivos y
-        cinematográficos para bodas, eventos y proyectos corporativos. ¡Cuenta tu historia en movimiento!')
-    @section('metaKeywords', 'videografo almeria, video boda almeria, video eventos almeria, produccion video almeria,
-        videos corporativos almeria, fotovalera videos')
+   <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Vídeos de Boda | Reportajes Cinematográficos - Fotovalera</title>
+    <meta name="description"
+        content="Descubre nuestros reportajes de vídeo en Almería. Creamos vídeos cinematográficos para bodas, comuniones y eventos especiales que cuentan tu historia de una manera única y emotiva.">
+    <meta name="keywords"
+        content="video de boda almeria, videografos almeria, videos de comunion, videos para eventos, reportajes de video, cinematografia de bodas, fotovalera">
 
-        {{-- Open Graph / Facebook --}}
-    @section('og_title', 'Videógrafos Profesionales en Almería | Fotovalera')
-    @section('og_description', 'Descubre nuestros trabajos de videografía en Almería. Vídeos de boda, eventos y más, con
-        un estilo cinematográfico y emotivo.')
-    @section('og_image', asset('images/default-og-image.jpg')) {{-- Reemplaza con una imagen representativa de tus videos o tu marca --}}
+    {{-- Open Graph / Facebook --}}
+    <meta property="og:title" content="Vídeos de Boda| Fotovalera">
+    <meta property="og:description"
+        content="Emociónate con nuestros reportajes de vídeo. Capturamos la esencia de tu boda o evento especial en Almería con un estilo cinematográfico.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ route('videos') }}">
+    <meta property="og:image" content="{{ asset('images/og_videos.jpg') }}"> {{-- RECUERDA: Crear y subir la imagen public/images/og_videos.jpg --}}
 
-    {{-- Twitter --}}
-    @section('twitter_title', 'Videógrafos en Almería | Vídeos que Cuentan Historias | Fotovalera')
-    @section('twitter_description', 'Vídeos de boda, eventos y corporativos en Almería. Calidad cinematográfica y
-        narrativa emotiva. ¡Contacta con Fotovalera!')
-    @section('twitter_image', asset('images/default-twitter-card-image.jpg')) {{-- Reemplaza con una imagen para Twitter Card --}}
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Vídeos de Boda y Eventos en Almería | Fotovalera">
+    <meta name="twitter:description"
+        content="Emociónate con nuestros reportajes de vídeo. Capturamos la esencia de tu boda o evento especial en Almería con un estilo cinematográfico.">
+    <meta name="twitter:image" content="{{ asset('images/twitter_videos.jpg') }}"> {{-- RECUERDA: Crear y subir la imagen public/images/twitter_videos.jpg --}}
 
+    {{-- Etiquetas Adicionales --}}
+    <link rel="canonical" href="{{ route('videos') }}" />
+    <meta name="author" content="Fotovalera">
+    <meta name="publisher" content="Fotovalera">
+    <meta name="robots" content="index, follow">
 
     {{-- @livewire('header-component') --}}
     @livewire('configurable-page-header', [

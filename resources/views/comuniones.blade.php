@@ -1,18 +1,35 @@
 <x-app-layout> {{-- O tu archivo de layout principal --}}
 
-    {{-- Para SEO y el título en la pestaña del navegador --}}
-    {{-- Esta sintaxis @section funciona si tu x-app-layout usa @yield('title') y @yield('metaDescription') --}}
-    {{-- Si x-app-layout usa slots (ej. <x-slot name="title">), deberás ajustar la sintaxis --}}
-    <x-slot name="title">
-        Fotografía de Comuniones en Almería | Reportajes Primera Comunión - Fotovalera
-    </x-slot>
-    <x-slot name="metaDescription">
-        Capturamos la ilusión y los momentos especiales de la Primera Comunión en Almería. Fotógrafos con experiencia en reportajes de comunión creativos y emotivos.
-    </x-slot>
-    <x-slot name="metaKeywords">
-        fotografo comunion almeria, reportaje comunion almeria, fotografia primera comunion almeria, fotos comunion almeria, fotovalera comuniones
-    </x-slot>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    {{-- ========================================================== --}}
+    {{--    INICIO: ETIQUETAS META ESPECÍFICAS PARA COMUNIONES      --}}
+    {{-- ========================================================== --}}
+
+    <title>Fotógrafo de Comuniones en Almería | Reportajes de Comunión</title>
+    <meta name="description" content="Reportajes de comunión en Almería, en estudio y exteriores. Capturamos la inocencia y alegría de su primera comunión con un recuerdo único y especial.">
+    <meta name="keywords" content="fotografo comunion almeria, reportaje comunion almeria, fotos de comunion, album de comunion, fotovalera, fotografo infantil almeria">
+
+    {{-- Open Graph / Facebook --}}
+    <meta property="og:title" content="Fotógrafo de Comuniones en Almería | Fotovalera">
+    <meta property="og:description" content="Inmortalizamos la primera comunión de tus hijos con reportajes creativos y llenos de encanto en Almería. Sesiones en estudio y exteriores.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ route('comuniones') }}">
+    <meta property="og:image" content="{{ asset('images/og_comuniones.jpg') }}"> {{-- RECOMENDACIÓN: Crear y subir la imagen public/images/og_comuniones.jpg --}}
+
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Fotógrafo de Comuniones en Almería | Fotovalera">
+    <meta name="twitter:description" content="Inmortalizamos la primera comunión de tus hijos con reportajes creativos y llenos de encanto en Almería. Sesiones en estudio y exteriores.">
+    <meta name="twitter:image" content="{{ asset('images/twitter_comuniones.jpg') }}"> {{-- RECOMENDACIÓN: Crear y subir la imagen public/images/twitter_comuniones.jpg --}}
+
+    {{-- Etiquetas Adicionales --}}
+    <link rel="canonical" href="{{ route('comuniones') }}" />
+    <meta name="author" content="Fotovalera">
+    <meta name="publisher" content="Fotovalera">
+    <meta name="robots" content="index, follow">
 
         <div>
 

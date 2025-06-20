@@ -49,12 +49,12 @@
                             @if (Auth::user()->role === 'admin' && !session('original_admin_id'))
                                 <a href="{{ route('admin.dashboard') }}">
                                     <img src="{{ $logoUrlScrolled }} " class="mt-2 block h-36 w-auto lg:h-56"
-                                        alt="Logo" />
+                                        alt="Logo" title="Logo" />
                                 </a>
                             @else
                                 <a href="{{ route('home') }}">
                                     <img src="{{ $logoUrlScrolled }}" class="mt-2 block h-36 w-auto lg:h-56"
-                                        alt="Logo" />
+                                        alt="Logo" title="Logo" />
                                 </a>
                             @endif
                         @else
@@ -74,8 +74,10 @@
                         @auth
                             @if (Auth::user()->role === 'admin' && !session('original_admin_id'))
                                 {{-- Admin Real --}}
-                                <x-nav-link href="{{ route('home') }}" :active="request()->routeIs('home')"> {{ __('Inicio') }} </x-nav-link>
-                                <x-nav-link href="{{ route('weddings') }}" :active="request()->routeIs('weddings')"> {{ __('Bodas') }}
+                                <x-nav-link href="{{ route('home') }}" title="Ir a la pagina principal" :active="request()->routeIs('home')">
+                                    {{ __('Inicio') }} </x-nav-link>
+                                <x-nav-link href="{{ route('weddings') }}" title="Ver nuestras bodas" :active="request()->routeIs('weddings')">
+                                    {{ __('Bodas') }}
                                 </x-nav-link>
 
                                 {{-- MENÚ DESPLEGABLE "BEBÉS" --}}
@@ -87,30 +89,36 @@
                                             </div>
                                         </x-slot>
                                         <x-slot name="content">
-                                            <x-dropdown-link href="{{ route('embarazo.index') }}" :active="request()->routeIs('embarazo.index')">
+                                            <x-dropdown-link href="{{ route('embarazo.index') }}"
+                                                title="Ver nuestras sessiones de Embarazadas" :active="request()->routeIs('embarazo.index')">
                                                 {{ __('Fotografía Embarazo') }}
                                             </x-dropdown-link>
-                                            <x-dropdown-link href="{{ route('newborn.index') }}" :active="request()->routeIs('newborn.index')">
+                                            <x-dropdown-link href="{{ route('newborn.index') }}"
+                                                title="Ver nuestras sessiones de Recién Nacidos" :active="request()->routeIs('newborn.index')">
                                                 {{ __('Fotografía Recién Nacidos') }}
                                             </x-dropdown-link>
                                         </x-slot>
                                     </x-dropdown>
                                 </div>
-                                <x-nav-link href="{{ route('comuniones') }}" :active="request()->routeIs('comuniones')"> {{ __('Comuniones') }}
+                                <x-nav-link href="{{ route('comuniones') }}" title="Ver nuestras Comuniones"
+                                    :active="request()->routeIs('comuniones')"> {{ __('Comuniones') }}
                                 </x-nav-link>
                                 {{-- ENLACE CORREGIDO PARA FOTOCARNET (ADMIN) --}}
-                                <x-nav-link href="{{ route('fotocarnet.almeria') }}" :active="request()->routeIs('fotocarnet.almeria')">
+                                <x-nav-link href="{{ route('fotocarnet.almeria') }}" title="Pedir Cita Fotocarnet"
+                                    :active="request()->routeIs('fotocarnet.almeria')">
                                     {{ __('Fotocarnet') }} </x-nav-link>
-                                <x-nav-link href="{{ route('studio.index') }}"
-                                    :active="request()->routeIs('studio.index')">{{ __('Studio') }}</x-nav-link>
-                                <x-nav-link href="{{ route('blog.index') }}" :active="request()->routeIs('blog.*')">
+                                <x-nav-link href="{{ route('studio.index') }}" :active="request()->routeIs('studio.index')"
+                                    title="Ver nuestros sessiones de foto en nuestro Estudio">{{ __('Studio') }}</x-nav-link>
+                                <x-nav-link href="{{ route('blog.index') }}" title="Ver nuestro Blog" :active="request()->routeIs('blog.*')">
                                     {{ __('Blog') }}
                                 </x-nav-link>
                             @else
                                 {{-- Usuario Normal o Admin Impersonando --}}
-                                <x-nav-link href="{{ route('home') }}" :active="request()->routeIs('home')">{{ __('Inicio') }}</x-nav-link>
+                                <x-nav-link href="{{ route('home') }}" title="Ir a la pagina principal"
+                                    :active="request()->routeIs('home')">{{ __('Inicio') }}</x-nav-link>
 
-                                <x-nav-link href="{{ route('weddings') }}" :active="request()->routeIs('weddings')"> {{ __('Bodas') }}
+                                <x-nav-link href="{{ route('weddings') }}" title="Ver nuestras bodas" :active="request()->routeIs('weddings')">
+                                    {{ __('Bodas') }}
                                 </x-nav-link>
                                 {{-- MENÚ DESPLEGABLE "BEBÉS" --}}
                                 <div class="hidden sm:flex sm:items-center">
@@ -128,27 +136,35 @@
                                         </x-slot>
                                     </x-dropdown>
                                 </div>
-                                <x-nav-link href="{{ route('comuniones') }}" :active="request()->routeIs('comuniones')"> {{ __('Comuniones') }}
+                                <x-nav-link href="{{ route('comuniones') }}"
+                                    title="Ver nuestras comuniones" :active="request()->routeIs('comuniones')">
+                                    {{ __('Comuniones') }}
                                 </x-nav-link>
-                                <x-nav-link href="{{ route('fotocarnet.almeria') }}" :active="request()->routeIs('fotocarnet.almeria')">
+                                <x-nav-link href="{{ route('fotocarnet.almeria') }}"
+                                    title="Pedir Cita Fotocarnet" :active="request()->routeIs('fotocarnet.almeria')">
                                     {{ __('Fotocarnet') }} </x-nav-link>
                                 <x-nav-link href="{{ route('studio.index') }}"
+                                    title="Ver nuestros sessiones de foto en nuestro Estudio"
                                     :active="request()->routeIs('studio.index')">{{ __('Studio') }}</x-nav-link>
-                                <x-nav-link href="{{ route('videos') }}" :active="request()->routeIs('videos')">
+                                <x-nav-link href="{{ route('videos') }}" title="Ver nuestros Videos" :active="request()->routeIs('videos')">
                                     {{ __('Videos') }}</x-nav-link>
-                                <x-nav-link href="{{ route('blog.index') }}" :active="request()->routeIs('blog.*')">
+                                <x-nav-link href="{{ route('blog.index') }}" title="Ver nuestro Blog" :active="request()->routeIs('blog.*')">
                                     {{ __('Blog') }}
                                 </x-nav-link>
-                                <x-nav-link href="{{ route('albums') }}" :active="request()->routeIs('albums')">
+                                <x-nav-link href="{{ route('albums') }}" title="Ver albumes" :active="request()->routeIs('albums')">
                                     {{ __('Álbumes') }}
                                 </x-nav-link>
-                                <x-nav-link href="{{ route('photos.liked') }}" :active="request()->routeIs('photos.liked')">
+                                <x-nav-link href="{{ route('photos.liked') }}" title="Ver las fotos gustadas"
+                                    :active="request()->routeIs('photos.liked')">
                                     {{ __('Favoritas') }} </x-nav-link>
                             @endif
                         @else
+
                             {{-- Invitados --}}
-                            <x-nav-link href="{{ route('home') }}" :active="request()->routeIs('home')"> {{ __('Inicio') }} </x-nav-link>
-                            <x-nav-link href="{{ route('weddings') }}" :active="request()->routeIs('weddings')"> {{ __('Bodas') }}
+                            <x-nav-link href="{{ route('home') }}" title="Ir a la pagina principal" :active="request()->routeIs('home')">
+                                {{ __('Inicio') }} </x-nav-link>
+                            <x-nav-link href="{{ route('weddings') }}" title="Ver nuestras bodas" :active="request()->routeIs('weddings')">
+                                {{ __('Bodas') }}
                             </x-nav-link>
                             {{-- MENÚ DESPLEGABLE "BEBÉS" --}}
                             <div class="hidden sm:flex sm:items-center">
@@ -159,24 +175,32 @@
                                         </div>
                                     </x-slot>
                                     <x-slot name="content">
-                                        <x-dropdown-link href="{{ route('embarazo.index') }}" :active="request()->routeIs('embarazo.index')">
+                                        <x-dropdown-link href="{{ route('embarazo.index') }}"
+                                            title="Ver nuestras sessiones de Embarazadas" :active="request()->routeIs('embarazo.index')">
                                             {{ __('Fotografía Embarazo') }} </x-dropdown-link>
-                                        <x-dropdown-link href="{{ route('newborn.index') }}" :active="request()->routeIs('newborn.index')">
+                                        <x-dropdown-link href="{{ route('newborn.index') }}"
+                                            title="Ver nuestras sessiones de Recién Nacidos" :active="request()->routeIs('newborn.index')">
                                             {{ __('Fotografía Recién Nacidos') }} </x-dropdown-link>
                                     </x-slot>
                                 </x-dropdown>
                             </div>
-                            <x-nav-link href="{{ route('comuniones') }}" :active="request()->routeIs('comuniones')"> {{ __('Comuniones') }}
+                            <x-nav-link href="{{ route('comuniones') }}" title="Ver nuestras comuniones"
+                                :active="request()->routeIs('comuniones')"> {{ __('Comuniones') }}
                             </x-nav-link>
-                            <x-nav-link href="{{ route('fotocarnet.almeria') }}" :active="request()->routeIs('fotocarnet.almeria')">
+                            <x-nav-link href="{{ route('fotocarnet.almeria') }}" title="Pedir cita Fotocarnet"
+                                :active="request()->routeIs('fotocarnet.almeria')">
                                 {{ __('Fotocarnet') }} </x-nav-link>
                             <x-nav-link href="{{ route('studio.index') }}"
+                                title="Ver nuestros sessiones de foto en nuestro Estudio"
                                 :active="request()->routeIs('studio.index')">{{ __('Studio') }}</x-nav-link>
-                            <x-nav-link href="{{ route('videos') }}" :active="request()->routeIs('videos')">
+                            <x-nav-link href="{{ route('videos') }}"
+                                title="Ver nuestros Videos" :active="request()->routeIs('videos')">
                                 {{ __('Videos') }}</x-nav-link>
-                            <x-nav-link href="{{ route('blog.index') }}" :active="request()->routeIs('blog.*')">
+                            <x-nav-link href="{{ route('blog.index') }}"
+                                title="Ver nuestro Blog" :active="request()->routeIs('blog.*')">
                                 {{ __('Blog') }}
                             </x-nav-link>
+
                         @endauth
                     </div>
                 </div>
@@ -214,7 +238,7 @@
                                         <x-dropdown-link href="{{ route('photos.liked') }}" :active="request()->routeIs('photos.liked')">
                                             {{ __('Mis Favoritas') }}
                                         </x-dropdown-link>
-                                        <x-dropdown-link href="{{ route('albums') }}" :active="request()->routeIs('albums')">
+                                        <x-dropdown-link href="{{ route('albums') }}" title="Ver albumes" :active="request()->routeIs('albums')">
                                             {{ __('Álbumes') }}
                                         </x-dropdown-link>
                                         <div class="border-t border-gray-200 dark:border-gray-600"></div>
@@ -232,7 +256,7 @@
                                         </x-dropdown-link>
                                         <div class="border-t border-gray-200 dark:border-gray-600"></div>
 
-                                        <x-dropdown-link href="{{ route('videos') }}" target="_blank">
+                                        <x-dropdown-link href="{{ route('videos') }}" title="Ir a nuestros videos" target="_blank">
                                             {{ __('Videos') }}
                                         </x-dropdown-link>
                                         <x-dropdown-link href="{{ route('home') }}" target="_blank">
@@ -274,12 +298,14 @@
                                 </x-slot>
 
                                 <x-slot name="content" contentClasses="py-1 bg-white">
-                                    <x-dropdown-link href="{{ route('profile.show') }}">
+                                    <x-dropdown-link href="{{ route('profile.show') }}" title="Ver perfil">
                                         {{ __('Profile') }}
                                     </x-dropdown-link>
-                                    <form method="POST" action="{{ route('logout') }}" x-data class="mt-1">
+                                    <form method="POST" action="{{ route('logout') }}" title="Cerrar Sesión" x-data
+                                        class="mt-1">
                                         @csrf
-                                        <x-dropdown-link href="{{ route('logout') }}" @click.prevent="$root.submit()">
+                                        <x-dropdown-link href="{{ route('logout') }}" title="Cerrar Sesión"
+                                            @click.prevent="$root.submit()">
                                             {{ __('Log Out') }}
                                         </x-dropdown-link>
                                     </form>
@@ -292,12 +318,12 @@
                     @else
                         @if (Route::has('login'))
                             <nav class="-mx-3 flex flex-1 justify-end">
-                                <a href="{{ route('login') }}"
+                                <a href="{{ route('login') }}" title="Login"
                                     class="rounded-md px-3 py-2 ring-1 ring-transparent transition focus:outline-none focus-visible:ring-[#FF2D20] text-gray-200 hover:text-white">
                                     Log in
                                 </a>
                                 @if (Route::has('register'))
-                                    <a href="{{ route('register') }}"
+                                    <a href="{{ route('register') }}" title="Register"
                                         class="ms-3 rounded-md px-3 py-2 ring-1 ring-transparent transition focus:outline-none focus-visible:ring-[#FF2D20] text-gray-200 hover:text-white">
                                         Register
                                     </a>
@@ -339,20 +365,27 @@
             <div class="divide-y divide-gray-700">
                 {{-- Primera sección de enlaces --}}
                 <div class="pt-2 pb-3">
-                    <x-responsive-nav-link href="{{ route('home') }}" :active="request()->routeIs('home')" class="px-4 py-3">
+                    <x-responsive-nav-link href="{{ route('home') }}" title="Ir a la pagina principal"
+                        :active="request()->routeIs('home')" class="px-4 py-3">
                         {{ __('Inicio') }} </x-responsive-nav-link>
-                    <x-responsive-nav-link href="{{ route('weddings') }}" :active="request()->routeIs('weddings')" class="px-4 py-3">
+                    <x-responsive-nav-link href="{{ route('weddings') }}" title="Ver nuestras bodas"
+                        :active="request()->routeIs('weddings')" class="px-4 py-3">
                         {{ __('Bodas') }} </x-responsive-nav-link>
-                    <x-responsive-nav-link href="{{ route('comuniones') }}" :active="request()->routeIs('comuniones')" class="px-4 py-3">
+                    <x-responsive-nav-link href="{{ route('comuniones') }}"
+                        title="Ver nuestras comuniones" :active="request()->routeIs('comuniones')" class="px-4 py-3">
                         {{ __('Comuniones') }} </x-responsive-nav-link>
                     {{-- ENLACE CORREGIDO PARA FOTOCARNET (RESPONSIVE) --}}
-                    <x-responsive-nav-link href="{{ route('fotocarnet.almeria') }}" :active="request()->routeIs('fotocarnet.almeria')"
-                        class="px-4 py-3"> {{ __('Fotocarnet') }} </x-responsive-nav-link>
-                    <x-responsive-nav-link href="{{ route('studio.index') }}" :active="request()->routeIs('studio.index')" class="px-4 py-3">
+                    <x-responsive-nav-link href="{{ route('fotocarnet.almeria') }}" title="Pedir Cita Fotocarnet"
+                        :active="request()->routeIs('fotocarnet.almeria')" class="px-4 py-3"> {{ __('Fotocarnet') }} </x-responsive-nav-link>
+                    <x-responsive-nav-link href="{{ route('studio.index') }}"
+                        title="Ver nuestros sessiones de foto en nuestro Estudio" :active="request()->routeIs('studio.index')"
+                        class="px-4 py-3">
                         {{ __('Studio') }} </x-responsive-nav-link>
-                    <x-responsive-nav-link href="{{ route('videos') }}" :active="request()->routeIs('videos')" class="px-4 py-3">
+                    <x-responsive-nav-link href="{{ route('videos') }}" title="Ver nuestros Videos"
+                        :active="request()->routeIs('videos')" class="px-4 py-3">
                         {{ __('Video Reportajes') }} </x-responsive-nav-link>
-                    <x-responsive-nav-link href="{{ route('blog.index') }}" :active="request()->routeIs('blog.*')">
+                    <x-responsive-nav-link href="{{ route('blog.index') }}"
+                        title="Ver nuestro Blog" :active="request()->routeIs('blog.*')">
                         {{ __('Blog') }}
                     </x-responsive-nav-link>
                 </div> {{-- Menú "Gestión" --}}
@@ -370,7 +403,7 @@
                             <div class="border-t border-gray-200 dark:border-gray-600"></div>
                             <div class="block px-4 py-2 text-xs text-gray-400">
                                 {{ __('Gestión Contenido') }}</div>
-                            <x-dropdown-link href="{{ route('albums') }}" :active="request()->routeIs('albums')">
+                            <x-dropdown-link href="{{ route('albums') }}" title="Albums" :active="request()->routeIs('albums')">
                                 {{ __('Álbumes') }} </x-dropdown-link>
                             <div class="border-t border-gray-200 dark:border-gray-600"></div>
                             <div class="block px-4 py-2 text-xs text-gray-400">
@@ -383,7 +416,7 @@
                             <x-dropdown-link href="{{ route('admin.user.likes') }}" :active="request()->routeIs('admin.user.likes')">
                                 {{ __('Likes Cliente') }} </x-dropdown-link>
                             <div class="border-t border-gray-200 dark:border-gray-600"></div>
-                            <x-dropdown-link href="{{ route('videos') }}" target="_blank">
+                            <x-dropdown-link href="{{ route('videos') }}" title="Ir a nuestros videos" target="_blank">
                                 {{ __('Videos') }} </x-dropdown-link>
                             <x-dropdown-link href="{{ route('home') }}" target="_blank">
                                 {{ __('Ver Sitio') }} </x-dropdown-link>
@@ -394,8 +427,8 @@
                 {{-- "Servicios Bebés" con título de grupo --}}
                 <div class="pt-2 pb-3">
                     <div class="px-4 py-2 text-xs text-gray-500 tracking-wide"> {{ __('Servicios Bebés') }} </div>
-                    <x-responsive-nav-link href="{{ route('embarazo.index') }}" :active="request()->routeIs('embarazo.index')"
-                        class="px-4 py-3">
+                    <x-responsive-nav-link href="{{ route('embarazo.index') }}"
+                        title="Ver nuestras sessiones de Embarazadas" :active="request()->routeIs('embarazo.index')" class="px-4 py-3">
                         <div class="flex justify-between items-center">
                             {{ __('Fotografía Embarazo') }}
                             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2"
@@ -404,7 +437,9 @@
                             </svg>
                         </div>
                     </x-responsive-nav-link>
-                    <x-responsive-nav-link href="{{ route('newborn.index') }}" :active="request()->routeIs('newborn.index')" class="px-4 py-3">
+                    <x-responsive-nav-link href="{{ route('newborn.index') }}"
+                        title="Ver nuestras sessiones de Recién Nacidos" :active="request()->routeIs('newborn.index')"
+                        class="px-4 py-3">
                         <div class="flex justify-between items-center">
                             {{ __('Fotografía Recién Nacidos') }}
                             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2"
@@ -449,12 +484,15 @@
                     </div>
                 @else
                     <div class="mt-3 space-y-1 divide-y divide-gray-700">
-                        <x-responsive-nav-link href="{{ route('login') }}" :active="request()->routeIs('login')" class="px-4 py-3">
+                        <x-responsive-nav-link href="{{ route('login') }}"
+                            title="Login" :active="request()->routeIs('login')" class="px-4 py-3">
                             {{ __('Log in') }} </x-responsive-nav-link>
                         @if (Route::has('register'))
-                            <x-responsive-nav-link href="{{ route('register') }}" :active="request()->routeIs('register')" class="px-4 py-3">
+                            <x-responsive-nav-link href="{{ route('register') }}" title="Register" :active="request()->routeIs('register')"
+                                class="px-4 py-3">
                                 {{ __('Register') }} </x-responsive-nav-link>
                         @endif
+
                     </div>
                 @endauth
             </div>
