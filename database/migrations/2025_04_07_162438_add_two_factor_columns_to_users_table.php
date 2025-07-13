@@ -12,17 +12,26 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->text('two_factor_secret')
-                ->after('password')
-                ->nullable();
+            // Comprueba si la columna 'two_factor_secret' NO existe antes de añadirla
+            if (!Schema::hasColumn('users', 'two_factor_secret')) {
+                $table->text('two_factor_secret')
+                    ->after('password')
+                    ->nullable();
+            }
 
-            $table->text('two_factor_recovery_codes')
-                ->after('two_factor_secret')
-                ->nullable();
+            // Comprueba si la columna 'two_factor_recovery_codes' NO existe antes de añadirla
+            if (!Schema::hasColumn('users', 'two_factor_recovery_codes')) {
+                $table->text('two_factor_recovery_codes')
+                    ->after('two_factor_secret')
+                    ->nullable();
+            }
 
-            $table->timestamp('two_factor_confirmed_at')
-                ->after('two_factor_recovery_codes')
-                ->nullable();
+            // Comprueba si la columna 'two_factor_confirmed_at' NO existe antes de añadirla
+            if (!Schema::hasColumn('users', 'two_factor_confirmed_at')) {
+                $table->timestamp('two_factor_confirmed_at')
+                    ->after('two_factor_recovery_codes')
+                    ->nullable();
+            }
         });
     }
 
@@ -32,11 +41,17 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn([
+            // Define las columnas a eliminar
+            $columns = [
                 'two_factor_secret',
                 'two_factor_recovery_codes',
                 'two_factor_confirmed_at',
-            ]);
+            ];
+
+            // Comprueba si las columnas existen antes de intentar eliminarlas
+            if (Schema::hasColumns('users', $columns)) {
+                $table->dropColumn($columns);
+            }
         });
     }
 };
