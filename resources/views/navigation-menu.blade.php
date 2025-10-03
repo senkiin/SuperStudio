@@ -1,10 +1,6 @@
 {{-- resources/views/navigation-menu.blade.php --}}
 <div x-data="{ open: false, scrolled: false }" @scroll.window.debounce.50ms="scrolled = (window.scrollY > 50)"
-    class="fixed top-0 z-40 w-full transition-all duration-300 ease-in-out text-gray-100"
-    :class="{
-        'bg-black/20 backdrop-blur-sm': !scrolled,
-        'bg-black/80 backdrop-blur-md': scrolled,
-    }">
+    class="fixed top-0 z-40 w-full transition-all duration-300 ease-in-out text-gray-100">
 
     @if (session('original_admin_id'))
         {{-- ... Barra de impersonación ... --}}
