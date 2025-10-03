@@ -38,21 +38,20 @@
         @if($albums->count() > 0)
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
                 @foreach($albums as $album)
-                    <div class="bg-gray-900/50 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-gray-800 hover:border-gray-700 transition-all duration-300 overflow-hidden group hover:scale-105">
+                    <div wire:click="openAlbum({{ $album->id }})"
+                         class="bg-gray-900/50 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-gray-800 hover:border-gray-700 transition-all duration-300 overflow-hidden group hover:scale-105 cursor-pointer">
                         <!-- Album Cover -->
                         <div class="relative aspect-square overflow-hidden">
                             @if($album->cover_image)
                                 @php
-                                    $config = config('filesystems.disks.s3');
-                                    $coverUrl = "https://{$config['bucket']}.s3.{$config['region']}.amazonaws.com/{$album->cover_image}";
+                                    $coverUrl = Storage::disk('albums')->url($album->cover_image);
                                 @endphp
                                 <img src="{{ $coverUrl }}"
                                      alt="{{ $album->name }}"
                                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                             @elseif($album->photos->count() > 0)
                                 @php
-                                    $config = config('filesystems.disks.s3');
-                                    $firstPhotoUrl = "https://{$config['bucket']}.s3.{$config['region']}.amazonaws.com/{$album->photos->first()->file_path}";
+                                    $firstPhotoUrl = Storage::disk('albums')->url($album->photos->first()->file_path);
                                 @endphp
                                 <img src="{{ $firstPhotoUrl }}"
                                      alt="{{ $album->name }}"
@@ -83,11 +82,11 @@
                             @if($showAdminPanel)
                                 <div class="absolute top-2 left-2 sm:top-3 sm:left-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <div class="flex space-x-1 sm:space-x-2">
-                                        <button wire:click="openEditAlbumModal({{ $album->id }})"
+                                        <button wire:click.stop="openEditAlbumModal({{ $album->id }})"
                                                 class="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-1.5 sm:p-2 rounded-full text-xs sm:text-sm border border-white/20">
                                             <i class="fas fa-edit"></i>
                                         </button>
-                                        <button wire:click="removeAlbumFromGallery({{ $album->id }})"
+                                        <button wire:click.stop="removeAlbumFromGallery({{ $album->id }})"
                                                 wire:confirm="¿Estás seguro de remover este álbum de la galería pública?"
                                                 class="bg-red-500/80 hover:bg-red-500 backdrop-blur-sm text-white p-1.5 sm:p-2 rounded-full text-xs sm:text-sm border border-red-400/50">
                                             <i class="fas fa-trash"></i>
@@ -95,19 +94,23 @@
                                     </div>
                                 </div>
                             @endif
+
+                            <!-- Overlay on hover -->
+                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                                <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <div class="bg-white/90 backdrop-blur-sm text-black px-4 py-2 rounded-full font-medium text-sm">
+                                        <i class="fas fa-eye mr-2"></i>Ver Álbum
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Album Info -->
                         <div class="p-4 sm:p-6">
                             <h3 class="font-light text-white text-lg sm:text-xl mb-1 sm:mb-2 line-clamp-1">{{ $album->name }}</h3>
                             @if($album->description)
-                                <p class="text-gray-400 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2">{{ $album->description }}</p>
+                                <p class="text-gray-400 text-xs sm:text-sm line-clamp-2">{{ $album->description }}</p>
                             @endif
-
-                            <button wire:click="openAlbum({{ $album->id }})"
-                                    class="w-full bg-white hover:bg-gray-100 text-black py-2 sm:py-3 px-3 sm:px-4 rounded-full font-medium transition-all duration-300 hover:scale-105 text-sm sm:text-base">
-                                <i class="fas fa-eye mr-1 sm:mr-2"></i>Ver Álbum
-                            </button>
                         </div>
                     </div>
                 @endforeach
@@ -217,114 +220,190 @@
 
     <!-- Album Modal -->
     @if($showAlbumModal && $selectedAlbum)
-        <div class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div class="bg-gray-900 border border-gray-700 rounded-xl sm:rounded-2xl max-w-lg sm:max-w-2xl w-full p-4 sm:p-6 lg:p-8">
-                <div class="flex justify-between items-center mb-4 sm:mb-6">
-                    <h3 class="text-lg sm:text-xl font-light text-white truncate pr-4">{{ $selectedAlbum->name }}</h3>
-                    <button wire:click="closeAlbumModal" class="text-gray-400 hover:text-white transition-colors flex-shrink-0">
-                        <i class="fas fa-times text-base sm:text-lg"></i>
-                    </button>
-                </div>
+        <div class="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-2 sm:p-4"
+             wire:click="closeAlbumModal">
+            <div class="bg-gray-900/95 backdrop-blur-xl border border-gray-700/50 rounded-xl sm:rounded-2xl max-w-sm sm:max-w-2xl lg:max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+                 wire:click.stop>
+                <div class="p-4 sm:p-6">
+                    <div class="flex justify-between items-center mb-4 sm:mb-6">
+                        <div>
+                            <h3 class="text-lg sm:text-xl lg:text-2xl font-light text-white truncate pr-4">{{ $selectedAlbum->name }}</h3>
+                            @if($selectedAlbum->description)
+                                <p class="text-gray-400 text-xs sm:text-sm mt-1">{{ $selectedAlbum->description }}</p>
+                            @endif
+                        </div>
+                        <button wire:click="closeAlbumModal"
+                                class="text-gray-400 hover:text-white transition-colors flex-shrink-0 p-2 hover:bg-gray-800/50 rounded-full">
+                            <i class="fas fa-times text-base sm:text-lg"></i>
+                        </button>
+                    </div>
 
                 @if($selectedAlbum->password && !$showPhotoViewer)
                     <!-- Password Form -->
-                    <div class="text-center py-8 sm:py-12">
+                    <div class="text-center py-6 sm:py-8">
                         <div class="mb-6 sm:mb-8">
-                            <i class="fas fa-lock text-4xl sm:text-6xl text-gray-500 mb-4 sm:mb-6"></i>
-                            <p class="text-gray-400 text-base sm:text-lg">Este álbum está protegido con contraseña</p>
+                            <!-- Album Cover -->
+                            <div class="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full mb-4 sm:mb-6 overflow-hidden border-2 border-gray-600">
+                                @if($selectedAlbum->cover_image)
+                                    @php
+                                        $coverUrl = Storage::disk('albums')->url($selectedAlbum->cover_image);
+                                    @endphp
+                                    <img src="{{ $coverUrl }}"
+                                         alt="{{ $selectedAlbum->name }}"
+                                         class="w-full h-full object-cover">
+                                @elseif($selectedAlbum->photos->count() > 0)
+                                    @php
+                                        $firstPhotoUrl = Storage::disk('albums')->url($selectedAlbum->photos->first()->file_path);
+                                    @endphp
+                                    <img src="{{ $firstPhotoUrl }}"
+                                         alt="{{ $selectedAlbum->name }}"
+                                         class="w-full h-full object-cover">
+                                @else
+                                    <div class="w-full h-full bg-gray-800 flex items-center justify-center">
+                                        <i class="fas fa-lock text-gray-400 text-xl sm:text-2xl"></i>
+                                    </div>
+                                @endif
+                            </div>
+                            <h4 class="text-base sm:text-lg font-light text-white mb-2">Álbum Protegido</h4>
+                            <p class="text-gray-400 text-xs sm:text-sm">Este álbum está protegido con contraseña</p>
                         </div>
 
-                        <form wire:submit.prevent="verifyPassword">
-                            <div class="mb-6 sm:mb-8">
-                                <input type="password"
-                                       wire:model="albumPassword"
-                                       placeholder="Ingresa la contraseña"
-                                       class="w-full max-w-xs sm:max-w-sm mx-auto bg-gray-800 border border-gray-600 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-white/20 focus:border-transparent text-sm sm:text-base">
-                                @error('albumPassword') <span class="text-red-400 text-xs sm:text-sm">{{ $message }}</span> @enderror
+                        <form wire:submit.prevent="verifyPassword" class="max-w-xs mx-auto">
+                            <div class="mb-6">
+                                <div class="relative">
+                                    <input type="password"
+                                           wire:model="albumPassword"
+                                           placeholder="Ingresa la contraseña"
+                                           class="w-full bg-gray-800/50 border border-gray-600/50 rounded-lg px-3 py-2 sm:py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-white/20 focus:border-transparent text-sm backdrop-blur-sm">
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-key text-gray-400 text-sm"></i>
+                                    </div>
+                                </div>
+                                @error('albumPassword')
+                                    <span class="text-red-400 text-xs mt-2 block">{{ $message }}</span>
+                                @enderror
                                 @if($passwordError)
-                                    <span class="text-red-400 text-xs sm:text-sm">{{ $passwordError }}</span>
+                                    <span class="text-red-400 text-xs mt-2 block">{{ $passwordError }}</span>
                                 @endif
                             </div>
 
                             <button type="submit"
-                                    class="bg-white hover:bg-gray-100 text-black py-2 sm:py-3 px-6 sm:px-8 rounded-full font-medium transition-all duration-300 hover:scale-105 text-sm sm:text-base">
-                                Acceder
+                                    class="w-full bg-white hover:bg-gray-100 text-black py-2 sm:py-3 px-4 rounded-lg font-medium transition-all duration-300 hover:scale-105 text-sm shadow-lg">
+                                <i class="fas fa-unlock mr-2"></i>Acceder al Álbum
                             </button>
                         </form>
+
+                        <!-- Admin Controls -->
+                        @if($showAdminPanel)
+                            <div class="mt-6 pt-6 border-t border-gray-700/50">
+                                <p class="text-gray-400 text-xs mb-4">Controles de Administrador</p>
+                                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                                    <button wire:click="openEditAlbumModal({{ $selectedAlbum->id }})"
+                                            class="flex-1 bg-blue-600/80 hover:bg-blue-600 backdrop-blur-sm text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-300 hover:scale-105 border border-blue-400/50">
+                                        <i class="fas fa-edit mr-2"></i>Editar Contraseña
+                                    </button>
+                                    <button wire:click="removeAlbumFromGallery({{ $selectedAlbum->id }})"
+                                            wire:confirm="¿Estás seguro de remover este álbum de la galería pública?"
+                                            class="flex-1 bg-red-600/80 hover:bg-red-600 backdrop-blur-sm text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-300 hover:scale-105 border border-red-400/50">
+                                        <i class="fas fa-trash mr-2"></i>Quitar de Galería
+                                    </button>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 @elseif($showPhotoViewer)
                     <!-- Photo Viewer -->
                     <div class="space-y-4 sm:space-y-6">
                         <!-- Current Photo -->
                         @if($this->currentPhoto)
-                            <div class="relative">
+                            <div class="relative bg-gray-800/30 rounded-lg sm:rounded-xl overflow-hidden border border-gray-700/50">
                                 @php
-                                    $config = config('filesystems.disks.s3');
-                                    $photoUrl = "https://{$config['bucket']}.s3.{$config['region']}.amazonaws.com/{$this->currentPhoto->file_path}";
+                                    $photoUrl = Storage::disk('albums')->url($this->currentPhoto->file_path);
                                 @endphp
                                 <img src="{{ $photoUrl }}"
                                      alt="Foto {{ $currentPhotoIndex + 1 }}"
-                                     class="w-full h-64 sm:h-80 lg:h-96 object-contain bg-gray-800 rounded-xl sm:rounded-2xl border border-gray-700">
+                                     class="w-full h-48 sm:h-64 lg:h-80 object-contain">
 
                                 <!-- Navigation Arrows -->
                                 <button wire:click="previousPhoto"
                                         @if(!$this->hasPreviousPhoto) disabled @endif
-                                        class="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 bg-black/70 backdrop-blur-sm text-white p-2 sm:p-3 rounded-full hover:bg-black/80 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 border border-white/20">
+                                        class="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 bg-black/60 backdrop-blur-sm text-white p-2 sm:p-3 rounded-full hover:bg-black/80 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 border border-white/20 shadow-lg">
                                     <i class="fas fa-chevron-left text-sm sm:text-base"></i>
                                 </button>
 
                                 <button wire:click="nextPhoto"
                                         @if(!$this->hasNextPhoto) disabled @endif
-                                        class="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 bg-black/70 backdrop-blur-sm text-white p-2 sm:p-3 rounded-full hover:bg-black/80 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 border border-white/20">
+                                        class="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 bg-black/60 backdrop-blur-sm text-white p-2 sm:p-3 rounded-full hover:bg-black/80 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 border border-white/20 shadow-lg">
                                     <i class="fas fa-chevron-right text-sm sm:text-base"></i>
                                 </button>
+
+                                <!-- Photo Counter -->
+                                <div class="absolute top-2 left-2 sm:top-3 sm:left-3 bg-black/60 backdrop-blur-sm text-white px-2 py-1 sm:px-3 sm:py-2 rounded-full text-xs sm:text-sm border border-white/20">
+                                    {{ $currentPhotoIndex + 1 }} / {{ $selectedAlbum->photos->count() }}
+                                </div>
                             </div>
 
-                            <!-- Photo Info and Controls -->
-                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
-                                <div class="text-xs sm:text-sm text-gray-400">
-                                    Foto {{ $currentPhotoIndex + 1 }} de {{ $selectedAlbum->photos->count() }}
-                                </div>
-
-                                <div class="flex space-x-2 sm:space-x-3">
+                            <!-- Photo Controls -->
+                            <div class="space-y-3">
+                                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
                                     <button wire:click="downloadPhoto({{ $this->currentPhoto->id }})"
-                                            class="bg-green-600/80 hover:bg-green-600 backdrop-blur-sm text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 hover:scale-105 border border-green-400/50">
+                                            class="flex-1 bg-green-600/80 hover:bg-green-600 backdrop-blur-sm text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 hover:scale-105 border border-green-400/50 shadow-lg">
                                         @if(isset($downloadingPhotos[$this->currentPhoto->id]))
-                                            <i class="fas fa-spinner fa-spin mr-1 sm:mr-2"></i><span class="hidden sm:inline">Descargando...</span><span class="sm:hidden">...</span>
+                                            <i class="fas fa-spinner fa-spin mr-2"></i>Descargando...
                                         @else
-                                            <i class="fas fa-download mr-1 sm:mr-2"></i><span class="hidden sm:inline">Descargar</span><span class="sm:hidden">↓</span>
+                                            <i class="fas fa-download mr-2"></i>Descargar Foto
                                         @endif
                                     </button>
 
                                     <button wire:click="downloadAllPhotos"
-                                            class="bg-blue-600/80 hover:bg-blue-600 backdrop-blur-sm text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-300 hover:scale-105 border border-blue-400/50">
-                                        <i class="fas fa-download mr-1 sm:mr-2"></i><span class="hidden sm:inline">Descargar Todas</span><span class="sm:hidden">Todas</span>
+                                            class="flex-1 bg-blue-600/80 hover:bg-blue-600 backdrop-blur-sm text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 hover:scale-105 border border-blue-400/50 shadow-lg">
+                                        <i class="fas fa-download mr-2"></i>Descargar Todas
                                     </button>
                                 </div>
+
+                                <!-- Admin Controls -->
+                                @if($showAdminPanel)
+                                    <div class="pt-3 border-t border-gray-700/50">
+                                        <p class="text-gray-400 text-xs mb-2">Controles de Administrador</p>
+                                        <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                                            <button wire:click="openEditAlbumModal({{ $selectedAlbum->id }})"
+                                                    class="flex-1 bg-yellow-600/80 hover:bg-yellow-600 backdrop-blur-sm text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-300 hover:scale-105 border border-yellow-400/50">
+                                                <i class="fas fa-edit mr-2"></i>Editar Contraseña
+                                            </button>
+                                            <button wire:click="removeAlbumFromGallery({{ $selectedAlbum->id }})"
+                                                    wire:confirm="¿Estás seguro de remover este álbum de la galería pública?"
+                                                    class="flex-1 bg-red-600/80 hover:bg-red-600 backdrop-blur-sm text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-300 hover:scale-105 border border-red-400/50">
+                                                <i class="fas fa-trash mr-2"></i>Quitar de Galería
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
 
                             <!-- Thumbnail Grid -->
                             @if($selectedAlbum->photos->count() > 1)
-                                <div class="grid grid-cols-4 sm:grid-cols-6 gap-2 sm:gap-3 max-h-24 sm:max-h-32 overflow-y-auto">
-                                    @foreach($selectedAlbum->photos as $index => $photo)
-                                        @php
-                                            $config = config('filesystems.disks.s3');
-                                            $thumbUrl = "https://{$config['bucket']}.s3.{$config['region']}.amazonaws.com/{$photo->file_path}";
-                                        @endphp
-                                        <button wire:click="viewPhoto({{ $photo->id }})"
-                                                class="relative aspect-square overflow-hidden rounded-lg sm:rounded-xl {{ $index === $currentPhotoIndex ? 'ring-2 ring-white border-2 border-white' : 'border border-gray-600' }} transition-all duration-300 hover:scale-105">
-                                            <img src="{{ $thumbUrl }}"
-                                                 alt="Miniatura {{ $index + 1 }}"
-                                                 class="w-full h-full object-cover">
-                                        </button>
-                                    @endforeach
+                                <div class="bg-gray-800/30 rounded-lg p-3 sm:p-4 border border-gray-700/50">
+                                    <h4 class="text-white text-xs sm:text-sm font-medium mb-2 sm:mb-3">Miniaturas</h4>
+                                    <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-1 sm:gap-2 max-h-24 sm:max-h-32 overflow-y-auto">
+                                        @foreach($selectedAlbum->photos as $index => $photo)
+                                            @php
+                                                $thumbUrl = Storage::disk('albums')->url($photo->file_path);
+                                            @endphp
+                                            <button wire:click="viewPhoto({{ $photo->id }})"
+                                                    class="relative aspect-square overflow-hidden rounded {{ $index === $currentPhotoIndex ? 'ring-2 ring-white border-2 border-white' : 'border border-gray-600' }} transition-all duration-300 hover:scale-105">
+                                                <img src="{{ $thumbUrl }}"
+                                                     alt="Miniatura {{ $index + 1 }}"
+                                                     class="w-full h-full object-cover">
+                                            </button>
+                                        @endforeach
+                                    </div>
                                 </div>
                             @endif
                         @endif
                     </div>
                 @endif
+                </div>
             </div>
-
         </div>
     @endif
 

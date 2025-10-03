@@ -267,19 +267,28 @@ class Gallery extends Component
             if (Storage::disk($disk)->exists($filePath)) {
                 $fileName = $this->selectedAlbum->name . '_' . $photo->id . '.' . pathinfo($filePath, PATHINFO_EXTENSION);
 
-                // Para S3, construimos la URL directamente
-                $config = config('filesystems.disks.s3');
-                $url = "https://{$config['bucket']}.s3.{$config['region']}.amazonaws.com/{$filePath}";
+                // Para S3, usamos el método url() del disco albums
+                $url = Storage::disk('albums')->url($filePath);
 
-                // Usar JavaScript para descargar el archivo
+                // Usar JavaScript para descargar el archivo directamente
                 $this->js("
-                    const link = document.createElement('a');
-                    link.href = '{$url}';
-                    link.download = '{$fileName}';
-                    link.target = '_blank';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+                    fetch('{$url}')
+                        .then(response => response.blob())
+                        .then(blob => {
+                            const url = window.URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = '{$fileName}';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            window.URL.revokeObjectURL(url);
+                        })
+                        .catch(error => {
+                            console.error('Error downloading file:', error);
+                            // Fallback: open in new tab
+                            window.open('{$url}', '_blank');
+                        });
                 ");
 
                 session()->flash('message', 'Descarga iniciada.');
