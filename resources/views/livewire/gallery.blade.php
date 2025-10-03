@@ -62,38 +62,12 @@
                                 </div>
                             @endif
 
-                            <!-- Password Lock Icon -->
-                            @if($album->password)
-                                <div class="absolute top-2 right-2 sm:top-3 sm:right-3">
-                                    <div class="bg-black/70 backdrop-blur-sm text-white p-1.5 sm:p-2 rounded-full border border-gray-600">
-                                        <i class="fas fa-lock text-xs sm:text-sm"></i>
-                                    </div>
-                                </div>
-                            @endif
-
                             <!-- Photo Count -->
                             <div class="absolute bottom-2 left-2 sm:bottom-3 sm:left-3">
-                                <div class="bg-black/70 backdrop-blur-sm text-white px-2 py-1 sm:px-3 sm:py-2 rounded-full text-xs sm:text-sm border border-gray-600">
+                                <div class="bg-black/70 backdrop-blur-sm text-white px-2 py-1 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm border border-gray-600">
                                     <i class="fas fa-camera mr-1"></i>{{ $album->photos_count }}
                                 </div>
                             </div>
-
-                            <!-- Admin Controls -->
-                            @if($showAdminPanel)
-                                <div class="absolute top-2 left-2 sm:top-3 sm:left-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <div class="flex space-x-1 sm:space-x-2">
-                                        <button wire:click.stop="openEditAlbumModal({{ $album->id }})"
-                                                class="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-1.5 sm:p-2 rounded-full text-xs sm:text-sm border border-white/20">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button wire:click.stop="removeAlbumFromGallery({{ $album->id }})"
-                                                wire:confirm="¿Estás seguro de remover este álbum de la galería pública?"
-                                                class="bg-red-500/80 hover:bg-red-500 backdrop-blur-sm text-white p-1.5 sm:p-2 rounded-full text-xs sm:text-sm border border-red-400/50">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            @endif
 
                             <!-- Overlay on hover -->
                             <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
@@ -243,7 +217,7 @@
                     <div class="text-center py-6 sm:py-8">
                         <div class="mb-6 sm:mb-8">
                             <!-- Album Cover -->
-                            <div class="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full mb-4 sm:mb-6 overflow-hidden border-2 border-gray-600">
+                            <div class="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-lg mb-4 sm:mb-6 overflow-hidden border border-gray-600">
                                 @if($selectedAlbum->cover_image)
                                     @php
                                         $coverUrl = Storage::disk('albums')->url($selectedAlbum->cover_image);
@@ -327,14 +301,14 @@
                                 <!-- Navigation Arrows -->
                                 <button wire:click="previousPhoto"
                                         @if(!$this->hasPreviousPhoto) disabled @endif
-                                        class="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 bg-black/60 backdrop-blur-sm text-white p-2 sm:p-3 rounded-full hover:bg-black/80 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 border border-white/20 shadow-lg">
-                                    <i class="fas fa-chevron-left text-sm sm:text-base"></i>
+                                        class="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 bg-transparent hover:bg-white/20 text-white p-3 sm:p-4 rounded-full font-bold text-2xl shadow-lg disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 z-20">
+                                    ←
                                 </button>
 
                                 <button wire:click="nextPhoto"
                                         @if(!$this->hasNextPhoto) disabled @endif
-                                        class="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 bg-black/60 backdrop-blur-sm text-white p-2 sm:p-3 rounded-full hover:bg-black/80 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 border border-white/20 shadow-lg">
-                                    <i class="fas fa-chevron-right text-sm sm:text-base"></i>
+                                        class="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 bg-transparent hover:bg-white/20 text-white p-3 sm:p-4 rounded-full font-bold text-2xl shadow-lg disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 z-20">
+                                    →
                                 </button>
 
                                 <!-- Photo Counter -->

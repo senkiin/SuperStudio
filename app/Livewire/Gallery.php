@@ -261,42 +261,40 @@ class Gallery extends Component
         $this->downloadingPhotos[$photoId] = true;
 
         try {
-            $disk = 'albums';
             $filePath = $photo->file_path;
 
-            if (Storage::disk($disk)->exists($filePath)) {
-                $fileName = $this->selectedAlbum->name . '_' . $photo->id . '.' . pathinfo($filePath, PATHINFO_EXTENSION);
+            if (Storage::disk('albums')->exists($filePath)) {
+                // Crear un ZIP con una sola foto
+                $zipFileName = $this->selectedAlbum->name . '_foto_' . $photo->id . '.zip';
+                $tempZipPath = storage_path('app/temp/' . $zipFileName);
 
-                // Para S3, usamos el método url() del disco albums
-                $url = Storage::disk('albums')->url($filePath);
+                // Crear directorio temp si no existe
+                if (!file_exists(storage_path('app/temp'))) {
+                    mkdir(storage_path('app/temp'), 0755, true);
+                }
 
-                // Usar JavaScript para descargar el archivo directamente
-                $this->js("
-                    fetch('{$url}')
-                        .then(response => response.blob())
-                        .then(blob => {
-                            const url = window.URL.createObjectURL(blob);
-                            const link = document.createElement('a');
-                            link.href = url;
-                            link.download = '{$fileName}';
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            window.URL.revokeObjectURL(url);
-                        })
-                        .catch(error => {
-                            console.error('Error downloading file:', error);
-                            // Fallback: open in new tab
-                            window.open('{$url}', '_blank');
-                        });
-                ");
+                $zip = new \ZipArchive();
+                if ($zip->open($tempZipPath, \ZipArchive::CREATE) !== TRUE) {
+                    session()->flash('error', 'No se pudo crear el archivo ZIP.');
+                    return;
+                }
 
-                session()->flash('message', 'Descarga iniciada.');
+                $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+                $fileName = $this->selectedAlbum->name . '_' . $photo->id . '.' . $extension;
+
+                // Obtener el contenido del archivo desde S3
+                $fileContent = Storage::disk('albums')->get($filePath);
+                $zip->addFromString($fileName, $fileContent);
+                $zip->close();
+
+                // Descargar el ZIP
+                return response()->download($tempZipPath, $zipFileName)->deleteFileAfterSend(true);
+
             } else {
                 session()->flash('error', 'Archivo no encontrado.');
             }
         } catch (\Exception $e) {
-            session()->flash('error', 'Error al descargar la foto.');
+            session()->flash('error', 'Error al descargar la foto: ' . $e->getMessage());
         } finally {
             unset($this->downloadingPhotos[$photoId]);
         }
@@ -306,9 +304,56 @@ class Gallery extends Component
     {
         if (!$this->selectedAlbum) return;
 
-        // Esta funcionalidad requeriría crear un ZIP con todas las fotos
-        // Por simplicidad, mostraremos un mensaje
-        session()->flash('message', 'Función de descarga masiva en desarrollo.');
+        try {
+            $photos = $this->selectedAlbum->photos;
+            if ($photos->count() === 0) {
+                session()->flash('error', 'No hay fotos para descargar.');
+                return;
+            }
+
+            // Crear un ZIP temporal
+            $zipFileName = $this->selectedAlbum->name . '_todas_las_fotos.zip';
+            $tempZipPath = storage_path('app/temp/' . $zipFileName);
+
+            // Crear directorio temp si no existe
+            if (!file_exists(storage_path('app/temp'))) {
+                mkdir(storage_path('app/temp'), 0755, true);
+            }
+
+            $zip = new \ZipArchive();
+            if ($zip->open($tempZipPath, \ZipArchive::CREATE) !== TRUE) {
+                session()->flash('error', 'No se pudo crear el archivo ZIP.');
+                return;
+            }
+
+            $addedFiles = 0;
+            foreach ($photos as $photo) {
+                $filePath = $photo->file_path;
+                if (Storage::disk('albums')->exists($filePath)) {
+                    $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+                    $fileName = $this->selectedAlbum->name . '_' . $photo->id . '.' . $extension;
+
+                    // Obtener el contenido del archivo desde S3
+                    $fileContent = Storage::disk('albums')->get($filePath);
+                    $zip->addFromString($fileName, $fileContent);
+                    $addedFiles++;
+                }
+            }
+
+            $zip->close();
+
+            if ($addedFiles === 0) {
+                session()->flash('error', 'No se encontraron archivos para descargar.');
+                unlink($tempZipPath);
+                return;
+            }
+
+            // Descargar el ZIP
+            return response()->download($tempZipPath, $zipFileName)->deleteFileAfterSend(true);
+
+        } catch (\Exception $e) {
+            session()->flash('error', 'Error al crear el archivo ZIP: ' . $e->getMessage());
+        }
     }
 
     // --- Propiedades computadas ---
