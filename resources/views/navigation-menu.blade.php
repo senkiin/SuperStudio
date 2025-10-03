@@ -31,9 +31,9 @@
     @endif
 
     <nav x-data="{ openNav: false }" class="w-full">
-        <div class="@if (!auth()->check() || (auth()->check() && auth()->user()->role === 'admin' && !session('original_admin_id'))) max-w-7xl @endif mx-auto pt-7 px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-2">
-                <div class="flex">
+        <div class="w-full pt-7 px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center h-2">
+                <div class="flex items-center flex-shrink-0">
                     {{-- Logo --}}
                     <div x-data="{ showMenu: false }" x-init="setTimeout(() => showMenu = true, 400)" x-show="showMenu"
                         x-transition:enter="transition ease-out duration-700"
@@ -66,7 +66,7 @@
                         x-transition:enter="transition ease-out duration-700"
                         x-transition:enter-start="opacity-0 -translate-y-10"
                         x-transition:enter-end="opacity-100 translate-y-0"
-                        class="hidden space-x-4 sm:-my-px lg:ms-10 lg:flex">
+                        class="hidden space-x-6 sm:-my-px lg:ms-8 lg:flex flex-1 justify-center">
 
                         @auth
                             @if (Auth::user()->role === 'admin' && !session('original_admin_id'))
@@ -216,7 +216,7 @@
                 <div x-data="{ showMenu: false }" x-init="setTimeout(() => showMenu = true, 400)" x-show="showMenu"
                     x-transition:enter="transition ease-out duration-700"
                     x-transition:enter-start="opacity-0 -translate-y-10"
-                    x-transition:enter-end="opacity-100 translate-y-0" class="hidden lg:flex lg:items-center lg:ms-6">
+                    x-transition:enter-end="opacity-100 translate-y-0" class="hidden lg:flex lg:items-center lg:space-x-6 flex-shrink-0 lg:ml-8">
                     @auth
                         {{-- 2) Menú de “Gestión” (engranaje), justo debajo del anterior --}}
                         @if (Auth::user()->role === 'admin' && !session('original_admin_id'))
@@ -323,18 +323,14 @@
                         </div>
                     @else
                         @if (Route::has('login'))
-                            <nav class="-mx-3 flex flex-1 justify-end">
-                                <a href="{{ route('login') }}" title="Login"
-                                    class="rounded-md px-3 py-2 ring-1 ring-transparent transition focus:outline-none focus-visible:ring-[#FF2D20] text-gray-200 hover:text-white">
-                                    Log in
-                                </a>
-                                @if (Route::has('register'))
-                                    <a href="{{ route('register') }}" title="Register"
-                                        class="ms-3 rounded-md px-3 py-2 ring-1 ring-transparent transition focus:outline-none focus-visible:ring-[#FF2D20] text-gray-200 hover:text-white">
-                                        Register
-                                    </a>
-                                @endif
-                            </nav>
+                            <x-nav-link href="{{ route('login') }}" title="Iniciar Sesión" :active="request()->routeIs('login')">
+                                {{ __('Login') }}
+                            </x-nav-link>
+                            @if (Route::has('register'))
+                                <x-nav-link href="{{ route('register') }}" title="Registrarse" :active="request()->routeIs('register')">
+                                    {{ __('Register') }}
+                                </x-nav-link>
+                            @endif
                         @endif
                     @endauth
 
