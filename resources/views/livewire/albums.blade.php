@@ -471,6 +471,25 @@
                             </div>
                         @endif
 
+                        {{-- Contraseña del Álbum --}}
+                        <div>
+                            <label for="newAlbumPassword" class="block text-sm font-medium text-gray-300 mb-1">Contraseña (Opcional)</label>
+                            <input type="password" id="newAlbumPassword" wire:model.defer="newAlbumPassword"
+                                placeholder="Dejar vacío para acceso sin contraseña"
+                                class="mt-1 block w-full bg-gray-700 border-gray-600 text-gray-200 rounded-lg shadow-sm py-2.5 px-3 focus:ring-indigo-500 focus:border-indigo-500 @error('newAlbumPassword') border-red-500 @enderror">
+                            @error('newAlbumPassword') <span class="text-xs text-red-400 mt-1">{{ $message }}</span> @enderror
+                        </div>
+
+                        {{-- Galería Pública --}}
+                        <div>
+                            <label class="flex items-center space-x-3">
+                                <input type="checkbox" wire:model.defer="newAlbumIsPublicGallery"
+                                    class="w-4 h-4 text-indigo-600 bg-gray-700 border-gray-600 rounded focus:ring-indigo-500 focus:ring-2">
+                                <span class="text-sm font-medium text-gray-300">Mostrar en Galería Pública</span>
+                            </label>
+                            <p class="text-xs text-gray-400 mt-1">Si está marcado, este álbum aparecerá en la galería pública del sitio web.</p>
+                        </div>
+
                         <div>
                             <label for="newAlbumCover" class="block text-sm font-medium text-gray-300 mb-1">Imagen de Portada (Opcional)</label>
                             <input type="file" id="newAlbumCover" wire:model="newAlbumCover"
@@ -647,6 +666,25 @@
                                 @error('editAlbumClientId') <span class="text-xs text-red-400 mt-1">{{ $message }}</span> @enderror
                             </div>
                         @endif
+
+                        {{-- Contraseña del Álbum --}}
+                        <div>
+                            <label for="editAlbumPassword" class="block text-sm font-medium text-gray-300 mb-1">Contraseña (Opcional)</label>
+                            <input type="password" id="editAlbumPassword" wire:model.defer="editAlbumPassword"
+                                placeholder="Dejar vacío para acceso sin contraseña"
+                                class="mt-1 block w-full bg-gray-700 border-gray-600 text-gray-200 rounded-lg shadow-sm py-2.5 px-3 focus:ring-indigo-500 focus:border-indigo-500 @error('editAlbumPassword') border-red-500 @enderror">
+                            @error('editAlbumPassword') <span class="text-xs text-red-400 mt-1">{{ $message }}</span> @enderror
+                        </div>
+
+                        {{-- Galería Pública --}}
+                        <div>
+                            <label class="flex items-center space-x-3">
+                                <input type="checkbox" wire:model.defer="editAlbumIsPublicGallery"
+                                    class="w-4 h-4 text-indigo-600 bg-gray-700 border-gray-600 rounded focus:ring-indigo-500 focus:ring-2">
+                                <span class="text-sm font-medium text-gray-300">Mostrar en Galería Pública</span>
+                            </label>
+                            <p class="text-xs text-gray-400 mt-1">Si está marcado, este álbum aparecerá en la galería pública del sitio web.</p>
+                        </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-300 mb-1">Imagen de Portada Actual</label>

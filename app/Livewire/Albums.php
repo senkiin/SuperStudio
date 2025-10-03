@@ -34,6 +34,8 @@ class Albums extends Component
     #[Validate] public ?string $editAlbumClientId = ''; // ID del cliente asociado al álbum (si es de tipo 'client').
     #[Validate('nullable|image|max:5120')] public $editAlbumNewCover = null; // Nuevo archivo de portada para el álbum en edición.
     public ?string $editAlbumCurrentCover = null; // Ruta de la portada actual del álbum en edición.
+    public string $editAlbumPassword = ''; // Contraseña del álbum en edición.
+    public bool $editAlbumIsPublicGallery = false; // Si el álbum aparece en la galería pública.
 
     // --- Propiedades para Búsqueda y Ordenación de Álbumes ---
     public string $cadena = ''; // Término de búsqueda para filtrar álbumes por nombre o descripción.
@@ -63,6 +65,8 @@ class Albums extends Component
     #[Validate('required|in:public,private,client')] public string $newAlbumType = 'public'; // Tipo para el nuevo álbum.
     #[Validate('nullable|image|max:5120')]  public $newAlbumCover = null; // Archivo de portada para el nuevo álbum.
     public ?string $newAlbumClientId = ''; // ID del cliente para el nuevo álbum (si es tipo 'client').
+    public string $newAlbumPassword = ''; // Contraseña para el nuevo álbum (opcional).
+    public bool $newAlbumIsPublicGallery = false; // Si el álbum debe aparecer en la galería pública.
 
     // --- Propiedades para Selección de Cliente ---
     public $clients = []; // Colección de usuarios (clientes) para seleccionar en los modales.
@@ -84,6 +88,8 @@ class Albums extends Component
                 Rule::requiredIf(fn() => $this->editAlbumType === 'client'),
                 'nullable','integer','exists:users,id' // Debe ser un ID de usuario existente.
             ],
+            'editAlbumPassword'    => 'nullable|string|max:255',
+            'editAlbumIsPublicGallery' => 'boolean',
         ];
     }
 
@@ -103,6 +109,8 @@ class Albums extends Component
                 Rule::requiredIf(fn() => $this->newAlbumType === 'client'),
                 'nullable','integer','exists:users,id'
             ],
+            'newAlbumPassword'    => 'nullable|string|max:255',
+            'newAlbumIsPublicGallery' => 'boolean',
         ];
     }
 
@@ -455,6 +463,7 @@ class Albums extends Component
         $this->reset([
             'newAlbumName','newAlbumDescription',
             'newAlbumType','newAlbumCover','newAlbumClientId',
+            'newAlbumPassword','newAlbumIsPublicGallery',
             'clientSearchEmail'
         ]);
         $this->newAlbumType = 'public'; // Tipo por defecto.
@@ -472,6 +481,7 @@ class Albums extends Component
         $this->reset([
             'newAlbumName','newAlbumDescription',
             'newAlbumType','newAlbumCover','newAlbumClientId',
+            'newAlbumPassword','newAlbumIsPublicGallery',
             'clientSearchEmail'
         ]);
         $this->clients = [];
@@ -515,6 +525,8 @@ class Albums extends Component
             'user_id'     => $user->id, // El creador siempre es el admin.
             'cover_image' => $coverPath,
             'client_id'   => $finalClientId,
+            'password'    => $data['newAlbumPassword'] ?: null,
+            'is_public_gallery' => $data['newAlbumIsPublicGallery'],
         ]);
         $this->closeCreateAlbumModal();
         session()->flash('message','Álbum creado exitosamente.');
@@ -549,6 +561,8 @@ class Albums extends Component
         $this->editAlbumClientId    = $album->client_id ? (string)$album->client_id : ''; // Convierte a string para el select.
         $this->editAlbumCurrentCover= $album->cover_image;
         $this->editAlbumNewCover    = null; // Limpia el campo de nueva portada.
+        $this->editAlbumPassword    = $album->password ?? '';
+        $this->editAlbumIsPublicGallery = $album->is_public_gallery ?? false;
 
         $this->clientSearchEmail = '';
         $this->clients = [];
@@ -568,7 +582,8 @@ class Albums extends Component
         $this->reset([
             'editingAlbum','editAlbumName','editAlbumDescription',
             'editAlbumType','editAlbumClientId','editAlbumNewCover',
-            'editAlbumCurrentCover','clientSearchEmail'
+            'editAlbumCurrentCover','editAlbumPassword','editAlbumIsPublicGallery',
+            'clientSearchEmail'
         ]);
         $this->clients = [];
     }
@@ -618,6 +633,8 @@ class Albums extends Component
             'type'        => $data['editAlbumType'],
             'cover_image' => $coverPath,
             'client_id'   => $finalClientId,
+            'password'    => $data['editAlbumPassword'] ?: null,
+            'is_public_gallery' => $data['editAlbumIsPublicGallery'],
         ]);
         $this->closeEditAlbumModal();
         session()->flash('message','Álbum actualizado exitosamente.');

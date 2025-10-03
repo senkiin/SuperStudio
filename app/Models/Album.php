@@ -19,6 +19,8 @@ class Album extends Model
         'cover_image',
         'user_id',
         'type',
+        'password',
+        'is_public_gallery',
         'client_id',
         'sort_order', // Add this
         'is_visible_on_weddings_page', // Add this

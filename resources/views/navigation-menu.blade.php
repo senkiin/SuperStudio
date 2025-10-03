@@ -1,8 +1,9 @@
 {{-- resources/views/navigation-menu.blade.php --}}
 <div x-data="{ open: false, scrolled: false }" @scroll.window.debounce.50ms="scrolled = (window.scrollY > 50)"
-    class="fixed top-0 z-50 w-full transition-all duration-300 ease-in-out text-gray-100"
+    class="fixed top-0 z-40 w-full transition-all duration-300 ease-in-out text-gray-100"
     :class="{
-        'bg-transparent': !scrolled,
+        'bg-black/20 backdrop-blur-sm': !scrolled,
+        'bg-black/80 backdrop-blur-md': scrolled,
     }">
 
     @if (session('original_admin_id'))
@@ -112,6 +113,9 @@
                                 <x-nav-link href="{{ route('blog.index') }}" title="Ver nuestro Blog" :active="request()->routeIs('blog.*')">
                                     {{ __('Blog') }}
                                 </x-nav-link>
+                                <x-nav-link href="{{ route('gallery') }}" title="Ver Galería Pública" :active="request()->routeIs('gallery')">
+                                    {{ __('Galería') }}
+                                </x-nav-link>
                             @else
                                 {{-- Usuario Normal o Admin Impersonando --}}
                                 <x-nav-link href="{{ route('home') }}" title="Ir a la pagina principal"
@@ -157,6 +161,9 @@
                                 <x-nav-link href="{{ route('photos.liked') }}" title="Ver las fotos gustadas"
                                     :active="request()->routeIs('photos.liked')">
                                     {{ __('Favoritas') }} </x-nav-link>
+                                <x-nav-link href="{{ route('gallery') }}" title="Ver Galería Pública" :active="request()->routeIs('gallery')">
+                                    {{ __('Galería') }}
+                                </x-nav-link>
                             @endif
                         @else
 
@@ -199,6 +206,9 @@
                             <x-nav-link href="{{ route('blog.index') }}"
                                 title="Ver nuestro Blog" :active="request()->routeIs('blog.*')">
                                 {{ __('Blog') }}
+                            </x-nav-link>
+                            <x-nav-link href="{{ route('gallery') }}" title="Ver Galería Pública" :active="request()->routeIs('gallery')">
+                                {{ __('Galería') }}
                             </x-nav-link>
 
                         @endauth
@@ -387,6 +397,10 @@
                     <x-responsive-nav-link href="{{ route('blog.index') }}"
                         title="Ver nuestro Blog" :active="request()->routeIs('blog.*')">
                         {{ __('Blog') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link href="{{ route('gallery') }}"
+                        title="Ver Galería Pública" :active="request()->routeIs('gallery')">
+                        {{ __('Galería') }}
                     </x-responsive-nav-link>
                 </div> {{-- Menú "Gestión" --}}
                 <div class="hidden sm:flex sm:items-center">

@@ -74,6 +74,9 @@ Route::get('/studio', function () {
     ]);
 })->name('studio.index');
 
+// --- Ruta de Galería Pública ---
+Route::get('/galeria', \App\Livewire\Gallery::class)->name('gallery');
+
 // --- Rutas Autenticadas ---
 Route::middleware([
     'auth:sanctum',
