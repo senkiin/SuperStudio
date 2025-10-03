@@ -207,8 +207,8 @@
                             @endif
                         </div>
                         <button wire:click="closeAlbumModal"
-                                class="text-gray-400 hover:text-white transition-colors flex-shrink-0 p-2 hover:bg-gray-800/50 rounded-full">
-                            <i class="fas fa-times text-base sm:text-lg"></i>
+                                class="text-white hover:text-gray-300 transition-colors flex-shrink-0 p-1 hover:bg-white/10 rounded bg-transparent backdrop-blur-sm">
+                            <span class="text-sm font-black">✕</span>
                         </button>
                     </div>
 
