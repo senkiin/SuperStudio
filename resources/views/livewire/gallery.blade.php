@@ -1,4 +1,26 @@
-<div class="min-h-screen bg-black text-white">
+    <div class="min-h-screen bg-black text-white">
+        <style>
+            /* Fixes for Safari/iOS thumbnail scrolling */
+            .thumbnail-container {
+                -webkit-overflow-scrolling: touch;
+                overflow-x: hidden;
+                overflow-y: auto;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+            .thumbnail-container::-webkit-scrollbar {
+                display: none;
+            }
+            .thumbnail-button {
+                -webkit-tap-highlight-color: transparent;
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+        </style>
     <!-- Header -->
     <div class="relative z-10 bg-black/60 backdrop-blur-sm border-b border-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-6 sm:pt-24 sm:pb-8">
@@ -358,13 +380,14 @@
                             @if($selectedAlbum->photos->count() > 1)
                                 <div class="bg-gray-800/30 rounded-lg p-3 sm:p-4 border border-gray-700/50">
                                     <h4 class="text-white text-xs sm:text-sm font-medium mb-2 sm:mb-3">Miniaturas</h4>
-                                    <div class="grid grid-cols-3 sm:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-2 max-h-32 sm:max-h-32 overflow-y-auto">
+                                    <div class="thumbnail-container grid grid-cols-3 sm:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-2 max-h-32 sm:max-h-32">
                                         @foreach($selectedAlbum->photos as $index => $photo)
                                             @php
                                                 $thumbUrl = Storage::disk('albums')->url($photo->file_path);
                                             @endphp
                                             <button wire:click="viewPhoto({{ $photo->id }})"
-                                                    class="relative aspect-square overflow-hidden rounded-lg {{ $index === $currentPhotoIndex ? 'ring-2 ring-white border-2 border-white' : 'border border-gray-600' }} transition-all duration-300 hover:scale-105">
+                                                    class="thumbnail-button relative w-full h-16 sm:h-20 overflow-hidden rounded-lg {{ $index === $currentPhotoIndex ? 'ring-2 ring-white border-2 border-white' : 'border border-gray-600' }} transition-all duration-300 hover:scale-105"
+                                                    style="min-height: 64px;">
                                                 <img src="{{ $thumbUrl }}"
                                                      alt="Miniatura {{ $index + 1 }}"
                                                      class="w-full h-full object-cover">
