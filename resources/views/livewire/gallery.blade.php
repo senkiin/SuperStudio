@@ -358,13 +358,13 @@
                             @if($selectedAlbum->photos->count() > 1)
                                 <div class="bg-gray-800/30 rounded-lg p-3 sm:p-4 border border-gray-700/50">
                                     <h4 class="text-white text-xs sm:text-sm font-medium mb-2 sm:mb-3">Miniaturas</h4>
-                                    <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-1 sm:gap-2 max-h-24 sm:max-h-32 overflow-y-auto">
+                                    <div class="grid grid-cols-3 sm:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-2 max-h-32 sm:max-h-32 overflow-y-auto">
                                         @foreach($selectedAlbum->photos as $index => $photo)
                                             @php
                                                 $thumbUrl = Storage::disk('albums')->url($photo->file_path);
                                             @endphp
                                             <button wire:click="viewPhoto({{ $photo->id }})"
-                                                    class="relative aspect-square overflow-hidden rounded {{ $index === $currentPhotoIndex ? 'ring-2 ring-white border-2 border-white' : 'border border-gray-600' }} transition-all duration-300 hover:scale-105">
+                                                    class="relative aspect-square overflow-hidden rounded-lg {{ $index === $currentPhotoIndex ? 'ring-2 ring-white border-2 border-white' : 'border border-gray-600' }} transition-all duration-300 hover:scale-105">
                                                 <img src="{{ $thumbUrl }}"
                                                      alt="Miniatura {{ $index + 1 }}"
                                                      class="w-full h-full object-cover">

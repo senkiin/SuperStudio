@@ -32,7 +32,7 @@
 
     <nav x-data="{ openNav: false }" class="w-full">
         <div class="w-full pt-7 px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center h-2">
+            <div class="flex justify-between items-center h-2">
                 <div class="flex items-center flex-shrink-0">
                     {{-- Logo --}}
                     <div x-data="{ showMenu: false }" x-init="setTimeout(() => showMenu = true, 400)" x-show="showMenu"
@@ -66,7 +66,7 @@
                         x-transition:enter="transition ease-out duration-700"
                         x-transition:enter-start="opacity-0 -translate-y-10"
                         x-transition:enter-end="opacity-100 translate-y-0"
-                        class="hidden space-x-6 sm:-my-px lg:ms-8 lg:flex flex-1 justify-center">
+                        class="hidden space-x-6 sm:-my-px lg:ms-8 lg:flex">
 
                         @auth
                             @if (Auth::user()->role === 'admin' && !session('original_admin_id'))
@@ -216,7 +216,7 @@
                 <div x-data="{ showMenu: false }" x-init="setTimeout(() => showMenu = true, 400)" x-show="showMenu"
                     x-transition:enter="transition ease-out duration-700"
                     x-transition:enter-start="opacity-0 -translate-y-10"
-                    x-transition:enter-end="opacity-100 translate-y-0" class="hidden lg:flex lg:items-center lg:space-x-6 flex-shrink-0 lg:ml-8">
+                    x-transition:enter-end="opacity-100 translate-y-0" class="hidden lg:flex lg:items-center lg:space-x-6 flex-shrink-0">
                     @auth
                         {{-- 2) Menú de “Gestión” (engranaje), justo debajo del anterior --}}
                         @if (Auth::user()->role === 'admin' && !session('original_admin_id'))

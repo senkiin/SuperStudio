@@ -264,31 +264,22 @@ class Gallery extends Component
             $filePath = $photo->file_path;
 
             if (Storage::disk('albums')->exists($filePath)) {
-                // Crear un ZIP con una sola foto
-                $zipFileName = $this->selectedAlbum->name . '_foto_' . $photo->id . '.zip';
-                $tempZipPath = storage_path('app/temp/' . $zipFileName);
+                // Crear archivo temporal con la foto original
+                $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+                $fileName = $this->selectedAlbum->name . '_' . $photo->id . '.' . $extension;
+                $tempFilePath = storage_path('app/temp/' . $fileName);
 
                 // Crear directorio temp si no existe
                 if (!file_exists(storage_path('app/temp'))) {
                     mkdir(storage_path('app/temp'), 0755, true);
                 }
 
-                $zip = new \ZipArchive();
-                if ($zip->open($tempZipPath, \ZipArchive::CREATE) !== TRUE) {
-                    session()->flash('error', 'No se pudo crear el archivo ZIP.');
-                    return;
-                }
-
-                $extension = pathinfo($filePath, PATHINFO_EXTENSION);
-                $fileName = $this->selectedAlbum->name . '_' . $photo->id . '.' . $extension;
-
                 // Obtener el contenido del archivo desde S3
                 $fileContent = Storage::disk('albums')->get($filePath);
-                $zip->addFromString($fileName, $fileContent);
-                $zip->close();
+                file_put_contents($tempFilePath, $fileContent);
 
-                // Descargar el ZIP
-                return response()->download($tempZipPath, $zipFileName)->deleteFileAfterSend(true);
+                // Descargar el archivo original
+                return response()->download($tempFilePath, $fileName)->deleteFileAfterSend(true);
 
             } else {
                 session()->flash('error', 'Archivo no encontrado.');
