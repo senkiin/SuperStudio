@@ -9,10 +9,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
-use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Support\Facades\Session; // Necesario para el método isImpersonating
+use App\Traits\HasS3ProfilePhoto;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -22,7 +22,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory;
-    use HasProfilePhoto;
+    use HasS3ProfilePhoto;
     use Notifiable;
     use TwoFactorAuthenticatable;
 
