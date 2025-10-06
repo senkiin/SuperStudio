@@ -56,7 +56,7 @@
             "name": "Foto Valera - Fotocarnet Almería",
             "description": "Estudio fotográfico profesional especializado en fotocarnet para documentos oficiales en Almería",
             "url": "{{ route('fotocarnet.almeria') }}",
-            "telephone": "+34-XXX-XXX-XXX",
+            "telephone": "+34-660-581-178",
             "email": "info@fotovalera.com",
             "address": {
                 "@type": "PostalAddress",
@@ -298,7 +298,7 @@
                         <ul class="space-y-2">
                             <li>📍 <strong>Ubicación:</strong> C. Alcalde Muñoz, 13, 04004 Almería</li>
                             <li>🕒 <strong>Horarios:</strong> Lunes a Viernes 9:00-19:00, Sábados 9:00-14:00</li>
-                            <li>📞 <strong>Teléfono:</strong> +34 XXX XXX XXX</li>
+                            <li>📞 <strong>Teléfono:</strong> +34 660 581 178</li>
                             <li>✉️ <strong>Email:</strong> info@fotovalera.com</li>
                             <li>🚗 <strong>Aparcamiento:</strong> Zona de aparcamiento público cercana</li>
                         </ul>

@@ -70,7 +70,7 @@
                     "latitude": "36.8381",
                     "longitude": "-2.4597"
                 },
-                "telephone": "+34-XXX-XXX-XXX",
+                "telephone": "+34-660-581-178",
                 "email": "info@fotovalera.com",
                 "url": "{{ route('home') }}"
             },

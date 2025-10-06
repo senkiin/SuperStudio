@@ -278,7 +278,7 @@
                 </svg>
                 <div>
                     <p class="font-medium text-gray-900 dark:text-white">Contacto:</p>
-                    <p>+34 XXX XXX XXX</p>
+                    <p>+34 660 581 178</p>
                     <p>info@fotovalera.com</p>
                 </div>
             </div>

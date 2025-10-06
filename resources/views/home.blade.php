@@ -56,7 +56,7 @@
             "name": "Foto Valera",
             "description": "Fotógrafo y videógrafo profesional especializado en bodas, eventos y reportajes en Almería",
             "url": "{{ route('home') }}",
-            "telephone": "+34-XXX-XXX-XXX",
+            "telephone": "+34-660-581-178",
             "email": "info@fotovalera.com",
             "address": {
                 "@type": "PostalAddress",
@@ -209,7 +209,7 @@
             },
             "contactPoint": {
                 "@type": "ContactPoint",
-                "telephone": "+34-XXX-XXX-XXX",
+                "telephone": "+34-660-581-178",
                 "contactType": "customer service",
                 "availableLanguage": "Spanish"
             },
@@ -304,7 +304,7 @@
                 </div>
                 <div>
                     <h3 class="text-lg font-semibold text-white mb-2">📞 Contacto</h3>
-                    <p class="text-gray-400">+34 XXX XXX XXX<br>info@fotovalera.com</p>
+                    <p class="text-gray-400">+34 660 581 178<br>info@fotovalera.com</p>
                 </div>
             </div>
         </div>
