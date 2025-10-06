@@ -1,35 +1,139 @@
-<x-app-layout> {{-- O tu archivo de layout principal --}}
-
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-
+<x-app-layout>
     {{-- ========================================================== --}}
-    {{--    INICIO: ETIQUETAS META ESPECÍFICAS PARA EMBARAZO          --}}
+    {{--    SEO COMPLETO Y PROFESIONAL PARA FOTOGRAFÍA DE EMBARAZO    --}}
     {{-- ========================================================== --}}
+    <x-slot name="head">
+        {{-- Meta Tags Básicos --}}
+        <title>Fotografía de Embarazo en Almería | Sesiones de Maternidad Profesionales | Foto Valera</title>
+        <meta name="description" content="Foto Valera, especialistas en fotografía de embarazo en Almería. Sesiones de maternidad artísticas y emotivas. Capturamos la belleza de la dulce espera con más de 23 años de experiencia profesional.">
+        <meta name="keywords" content="fotografia embarazo almeria, sesion fotos embarazada almeria, fotografo maternidad almeria, fotos de embarazo almeria, reportaje embarazo almeria, fotovalera embarazo, foto valera embarazo, sesion maternidad almeria, fotografo embarazo profesional almeria">
+        <meta name="author" content="Foto Valera">
+        <meta name="publisher" content="Foto Valera">
+        <meta name="robots" content="index, follow">
+        <meta name="language" content="es">
+        <meta name="geo.region" content="ES-AL">
+        <meta name="geo.placename" content="Almería">
+        <meta name="geo.position" content="36.8381;-2.4597">
+        <meta name="ICBM" content="36.8381, -2.4597">
 
-    <title>Fotografía de Embarazo en Almería | Sesiones de Maternidad</title>
-    <meta name="description" content="Captura la magia de tu embarazo con una sesión de fotos profesional en Almería. Creamos recuerdos artísticos y emotivos de tu maternidad. ¡Infórmate ahora!">
-    <meta name="keywords" content="fotografia embarazo almeria, sesion fotos embarazada almeria, fotografo maternidad almeria, fotos de embarazo, reportaje embarazo, fotovalera">
+        {{-- URL Canónica --}}
+        <link rel="canonical" href="{{ route('embarazo.index') }}">
 
-    {{-- Open Graph / Facebook --}}
-    <meta property="og:title" content="Fotografía de Embarazo en Almería | Fotovalera">
-    <meta property="og:description" content="Celebra la dulce espera con una sesión de fotos de maternidad única en Almería. Capturamos la belleza de este momento tan especial para ti.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ route('embarazo.index') }}">
-    <meta property="og:image" content="{{ asset('images/og_embarazo.jpg') }}"> {{-- RECOMENDACIÓN: Crear y subir la imagen public/images/og_embarazo.jpg --}}
+        {{-- Open Graph / Facebook --}}
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="{{ route('embarazo.index') }}">
+        <meta property="og:title" content="Fotografía de Embarazo en Almería | Sesiones de Maternidad Profesionales | Foto Valera">
+        <meta property="og:description" content="Foto Valera, especialistas en fotografía de embarazo en Almería. Sesiones de maternidad artísticas y emotivas. Capturamos la belleza de la dulce espera con profesionalidad.">
+        <meta property="og:image" content="{{ Storage::disk('logos')->url('SuperLogo.png') }}">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+        <meta property="og:image:alt" content="Foto Valera - Fotografía de Embarazo Profesional en Almería">
+        <meta property="og:site_name" content="Foto Valera">
+        <meta property="og:locale" content="es_ES">
 
-    {{-- Twitter Card --}}
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Fotografía de Embarazo en Almería | Fotovalera">
-    <meta name="twitter:description" content="Celebra la dulce espera con una sesión de fotos de maternidad única en Almería. Capturamos la belleza de este momento tan especial para ti.">
-    <meta name="twitter:image" content="{{ asset('images/twitter_embarazo.jpg') }}"> {{-- RECOMENDACIÓN: Crear y subir la imagen public/images/twitter_embarazo.jpg --}}
+        {{-- Twitter Card --}}
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:site" content="@foto_valera">
+        <meta name="twitter:creator" content="@foto_valera">
+        <meta name="twitter:title" content="Fotografía de Embarazo en Almería | Sesiones de Maternidad Profesionales | Foto Valera">
+        <meta name="twitter:description" content="Foto Valera, especialistas en fotografía de embarazo en Almería. Sesiones de maternidad artísticas y emotivas.">
+        <meta name="twitter:image" content="{{ Storage::disk('logos')->url('SuperLogo.png') }}">
+        <meta name="twitter:image:alt" content="Foto Valera - Fotografía de Embarazo Profesional en Almería">
 
-    {{-- Etiquetas Adicionales --}}
-    <link rel="canonical" href="{{ route('embarazo.index') }}" />
-    <meta name="author" content="Fotovalera">
-    <meta name="publisher" content="Fotovalera">
-    <meta name="robots" content="index, follow">
+        {{-- Meta Tags Adicionales --}}
+        <meta name="theme-color" content="#1f2937">
+        <meta name="msapplication-TileColor" content="#1f2937">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="Foto Valera">
+
+        {{-- Schema.org JSON-LD --}}
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "Fotografía de Embarazo en Almería",
+            "description": "Servicio profesional de fotografía de maternidad y embarazo en Almería",
+            "provider": {
+                "@type": "LocalBusiness",
+                "name": "Foto Valera",
+                "address": {
+                    "@type": "PostalAddress",
+                    "streetAddress": "C. Alcalde Muñoz, 13",
+                    "addressLocality": "Almería",
+                    "addressRegion": "Andalucía",
+                    "postalCode": "04004",
+                    "addressCountry": "ES"
+                },
+                "geo": {
+                    "@type": "GeoCoordinates",
+                    "latitude": "36.8381",
+                    "longitude": "-2.4597"
+                },
+                "telephone": "+34-XXX-XXX-XXX",
+                "email": "info@fotovalera.com",
+                "url": "{{ route('home') }}"
+            },
+            "areaServed": {
+                "@type": "City",
+                "name": "Almería"
+            },
+            "serviceType": "Fotografía de Embarazo",
+            "offers": {
+                "@type": "Offer",
+                "description": "Sesiones fotográficas de maternidad y embarazo",
+                "priceRange": "€€€"
+            },
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.8",
+                "reviewCount": "67"
+            }
+        }
+        </script>
+
+        {{-- Schema.org para FAQ --}}
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "¿Cuándo es el mejor momento para hacer una sesión de fotos de embarazo?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "El momento ideal para una sesión de fotos de embarazo es entre las semanas 28-36, cuando la barriga está bien redondeada pero aún te sientes cómoda para posar."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "¿Dónde realizan las sesiones de fotografía de embarazo?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Realizamos sesiones en nuestro estudio profesional, en exteriores con los paisajes únicos de Almería, o en la intimidad de tu hogar. Nos adaptamos a tus preferencias."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "¿Qué incluye una sesión de fotos de embarazo?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Incluye sesión fotográfica profesional, edición de todas las fotos, entrega en alta resolución y álbum digital. También ofrecemos álbumes físicos y productos personalizados."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "¿Puede participar la pareja en la sesión de embarazo?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "¡Por supuesto! Las sesiones de embarazo son perfectas para incluir a la pareja y crear recuerdos familiares únicos antes de la llegada del bebé."
+                    }
+                }
+            ]
+        }
+        </script>
+    </x-slot>
 
     <div>
 

@@ -38,6 +38,9 @@
     @livewireStyles
     @trixassets
     @stack('styles')
+
+    {{-- Slot para meta tags dinámicos --}}
+    {{ $head ?? '' }}
 </head>
 
 

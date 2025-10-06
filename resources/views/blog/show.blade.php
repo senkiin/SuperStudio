@@ -1,4 +1,79 @@
+@php
+    use Illuminate\Support\Facades\Storage;
+@endphp
+
 <x-app-layout>
+    {{-- Meta Tags SEO --}}
+    <x-slot name="head">
+        {{-- Meta Tags Básicos --}}
+        <title>{{ $seoData['title'] }}</title>
+        <meta name="description" content="{{ $seoData['description'] }}">
+        <meta name="keywords" content="{{ $seoData['keywords'] }}">
+        <meta name="author" content="{{ $seoData['author'] }}">
+        <meta name="publisher" content="{{ $seoData['publisher'] }}">
+        <meta name="robots" content="{{ $seoData['robots'] }}">
+        <meta name="language" content="{{ $seoData['lang'] }}">
+
+        {{-- URL Canónica --}}
+        <link rel="canonical" href="{{ $seoData['canonical'] }}">
+
+        {{-- Open Graph / Facebook --}}
+        <meta property="og:type" content="{{ $seoData['og_type'] }}">
+        <meta property="og:url" content="{{ $seoData['canonical'] }}">
+        <meta property="og:title" content="{{ $seoData['og_title'] }}">
+        <meta property="og:description" content="{{ $seoData['og_description'] }}">
+        <meta property="og:image" content="{{ $seoData['og_image'] }}">
+        <meta property="og:site_name" content="Foto Valera">
+        <meta property="og:locale" content="es_ES">
+
+        {{-- Article Specific Open Graph --}}
+        <meta property="article:author" content="{{ $seoData['article_author'] }}">
+        <meta property="article:published_time" content="{{ $seoData['article_published_time'] }}">
+        <meta property="article:modified_time" content="{{ $seoData['article_modified_time'] }}">
+        <meta property="article:section" content="{{ $seoData['article_section'] }}">
+        <meta property="article:tag" content="{{ $seoData['article_tag'] }}">
+
+        {{-- Twitter Card --}}
+        <meta name="twitter:card" content="{{ $seoData['twitter_card'] }}">
+        <meta name="twitter:site" content="{{ $seoData['twitter_site'] }}">
+        <meta name="twitter:creator" content="{{ $seoData['twitter_creator'] }}">
+        <meta name="twitter:title" content="{{ $seoData['og_title'] }}">
+        <meta name="twitter:description" content="{{ $seoData['og_description'] }}">
+        <meta name="twitter:image" content="{{ $seoData['og_image'] }}">
+
+        {{-- Schema.org JSON-LD --}}
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "BlogPosting",
+            "headline": "{{ $post->title }}",
+            "description": "{{ $seoData['description'] }}",
+            "image": "{{ $seoData['og_image'] }}",
+            "author": {
+                "@type": "Person",
+                "name": "{{ $post->author->name }}"
+            },
+            "publisher": {
+                "@type": "Organization",
+                "name": "Foto Valera",
+                "logo": {
+                    "@type": "ImageObject",
+                    "url": "{{ asset('images/logo.png') }}"
+                }
+            },
+            "datePublished": "{{ $seoData['article_published_time'] }}",
+            "dateModified": "{{ $seoData['article_modified_time'] }}",
+            "mainEntityOfPage": {
+                "@type": "WebPage",
+                "@id": "{{ $seoData['canonical'] }}"
+            },
+            "articleSection": "{{ $post->category->name }}",
+            "keywords": "{{ $seoData['keywords'] }}",
+            "url": "{{ $seoData['canonical'] }}"
+        }
+        </script>
+    </x-slot>
+
     <div class="bg-black text-gray-300">
         {{-- Cabecera Hero con la primera imagen del carrusel como fondo --}}
         <header class="relative h-[60vh] md:h-[70vh] w-full flex items-center justify-center text-center text-white"

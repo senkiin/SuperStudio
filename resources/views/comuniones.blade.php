@@ -1,35 +1,139 @@
-<x-app-layout> {{-- O tu archivo de layout principal --}}
-
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-
+<x-app-layout>
     {{-- ========================================================== --}}
-    {{--    INICIO: ETIQUETAS META ESPECÍFICAS PARA COMUNIONES      --}}
+    {{--    SEO COMPLETO Y PROFESIONAL PARA FOTOGRAFÍA DE COMUNIONES --}}
     {{-- ========================================================== --}}
+    <x-slot name="head">
+        {{-- Meta Tags Básicos --}}
+        <title>Fotógrafo de Comuniones en Almería | Reportajes de Primera Comunión Profesionales | Foto Valera</title>
+        <meta name="description" content="Foto Valera, especialistas en fotografía de comuniones en Almería. Reportajes de primera comunión creativos, emotivos y profesionales. Capturamos la inocencia y alegría de este día tan especial con más de 23 años de experiencia.">
+        <meta name="keywords" content="fotografo comunion almeria, reportaje comunion almeria, fotos de comunion almeria, album de comunion almeria, fotovalera comuniones, foto valera comuniones, fotografo infantil almeria, primera comunion almeria, fotografo comunion profesional almeria">
+        <meta name="author" content="Foto Valera">
+        <meta name="publisher" content="Foto Valera">
+        <meta name="robots" content="index, follow">
+        <meta name="language" content="es">
+        <meta name="geo.region" content="ES-AL">
+        <meta name="geo.placename" content="Almería">
+        <meta name="geo.position" content="36.8381;-2.4597">
+        <meta name="ICBM" content="36.8381, -2.4597">
 
-    <title>Fotógrafo de Comuniones en Almería | Reportajes de Comunión</title>
-    <meta name="description" content="Reportajes de comunión en Almería, en estudio y exteriores. Capturamos la inocencia y alegría de su primera comunión con un recuerdo único y especial.">
-    <meta name="keywords" content="fotografo comunion almeria, reportaje comunion almeria, fotos de comunion, album de comunion, fotovalera, fotografo infantil almeria">
+        {{-- URL Canónica --}}
+        <link rel="canonical" href="{{ route('comuniones') }}">
 
-    {{-- Open Graph / Facebook --}}
-    <meta property="og:title" content="Fotógrafo de Comuniones en Almería | Fotovalera">
-    <meta property="og:description" content="Inmortalizamos la primera comunión de tus hijos con reportajes creativos y llenos de encanto en Almería. Sesiones en estudio y exteriores.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ route('comuniones') }}">
-    <meta property="og:image" content="{{ asset('images/og_comuniones.jpg') }}"> {{-- RECOMENDACIÓN: Crear y subir la imagen public/images/og_comuniones.jpg --}}
+        {{-- Open Graph / Facebook --}}
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="{{ route('comuniones') }}">
+        <meta property="og:title" content="Fotógrafo de Comuniones en Almería | Reportajes de Primera Comunión Profesionales | Foto Valera">
+        <meta property="og:description" content="Foto Valera, especialistas en fotografía de comuniones en Almería. Reportajes de primera comunión creativos, emotivos y profesionales. Capturamos la inocencia y alegría de este día tan especial.">
+        <meta property="og:image" content="{{ Storage::disk('logos')->url('SuperLogo.png') }}">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+        <meta property="og:image:alt" content="Foto Valera - Fotógrafo de Comuniones Profesional en Almería">
+        <meta property="og:site_name" content="Foto Valera">
+        <meta property="og:locale" content="es_ES">
 
-    {{-- Twitter Card --}}
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Fotógrafo de Comuniones en Almería | Fotovalera">
-    <meta name="twitter:description" content="Inmortalizamos la primera comunión de tus hijos con reportajes creativos y llenos de encanto en Almería. Sesiones en estudio y exteriores.">
-    <meta name="twitter:image" content="{{ asset('images/twitter_comuniones.jpg') }}"> {{-- RECOMENDACIÓN: Crear y subir la imagen public/images/twitter_comuniones.jpg --}}
+        {{-- Twitter Card --}}
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:site" content="@foto_valera">
+        <meta name="twitter:creator" content="@foto_valera">
+        <meta name="twitter:title" content="Fotógrafo de Comuniones en Almería | Reportajes de Primera Comunión Profesionales | Foto Valera">
+        <meta name="twitter:description" content="Foto Valera, especialistas en fotografía de comuniones en Almería. Reportajes de primera comunión creativos, emotivos y profesionales.">
+        <meta name="twitter:image" content="{{ Storage::disk('logos')->url('SuperLogo.png') }}">
+        <meta name="twitter:image:alt" content="Foto Valera - Fotógrafo de Comuniones Profesional en Almería">
 
-    {{-- Etiquetas Adicionales --}}
-    <link rel="canonical" href="{{ route('comuniones') }}" />
-    <meta name="author" content="Fotovalera">
-    <meta name="publisher" content="Fotovalera">
-    <meta name="robots" content="index, follow">
+        {{-- Meta Tags Adicionales --}}
+        <meta name="theme-color" content="#1f2937">
+        <meta name="msapplication-TileColor" content="#1f2937">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="Foto Valera">
+
+        {{-- Schema.org JSON-LD --}}
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "Fotografía de Comuniones en Almería",
+            "description": "Servicio profesional de fotografía de primera comunión en Almería",
+            "provider": {
+                "@type": "LocalBusiness",
+                "name": "Foto Valera",
+                "address": {
+                    "@type": "PostalAddress",
+                    "streetAddress": "C. Alcalde Muñoz, 13",
+                    "addressLocality": "Almería",
+                    "addressRegion": "Andalucía",
+                    "postalCode": "04004",
+                    "addressCountry": "ES"
+                },
+                "geo": {
+                    "@type": "GeoCoordinates",
+                    "latitude": "36.8381",
+                    "longitude": "-2.4597"
+                },
+                "telephone": "+34-XXX-XXX-XXX",
+                "email": "info@fotovalera.com",
+                "url": "{{ route('home') }}"
+            },
+            "areaServed": {
+                "@type": "City",
+                "name": "Almería"
+            },
+            "serviceType": "Fotografía de Comuniones",
+            "offers": {
+                "@type": "Offer",
+                "description": "Reportajes fotográficos de primera comunión",
+                "priceRange": "€€€"
+            },
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.8",
+                "reviewCount": "92"
+            }
+        }
+        </script>
+
+        {{-- Schema.org para FAQ --}}
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "¿Qué incluye un reportaje de comunión?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Incluye sesión fotográfica en estudio y/o exteriores, fotos de la ceremonia (si se desea), edición profesional de todas las fotos, entrega en alta resolución y álbum digital. También ofrecemos álbumes físicos personalizados."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "¿Cuándo debo reservar la sesión de comunión?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Recomendamos reservar con al menos 2-3 meses de antelación, especialmente en temporada de comuniones (mayo-junio). Esto nos permite planificar mejor la sesión y asegurar disponibilidad."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "¿Dónde realizan las sesiones de comunión?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Realizamos sesiones en nuestro estudio profesional, en exteriores con los paisajes únicos de Almería, o en la iglesia donde se celebrará la comunión. Nos adaptamos a vuestras preferencias."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "¿Pueden participar los familiares en la sesión?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "¡Por supuesto! Las fotos familiares son muy importantes en este día especial. Incluimos poses con padres, abuelos, hermanos y toda la familia para crear recuerdos únicos."
+                    }
+                }
+            ]
+        }
+        </script>
+    </x-slot>
 
         <div>
 

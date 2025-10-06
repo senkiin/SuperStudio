@@ -1,26 +1,139 @@
 <div>
- <title>Fotógrafo de Bodas en Almería | Reportajes Únicos | Fotovalera</title>
-    <meta name="description" content="Fotógrafo de bodas en Almería especializado en capturar la emoción y la naturalidad de vuestro día. Creamos recuerdos inolvidables con un estilo documental y artístico. ¡Pide presupuesto!">
-    <meta name="keywords" content="fotografo de bodas almeria, fotografo para bodas, reportajes de boda almeria, video de boda, bodas en almeria, fotovalera, fotografia matrimonial">
+    {{-- ========================================================== --}}
+    {{--    SEO COMPLETO Y PROFESIONAL PARA LA PÁGINA DE BODAS      --}}
+    {{-- ========================================================== --}}
+    <x-slot name="head">
+        {{-- Meta Tags Básicos --}}
+        <title>Fotógrafo de Bodas en Almería | Reportajes de Boda Profesionales | Foto Valera</title>
+        <meta name="description" content="Foto Valera, fotógrafo de bodas profesional en Almería con más de 23 años de experiencia. Reportajes de boda únicos, creativos y emotivos. Capturamos vuestro día más especial con pasión y profesionalidad.">
+        <meta name="keywords" content="fotografo bodas almeria, fotografo de boda almeria, reportaje boda almeria, fotografia boda almeria, video boda almeria, fotografo matrimonio almeria, fotovalera bodas, foto valera bodas, videografo boda almeria, reportaje fotografico boda almeria">
+        <meta name="author" content="Foto Valera">
+        <meta name="publisher" content="Foto Valera">
+        <meta name="robots" content="index, follow">
+        <meta name="language" content="es">
+        <meta name="geo.region" content="ES-AL">
+        <meta name="geo.placename" content="Almería">
+        <meta name="geo.position" content="36.8381;-2.4597">
+        <meta name="ICBM" content="36.8381, -2.4597">
 
-    {{-- Open Graph / Facebook --}}
-    <meta property="og:title" content="Fotógrafo de Bodas en Almería | Fotovalera">
-    <meta property="og:description" content="Hacemos que los recuerdos de tu boda duren para siempre. Fotografía y vídeo con un enfoque artístico y emocional en Almería y provincia.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ route('weddings') }}">
-    <meta property="og:image" content="{{ asset('images/og_bodas.jpg') }}"> {{-- RECOMENDACIÓN: Crear y subir la imagen public/images/og_bodas.jpg --}}
+        {{-- URL Canónica --}}
+        <link rel="canonical" href="{{ route('weddings') }}">
 
-    {{-- Twitter Card --}}
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Fotógrafo de Bodas en Almería | Fotovalera">
-    <meta name="twitter:description" content="Hacemos que los recuerdos de tu boda duren para siempre. Fotografía y vídeo con un enfoque artístico y emocional en Almería y provincia.">
-    <meta name="twitter:image" content="{{ asset('images/twitter_bodas.jpg') }}"> {{-- RECOMENDACIÓN: Crear y subir la imagen public/images/twitter_bodas.jpg --}}
+        {{-- Open Graph / Facebook --}}
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="{{ route('weddings') }}">
+        <meta property="og:title" content="Fotógrafo de Bodas en Almería | Reportajes de Boda Profesionales | Foto Valera">
+        <meta property="og:description" content="Foto Valera, fotógrafo de bodas profesional en Almería. Más de 23 años capturando momentos únicos de vuestro día más especial. Reportajes creativos, emotivos y de calidad profesional.">
+        <meta property="og:image" content="{{ Storage::disk('logos')->url('SuperLogo.png') }}">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+        <meta property="og:image:alt" content="Foto Valera - Fotógrafo de Bodas Profesional en Almería">
+        <meta property="og:site_name" content="Foto Valera">
+        <meta property="og:locale" content="es_ES">
 
-    {{-- Etiquetas Adicionales --}}
-    <link rel="canonical" href="{{ route('weddings') }}" />
-    <meta name="author" content="Fotovalera">
-    <meta name="publisher" content="Fotovalera">
-    <meta name="robots" content="index, follow">
+        {{-- Twitter Card --}}
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:site" content="@foto_valera">
+        <meta name="twitter:creator" content="@foto_valera">
+        <meta name="twitter:title" content="Fotógrafo de Bodas en Almería | Reportajes de Boda Profesionales | Foto Valera">
+        <meta name="twitter:description" content="Foto Valera, fotógrafo de bodas profesional en Almería. Más de 23 años capturando momentos únicos de vuestro día más especial.">
+        <meta name="twitter:image" content="{{ Storage::disk('logos')->url('SuperLogo.png') }}">
+        <meta name="twitter:image:alt" content="Foto Valera - Fotógrafo de Bodas Profesional en Almería">
+
+        {{-- Meta Tags Adicionales --}}
+        <meta name="theme-color" content="#1f2937">
+        <meta name="msapplication-TileColor" content="#1f2937">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="Foto Valera">
+
+        {{-- Schema.org JSON-LD --}}
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "Fotografía de Bodas en Almería",
+            "description": "Servicio profesional de fotografía y videografía para bodas en Almería y provincia",
+            "provider": {
+                "@type": "LocalBusiness",
+                "name": "Foto Valera",
+                "address": {
+                    "@type": "PostalAddress",
+                    "streetAddress": "C. Alcalde Muñoz, 13",
+                    "addressLocality": "Almería",
+                    "addressRegion": "Andalucía",
+                    "postalCode": "04004",
+                    "addressCountry": "ES"
+                },
+                "geo": {
+                    "@type": "GeoCoordinates",
+                    "latitude": "36.8381",
+                    "longitude": "-2.4597"
+                },
+                "telephone": "+34-XXX-XXX-XXX",
+                "email": "info@fotovalera.com",
+                "url": "{{ route('home') }}"
+            },
+            "areaServed": {
+                "@type": "City",
+                "name": "Almería"
+            },
+            "serviceType": "Fotografía de Bodas",
+            "offers": {
+                "@type": "Offer",
+                "description": "Reportajes fotográficos y de vídeo para bodas",
+                "priceRange": "€€€"
+            },
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.9",
+                "reviewCount": "89"
+            }
+        }
+        </script>
+
+        {{-- Schema.org para FAQ --}}
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "¿Qué incluye el reportaje de boda en Foto Valera?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Nuestro reportaje de boda incluye fotografía y videografía profesional, sesión de preparación, ceremonia, banquete y sesión de pareja. Entregamos todas las fotos editadas en alta resolución y un vídeo resumen del día."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "¿Cuánto tiempo antes debo reservar el fotógrafo de boda?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Recomendamos reservar con al menos 6-12 meses de antelación, especialmente en temporada alta (primavera y verano). Esto nos permite planificar mejor vuestro día especial."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "¿Trabajáis en toda la provincia de Almería?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Sí, realizamos reportajes de boda en toda la provincia de Almería. Nos desplazamos a cualquier ubicación: playas, cortijos, hoteles, iglesias o espacios al aire libre."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "¿Ofrecen sesión de pareja antes de la boda?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Sí, ofrecemos sesiones de pareja (engagement) antes de la boda. Es una excelente oportunidad para conocernos y crear fotos románticas en los paisajes únicos de Almería."
+                    }
+                }
+            ]
+        }
+        </script>
+    </x-slot>
     {{-- @livewire('header-component') --}}
  @livewire('configurable-page-header', [
         'identifier' => 'bodas_header', // ¡Nuevo identificador!

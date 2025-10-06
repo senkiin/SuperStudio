@@ -41,6 +41,7 @@
                   <li><strong>Servicios Adicionales:</strong> {{ $additionalServices }}</li>
                 @endif
                 <li><strong>Fecha y Hora:</strong> {{ $appointmentDateTime }}</li>
+                <li><strong>Ubicación:</strong> C. Alcalde Muñoz, 13, 04004 Almería</li>
                 @if($appointmentNotes)
                   <li><strong>Notas Adicionales:</strong> {{ $appointmentNotes }}</li>
                 @endif

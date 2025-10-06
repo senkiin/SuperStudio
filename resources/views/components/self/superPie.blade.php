@@ -5,7 +5,7 @@
             <div>
                 <h3 class="text-lg font-bold text-white mb-4">Foto Valera</h3>
                 <p class="text-sm">
-                    Capturando la esencia del paisaje y la vida salvaje. Explora el mundo a través de mi lente.
+                    Fotógrafo y videógrafo profesional especializado en bodas, eventos y reportajes. Transformando momentos únicos en recuerdos eternos con creatividad y pasión.
                 </p>
                 <div class="flex items-center space-x-4 mt-6">
                     <a href="https://www.instagram.com/foto_valera/" title="Ir a Instagram" target="_blank" rel="noopener noreferrer"
@@ -23,14 +23,30 @@
             <div>
                 <h3 class="text-sm font-semibold tracking-wider text-white uppercase mb-4">Categorías de nuestro Blog</h3>
                 <ul class="space-y-2 text-sm">
-                    <li><a href="#" class="hover:text-white transition-colors duration-300">Mejores
-                            Fotografías</a></li>
-                    <li><a href="#" class="hover:text-white transition-colors duration-300">Consejos de
-                            Composición</a></li>
-                    <li><a href="#" class="hover:text-white transition-colors duration-300">Fotografía de
-                            Paisajes</a></li>
-                    <li><a href="#" class="hover:text-white transition-colors duration-300">Procesamiento y
-                            Edición</a></li>
+                    @php
+                        use App\Models\BlogCategory;
+                        $blogCategories = BlogCategory::whereHas('posts', function ($query) {
+                            $query->where('status', 'published');
+                        })
+                        ->withCount(['posts' => function ($query) {
+                            $query->where('status', 'published');
+                        }])
+                        ->orderBy('name')
+                        ->get();
+                    @endphp
+
+                    @forelse($blogCategories as $category)
+                        <li>
+                            <a href="{{ route('blog.index', ['category' => $category->id]) }}"
+                               title="Ver posts en la categoría {{ $category->name }}"
+                               class="hover:text-white transition-colors duration-300 flex justify-between items-center">
+                                <span>{{ $category->name }}</span>
+                                <span class="text-xs bg-gray-700 px-2 py-0.5 rounded-full">{{ $category->posts_count }}</span>
+                            </a>
+                        </li>
+                    @empty
+                        <li><a href="{{ route('blog.index') }}" class="hover:text-white transition-colors duration-300">Ver Blog</a></li>
+                    @endforelse
                 </ul>
             </div>
 
