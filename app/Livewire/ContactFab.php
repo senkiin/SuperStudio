@@ -54,6 +54,22 @@ class ContactFab extends Component
     ];
 
     /**
+     * Define los eventos que este componente escucha.
+     * @var array
+     */
+    protected $listeners = ['openContactModal'];
+
+    /**
+     * Abre el modal de contacto cuando se dispara el evento.
+     */
+    public function openContactModal(): void
+    {
+        $this->showModal = true;
+        $this->formSubmitted = false;
+        $this->resetValidation();
+    }
+
+    /**
      * Muestra u oculta el modal de contacto.
      * Si se oculta, resetea el formulario y la validación.
      * Si se muestra, resetea el estado de envío y la validación.
