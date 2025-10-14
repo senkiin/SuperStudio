@@ -21,6 +21,7 @@ class Album extends Model
         'type',
         'password',
         'is_public_gallery',
+        'allow_downloads',
         'client_id',
         'sort_order', // Add this
         'is_visible_on_weddings_page', // Add this

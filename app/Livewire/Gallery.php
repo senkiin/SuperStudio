@@ -22,9 +22,11 @@ class Gallery extends Component
     // --- Propiedades para añadir álbum ---
     public $newAlbumId = '';
     public $newAlbumPassword = '';
+    public $newAlbumAllowDownloads = true;
 
     // --- Propiedades para editar álbum ---
     public $editAlbumPassword = '';
+    public $editAlbumAllowDownloads = true;
 
     // --- Propiedades para visualización de álbumes ---
     public $selectedAlbum = null;
@@ -43,7 +45,9 @@ class Gallery extends Component
     protected $rules = [
         'newAlbumId' => 'required|exists:albums,id',
         'newAlbumPassword' => 'nullable|string|max:255',
+        'newAlbumAllowDownloads' => 'boolean',
         'editAlbumPassword' => 'nullable|string|max:255',
+        'editAlbumAllowDownloads' => 'boolean',
         'albumPassword' => 'nullable|string|max:255',
     ];
 
@@ -65,13 +69,14 @@ class Gallery extends Component
         if (!$this->showAdminPanel) return;
 
         $this->reset(['newAlbumId', 'newAlbumPassword']);
+        $this->newAlbumAllowDownloads = true;
         $this->showAddAlbumModal = true;
     }
 
     public function closeAddAlbumModal()
     {
         $this->showAddAlbumModal = false;
-        $this->reset(['newAlbumId', 'newAlbumPassword']);
+        $this->reset(['newAlbumId', 'newAlbumPassword', 'newAlbumAllowDownloads']);
     }
 
     public function addAlbumToGallery()
@@ -81,6 +86,7 @@ class Gallery extends Component
         $this->validate([
             'newAlbumId' => 'required|exists:albums,id',
             'newAlbumPassword' => 'nullable|string|max:255',
+            'newAlbumAllowDownloads' => 'boolean',
         ]);
 
         $album = Album::find($this->newAlbumId);
@@ -89,6 +95,7 @@ class Gallery extends Component
             $album->update([
                 'is_public_gallery' => true,
                 'password' => $this->newAlbumPassword ?: null,
+                'allow_downloads' => $this->newAlbumAllowDownloads,
             ]);
 
             session()->flash('message', 'Álbum añadido a la galería pública exitosamente.');
@@ -104,6 +111,7 @@ class Gallery extends Component
         if ($album && $album->is_public_gallery) {
             $this->editingAlbum = $album;
             $this->editAlbumPassword = $album->password ?? '';
+            $this->editAlbumAllowDownloads = $album->allow_downloads ?? true;
             $this->showEditAlbumModal = true;
         }
     }
@@ -111,7 +119,7 @@ class Gallery extends Component
     public function closeEditAlbumModal()
     {
         $this->showEditAlbumModal = false;
-        $this->reset(['editingAlbum', 'editAlbumPassword']);
+        $this->reset(['editingAlbum', 'editAlbumPassword', 'editAlbumAllowDownloads']);
     }
 
     public function updateAlbumPassword()
@@ -120,13 +128,15 @@ class Gallery extends Component
 
         $this->validate([
             'editAlbumPassword' => 'nullable|string|max:255',
+            'editAlbumAllowDownloads' => 'boolean',
         ]);
 
         $this->editingAlbum->update([
             'password' => $this->editAlbumPassword ?: null,
+            'allow_downloads' => $this->editAlbumAllowDownloads,
         ]);
 
-        session()->flash('message', 'Contraseña del álbum actualizada exitosamente.');
+        session()->flash('message', 'Configuración del álbum actualizada exitosamente.');
         $this->closeEditAlbumModal();
     }
 
@@ -252,6 +262,12 @@ class Gallery extends Component
     {
         if (!$this->selectedAlbum) return;
 
+        // Verificar si las descargas están permitidas
+        if (!$this->selectedAlbum->allow_downloads) {
+            session()->flash('error', 'Las descargas no están permitidas para este álbum.');
+            return;
+        }
+
         $photo = Photo::find($photoId);
         if (!$photo || $photo->album_id !== $this->selectedAlbum->id) {
             session()->flash('error', 'Foto no encontrada.');
@@ -294,6 +310,12 @@ class Gallery extends Component
     public function downloadAllPhotos()
     {
         if (!$this->selectedAlbum) return;
+
+        // Verificar si las descargas están permitidas
+        if (!$this->selectedAlbum->allow_downloads) {
+            session()->flash('error', 'Las descargas no están permitidas para este álbum.');
+            return;
+        }
 
         try {
             $photos = $this->selectedAlbum->photos;

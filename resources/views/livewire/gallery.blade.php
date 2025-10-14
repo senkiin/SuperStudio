@@ -148,13 +148,23 @@
                         @error('newAlbumId') <span class="text-red-400 text-xs sm:text-sm">{{ $message }}</span> @enderror
                     </div>
 
-                    <div class="mb-6 sm:mb-8">
+                    <div class="mb-4 sm:mb-6">
                         <label class="block text-xs sm:text-sm font-medium text-gray-300 mb-2 sm:mb-3">Contraseña (opcional)</label>
                         <input type="password"
                                wire:model="newAlbumPassword"
                                placeholder="Dejar vacío para acceso público"
                                class="w-full bg-gray-800 border border-gray-600 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-white/20 focus:border-transparent text-sm sm:text-base">
                         @error('newAlbumPassword') <span class="text-red-400 text-xs sm:text-sm">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="mb-6 sm:mb-8">
+                        <label class="flex items-center space-x-3 cursor-pointer">
+                            <input type="checkbox"
+                                   wire:model="newAlbumAllowDownloads"
+                                   class="w-4 h-4 sm:w-5 sm:h-5 text-white bg-gray-800 border-gray-600 rounded focus:ring-2 focus:ring-white/20">
+                            <span class="text-xs sm:text-sm font-medium text-gray-300">Permitir descargas de fotos</span>
+                        </label>
+                        <p class="text-xs text-gray-500 mt-2 ml-7 sm:ml-8">Los usuarios podrán descargar fotos de este álbum si esta opción está activada</p>
                     </div>
 
                     <div class="flex space-x-3 sm:space-x-4">
@@ -184,18 +194,24 @@
                     </button>
                 </div>
 
-                <div class="mb-4 sm:mb-6">
-                    <p class="text-xs sm:text-sm text-gray-400 mb-2">Álbum: <span class="font-medium text-white">{{ $editingAlbum->name }}</span></p>
-                </div>
-
                 <form wire:submit.prevent="updateAlbumPassword">
-                    <div class="mb-6 sm:mb-8">
+                    <div class="mb-4 sm:mb-6">
                         <label class="block text-xs sm:text-sm font-medium text-gray-300 mb-2 sm:mb-3">Contraseña</label>
                         <input type="password"
                                wire:model="editAlbumPassword"
                                placeholder="Dejar vacío para acceso público"
                                class="w-full bg-gray-800 border border-gray-600 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-white/20 focus:border-transparent text-sm sm:text-base">
                         @error('editAlbumPassword') <span class="text-red-400 text-xs sm:text-sm">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="mb-6 sm:mb-8">
+                        <label class="flex items-center space-x-3 cursor-pointer">
+                            <input type="checkbox"
+                                   wire:model="editAlbumAllowDownloads"
+                                   class="w-4 h-4 sm:w-5 sm:h-5 text-white bg-gray-800 border-gray-600 rounded focus:ring-2 focus:ring-white/20">
+                            <span class="text-xs sm:text-sm font-medium text-gray-300">Permitir descargas de fotos</span>
+                        </label>
+                        <p class="text-xs text-gray-500 mt-2 ml-7 sm:ml-8">Los usuarios podrán descargar fotos de este álbum si esta opción está activada</p>
                     </div>
 
                     <div class="flex space-x-3 sm:space-x-4">
@@ -296,7 +312,7 @@
                                 <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
                                     <button wire:click="openEditAlbumModal({{ $selectedAlbum->id }})"
                                             class="flex-1 bg-blue-600/80 hover:bg-blue-600 backdrop-blur-sm text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-300 hover:scale-105 border border-blue-400/50">
-                                        <i class="fas fa-edit mr-2"></i>Editar Contraseña
+                                        <i class="fas fa-edit mr-2"></i>Editar Álbum
                                     </button>
                                     <button wire:click="removeAlbumFromGallery({{ $selectedAlbum->id }})"
                                             wire:confirm="¿Estás seguro de remover este álbum de la galería pública?"
@@ -341,21 +357,28 @@
 
                             <!-- Photo Controls -->
                             <div class="space-y-3">
-                                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                                    <button wire:click="downloadPhoto({{ $this->currentPhoto->id }})"
-                                            class="flex-1 bg-green-600/80 hover:bg-green-600 backdrop-blur-sm text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 hover:scale-105 border border-green-400/50 shadow-lg">
-                                        @if(isset($downloadingPhotos[$this->currentPhoto->id]))
-                                            <i class="fas fa-spinner fa-spin mr-2"></i>Descargando...
-                                        @else
-                                            <i class="fas fa-download mr-2"></i>Descargar Foto
-                                        @endif
-                                    </button>
+                                @if($selectedAlbum->allow_downloads)
+                                    <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                                        <button wire:click="downloadPhoto({{ $this->currentPhoto->id }})"
+                                                class="flex-1 bg-green-600/80 hover:bg-green-600 backdrop-blur-sm text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 hover:scale-105 border border-green-400/50 shadow-lg">
+                                            @if(isset($downloadingPhotos[$this->currentPhoto->id]))
+                                                <i class="fas fa-spinner fa-spin mr-2"></i>Descargando...
+                                            @else
+                                                <i class="fas fa-download mr-2"></i>Descargar Foto
+                                            @endif
+                                        </button>
 
-                                    <button wire:click="downloadAllPhotos"
-                                            class="flex-1 bg-blue-600/80 hover:bg-blue-600 backdrop-blur-sm text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 hover:scale-105 border border-blue-400/50 shadow-lg">
-                                        <i class="fas fa-download mr-2"></i>Descargar Todas
-                                    </button>
-                                </div>
+                                        <button wire:click="downloadAllPhotos"
+                                                class="flex-1 bg-blue-600/80 hover:bg-blue-600 backdrop-blur-sm text-white px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 hover:scale-105 border border-blue-400/50 shadow-lg">
+                                            <i class="fas fa-download mr-2"></i>Descargar Todas
+                                        </button>
+                                    </div>
+                                @else
+                                    <div class="bg-gray-800/50 border border-gray-700/50 rounded-lg p-3 sm:p-4 text-center">
+                                        <i class="fas fa-lock text-gray-400 text-lg sm:text-xl mb-2"></i>
+                                        <p class="text-gray-400 text-xs sm:text-sm">Las descargas están deshabilitadas para este álbum</p>
+                                    </div>
+                                @endif
 
                                 <!-- Admin Controls -->
                                 @if($showAdminPanel)
@@ -364,7 +387,7 @@
                                         <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
                                             <button wire:click="openEditAlbumModal({{ $selectedAlbum->id }})"
                                                     class="flex-1 bg-yellow-600/80 hover:bg-yellow-600 backdrop-blur-sm text-white px-3 py-2 rounded-lg text-xs font-medium transition-all duration-300 hover:scale-105 border border-yellow-400/50">
-                                                <i class="fas fa-edit mr-2"></i>Editar Contraseña
+                                                <i class="fas fa-edit mr-2"></i>Editar Álbum
                                             </button>
                                             <button wire:click="removeAlbumFromGallery({{ $selectedAlbum->id }})"
                                                     wire:confirm="¿Estás seguro de remover este álbum de la galería pública?"
