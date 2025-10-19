@@ -42,6 +42,26 @@
             </div>
         @endif
 
+        @if (session()->has('error'))
+            <div class="mb-8 bg-gradient-to-r from-red-500 to-red-600 text-white p-4 rounded-xl shadow-lg"
+                x-data="{ show: true }"
+                x-show="show"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 transform translate-y-2"
+                x-transition:enter-end="opacity-100 transform translate-y-0"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                x-init="setTimeout(() => show = false, 5000)">
+                <div class="flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ session('error') }}
+                </div>
+            </div>
+        @endif
+
         {{-- Team Grid --}}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
             @forelse ($employees as $employee)
@@ -53,7 +73,7 @@
                         <div class="relative h-80 overflow-hidden">
                             <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent z-10"></div>
                             <img class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
-                                src="{{ $employee->image_path ? Illuminate\Support\Facades\Storage::disk('empleados')->url($employee->image_path) : 'https://via.placeholder.com/400x500.png/1a202c/ffffff?text=Sin+Foto' }}"
+                                src="{{ $employee->image_url }}"
                                 alt="Foto de {{ $employee->name }}">
 
                             {{-- Position Badge --}}
@@ -219,18 +239,22 @@
                             Fotografía Profesional
                         </label>
                         <div class="mt-2">
-                            <label for="photo" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-700 border-dashed rounded-lg cursor-pointer bg-gray-800/30 hover:bg-gray-800/50 transition-all">
+                            {{-- Input file simple --}}
+                            <input type="file" wire:model="photo" id="photo" accept="image/*"
+                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 bg-gray-800 border border-gray-700 rounded-lg">
+
+                            {{-- Área visual alternativa --}}
+                            <div class="mt-2 flex flex-col items-center justify-center w-full h-32 border-2 border-gray-700 border-dashed rounded-lg bg-gray-800/30">
                                 <div class="flex flex-col items-center justify-center pt-5 pb-6">
                                     <svg class="w-10 h-10 mb-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                                     </svg>
                                     <p class="mb-2 text-sm text-gray-400">
-                                        <span class="font-semibold">Click para subir</span> o arrastra la imagen
+                                        <span class="font-semibold text-indigo-400">Usa el input de arriba</span> para seleccionar imagen
                                     </p>
-                                    <p class="text-xs text-gray-500">PNG, JPG (MAX. 20MB)</p>
+                                    <p class="text-xs text-gray-500">PNG, JPG, GIF, WebP (MAX. 20MB)</p>
                                 </div>
-                                <input type="file" wire:model="photo" id="photo" class="hidden">
-                            </label>
+                            </div>
                         </div>
 
                         @error('photo')
@@ -250,25 +274,35 @@
                             Cargando imagen...
                         </div>
 
+
                         {{-- Photo Preview --}}
-                        @if ($photo || $existingPhoto)
-                            <div class="mt-4 flex items-center gap-4 p-4 bg-gray-800/30 rounded-lg border border-gray-700">
-                                @if ($photo)
+                        <div class="mt-4">
+                            @if ($photo)
+                                <div class="flex items-center gap-4 p-4 bg-gray-800/30 rounded-lg border border-gray-700">
                                     <img src="{{ $photo->temporaryUrl() }}" class="h-24 w-24 rounded-lg object-cover shadow-lg ring-2 ring-indigo-500">
                                     <div class="flex-1">
-                                        <p class="text-sm font-semibold text-white">Nueva foto</p>
-                                        <p class="text-xs text-gray-400 mt-1">Previsualización de la imagen seleccionada</p>
+                                        <p class="text-sm font-semibold text-white">Nueva foto seleccionada</p>
+                                        <p class="text-xs text-gray-400 mt-1">Previsualización de la imagen que se subirá</p>
+                                        <p class="text-xs text-indigo-400 mt-1">Archivo: {{ $photo->getClientOriginalName() }}</p>
                                     </div>
-                                @elseif ($existingPhoto)
-                                    <img src="{{ Illuminate\Support\Facades\Storage::disk('empleados')->url($existingPhoto) }}"
+                                    <button type="button" wire:click="removePhoto"
+                                        class="text-red-400 hover:text-red-300 transition-colors">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            @elseif ($existingPhoto)
+                                <div class="flex items-center gap-4 p-4 bg-gray-800/30 rounded-lg border border-gray-700">
+                                    <img src="{{ $existingPhoto ? 'https://fotovalerasite.s3.amazonaws.com/empleados/' . $existingPhoto : '' }}"
                                         class="h-24 w-24 rounded-lg object-cover shadow-lg">
                                     <div class="flex-1">
                                         <p class="text-sm font-semibold text-white">Foto actual</p>
-                                        <p class="text-xs text-gray-400 mt-1">Sube una nueva imagen para reemplazarla</p>
+                                        <p class="text-xs text-gray-400 mt-1">Selecciona una nueva imagen para reemplazarla</p>
                                     </div>
-                                @endif
-                            </div>
-                        @endif
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </x-slot>

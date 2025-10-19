@@ -20,4 +20,15 @@ class Employee extends Model
         'description',
         'image_path',
     ];
+
+    /**
+     * Get the full URL for the employee's image.
+     */
+    public function getImageUrlAttribute()
+    {
+        if ($this->image_path) {
+            return 'https://fotovalerasite.s3.amazonaws.com/empleados/' . $this->image_path;
+        }
+        return 'https://via.placeholder.com/400x500.png/1a202c/ffffff?text=Sin+Foto';
+    }
 }
