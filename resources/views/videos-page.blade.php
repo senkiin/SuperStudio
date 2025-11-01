@@ -58,6 +58,71 @@
         <meta property="twitter:image" content="{{ $pageImageUrl }}">
         <meta name="twitter:image:alt" content="Foto Valera - Videógrafos Profesionales en Almería">
         
+        {{-- Schema.org para LocalBusiness (para valoraciones) --}}
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            "name": "Foto Valera",
+            "image": {
+                "@type": "ImageObject",
+                "url": "{{ $pageImageUrl }}",
+                "width": "{{ $pageImageWidth }}",
+                "height": "{{ $pageImageHeight }}"
+            },
+            "logo": {
+                "@type": "ImageObject",
+                "url": "{{ Storage::disk('logos')->url('SuperLogo.png') }}",
+                "width": "600",
+                "height": "600"
+            },
+            "@id": "{{ route('home') }}#organization",
+            "url": "{{ route('home') }}",
+            "telephone": "+34-660-581-178",
+            "email": "info@fotovalera.com",
+            "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "C. Alcalde Muñoz, 13",
+                "addressLocality": "Almería",
+                "addressRegion": "Andalucía",
+                "postalCode": "04004",
+                "addressCountry": "ES"
+            },
+            "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": "36.8381",
+                "longitude": "-2.4597"
+            },
+            "openingHoursSpecification": [
+                {
+                    "@type": "OpeningHoursSpecification",
+                    "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                    "opens": "09:00",
+                    "closes": "19:00"
+                },
+                {
+                    "@type": "OpeningHoursSpecification",
+                    "dayOfWeek": "Saturday",
+                    "opens": "09:00",
+                    "closes": "14:00"
+                }
+            ],
+            "priceRange": "€€€",
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.9",
+                "reviewCount": "76",
+                "bestRating": "5",
+                "worstRating": "1"
+            },
+            "sameAs": [
+                "https://www.facebook.com/fotovalera",
+                "https://www.instagram.com/fotovalera",
+                "https://www.twitter.com/foto_valera"
+            ]
+        }
+        </script>
+
         {{-- Schema.org para Organization Mejorado 2025 - Para imagen en buscador --}}
         <script type="application/ld+json">
         {

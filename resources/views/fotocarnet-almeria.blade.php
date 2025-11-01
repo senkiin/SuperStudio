@@ -139,8 +139,71 @@
             "aggregateRating": {
                 "@type": "AggregateRating",
                 "ratingValue": "4.8",
-                "reviewCount": "127"
+                "reviewCount": "127",
+                "bestRating": "5",
+                "worstRating": "1"
             }
+        }
+        </script>
+
+        {{-- Schema.org para Organization Mejorado 2025 - Para imagen en buscador --}}
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "Foto Valera",
+            "legalName": "Foto Valera",
+            "url": "{{ route('home') }}",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "{{ Storage::disk('logos')->url('SuperLogo.png') }}",
+                "width": "600",
+                "height": "600"
+            },
+            "image": {
+                "@type": "ImageObject",
+                "url": "{{ $pageImageUrl }}",
+                "width": "{{ $pageImageWidth }}",
+                "height": "{{ $pageImageHeight }}"
+            },
+            "description": "Foto Valera es un estudio fotográfico profesional en Almería especializado en fotocarnet para documentos oficiales. Fotos para DNI, pasaporte, carnet de conducir, visados y documentos oficiales con cumplimiento estricto de normativas. Listo en minutos en nuestro estudio del centro de Almería.",
+            "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "C. Alcalde Muñoz, 13",
+                "addressLocality": "Almería",
+                "addressRegion": "Andalucía",
+                "postalCode": "04004",
+                "addressCountry": "ES"
+            },
+            "contactPoint": [
+                {
+                    "@type": "ContactPoint",
+                    "telephone": "+34-660-581-178",
+                    "contactType": "customer service",
+                    "availableLanguage": ["Spanish", "es"],
+                    "areaServed": "ES"
+                }
+            ],
+            "foundingDate": "2001",
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.8",
+                "reviewCount": "127",
+                "bestRating": "5",
+                "worstRating": "1"
+            },
+            "sameAs": [
+                "https://www.facebook.com/fotovalera",
+                "https://www.instagram.com/fotovalera",
+                "https://www.twitter.com/foto_valera"
+            ],
+            "knowsAbout": [
+                "Fotocarnet Profesional",
+                "Fotos para DNI",
+                "Fotos para Pasaporte",
+                "Fotos para Carnet de Conducir",
+                "Documentos Oficiales"
+            ]
         }
         </script>
 

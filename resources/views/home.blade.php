@@ -159,7 +159,9 @@
             "aggregateRating": {
                 "@type": "AggregateRating",
                 "ratingValue": "4.9",
-                "reviewCount": "156"
+                "reviewCount": "156",
+                "bestRating": "5",
+                "worstRating": "1"
             },
             "foundingDate": "2001",
             "numberOfEmployees": "1-5",
