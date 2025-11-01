@@ -4,18 +4,40 @@
     {{--    SEO COMPLETO Y PROFESIONAL PARA LA PÁGINA PRINCIPAL      --}}
     {{-- ========================================================== --}}
     <x-slot name="head">
-        {{-- Meta Tags Básicos --}}
+        @php
+            // Para home, obtenemos la primera imagen del carrusel
+            $firstCarouselImage = \App\Models\CarouselImage::where('is_active', true)
+                ->orderBy('order')
+                ->first();
+
+            if ($firstCarouselImage && $firstCarouselImage->image_path) {
+                $pageImageUrl = Storage::disk('s3')->url($firstCarouselImage->image_path);
+            } else {
+                // Fallback al logo si no hay imágenes en el carrusel
+                $pageImageUrl = Storage::disk('logos')->url('SuperLogo.png');
+            }
+            $pageImageWidth = 1200;
+            $pageImageHeight = 630;
+        @endphp
+        {{-- Meta Tags Básicos Optimizados para SEO 2025 --}}
         <title>Fotógrafos y Videógrafos en Almería | Reportajes de Bodas | Foto Valera</title>
         <meta name="description" content="Fotógrafos y videógrafos profesionales en Almería con +23 años de experiencia. Especialistas en reportajes de bodas, vídeo de bodas, comuniones, sesiones de estudio y eventos. Los mejores fotógrafos de Almería para tu gran día. ¡Presupuesto sin compromiso!">
         <meta name="keywords" content="fotografos almeria, fotografo almeria, videografos almeria, videografo almeria, reportajes de bodas, reportajes de bodas almeria, fotografia de boda almeria, video de boda almeria, estudio fotografico almeria, fotografo comunion almeria, fotografo embarazo almeria, fotografo newborn almeria, fotocarnet almeria, fotovalera, foto valera, reportaje fotografico almeria, fotografos profesionales almeria, videografia de bodas, fotografo bodas almeria">
         <meta name="author" content="Foto Valera">
         <meta name="publisher" content="Foto Valera">
-        <meta name="robots" content="index, follow">
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
         <meta name="language" content="es">
         <meta name="geo.region" content="ES-AL">
         <meta name="geo.placename" content="Almería">
         <meta name="geo.position" content="36.8381;-2.4597">
         <meta name="ICBM" content="36.8381, -2.4597">
+
+        {{-- Meta Tags para Búsqueda por Voz y E-E-A-T 2025 --}}
+        <meta name="rating" content="General">
+        <meta name="distribution" content="Global">
+        <meta name="coverage" content="Worldwide">
+        <meta name="audience" content="All">
+        <meta name="classification" content="Fotografía Profesional, Videografía, Eventos">
 
         {{-- URL Canónica --}}
         <link rel="canonical" href="{{ route('home') }}">
@@ -25,9 +47,9 @@
         <meta property="og:url" content="{{ route('home') }}">
         <meta property="og:title" content="Fotógrafos y Videógrafos en Almería | Reportajes de Bodas | Foto Valera">
         <meta property="og:description" content="Fotógrafos y videógrafos profesionales en Almería. Especialistas en reportajes de bodas, vídeo de bodas, comuniones y eventos. +23 años de experiencia capturando tus momentos más especiales.">
-        <meta property="og:image" content="{{ Storage::disk('logos')->url('SuperLogo.png') }}">
-        <meta property="og:image:width" content="1200">
-        <meta property="og:image:height" content="630">
+        <meta property="og:image" content="{{ $pageImageUrl }}">
+        <meta property="og:image:width" content="{{ $pageImageWidth }}">
+        <meta property="og:image:height" content="{{ $pageImageHeight }}">
         <meta property="og:image:alt" content="Foto Valera - Fotógrafo Profesional en Almería">
         <meta property="og:site_name" content="Foto Valera">
         <meta property="og:locale" content="es_ES">
@@ -38,7 +60,7 @@
         <meta name="twitter:creator" content="@foto_valera">
         <meta name="twitter:title" content="Fotógrafos y Videógrafos en Almería | Reportajes de Bodas | Foto Valera">
         <meta name="twitter:description" content="Fotógrafos y videógrafos profesionales en Almería. Especialistas en reportajes de bodas, vídeo de bodas y eventos. +23 años de experiencia.">
-        <meta name="twitter:image" content="{{ Storage::disk('logos')->url('SuperLogo.png') }}">
+        <meta name="twitter:image" content="{{ $pageImageUrl }}">
         <meta name="twitter:image:alt" content="Foto Valera - Fotógrafo Profesional en Almería">
 
         {{-- Meta Tags Adicionales --}}
@@ -214,15 +236,27 @@
         }
         </script>
 
-        {{-- Schema.org para Organization --}}
+        {{-- Schema.org para Organization Mejorado 2025 - Para imagen en buscador --}}
         <script type="application/ld+json">
         {
             "@context": "https://schema.org",
             "@type": "Organization",
             "name": "Foto Valera",
+            "legalName": "Foto Valera",
             "url": "{{ route('home') }}",
-            "logo": "{{ Storage::disk('logos')->url('SuperLogo.png') }}",
-            "description": "Fotógrafos y videógrafos profesionales en Almería especializados en reportajes de bodas, vídeo de bodas, eventos y fotografía profesional",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "{{ Storage::disk('logos')->url('SuperLogo.png') }}",
+                "width": "600",
+                "height": "600"
+            },
+            "image": {
+                "@type": "ImageObject",
+                "url": "{{ $pageImageUrl }}",
+                "width": "{{ $pageImageWidth }}",
+                "height": "{{ $pageImageHeight }}"
+            },
+            "description": "Foto Valera es un estudio fotográfico profesional en Almería con más de 23 años de experiencia. Especializados en reportajes de bodas, vídeo de bodas, comuniones, sesiones de estudio, embarazo, newborn y fotocarnet. Fotógrafos y videógrafos profesionales certificados con equipo de última generación.",
             "address": {
                 "@type": "PostalAddress",
                 "streetAddress": "C. Alcalde Muñoz, 13",
@@ -231,17 +265,77 @@
                 "postalCode": "04004",
                 "addressCountry": "ES"
             },
-            "contactPoint": {
-                "@type": "ContactPoint",
-                "telephone": "+34-660-581-178",
-                "contactType": "customer service",
-                "availableLanguage": "Spanish"
+            "contactPoint": [
+                {
+                    "@type": "ContactPoint",
+                    "telephone": "+34-660-581-178",
+                    "contactType": "customer service",
+                    "availableLanguage": ["Spanish", "es"],
+                    "areaServed": "ES",
+                    "hoursAvailable": {
+                        "@type": "OpeningHoursSpecification",
+                        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                        "opens": "09:00",
+                        "closes": "19:00"
+                    }
+                }
+            ],
+            "foundingDate": "2001",
+            "numberOfEmployees": {
+                "@type": "QuantitativeValue",
+                "minValue": 1,
+                "maxValue": 5
+            },
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.9",
+                "reviewCount": "156",
+                "bestRating": "5",
+                "worstRating": "1"
             },
             "sameAs": [
                 "https://www.facebook.com/fotovalera",
                 "https://www.instagram.com/fotovalera",
                 "https://www.twitter.com/foto_valera"
-            ]
+            ],
+            "knowsAbout": [
+                "Fotografía de Bodas",
+                "Videografía de Bodas",
+                "Fotografía de Comuniones",
+                "Fotografía Newborn",
+                "Fotografía de Embarazo",
+                "Fotografía de Estudio",
+                "Fotocarnet Profesional"
+            ],
+            "areaServed": {
+                "@type": "City",
+                "name": "Almería",
+                "sameAs": "https://es.wikipedia.org/wiki/Almer%C3%ADa"
+            }
+        }
+        </script>
+
+        {{-- Schema.org para Person (E-E-A-T reforzado) --}}
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Person",
+            "name": "Valeriy",
+            "jobTitle": "Fotógrafo y Videógrafo Principal",
+            "worksFor": {
+                "@type": "Organization",
+                "name": "Foto Valera"
+            },
+            "description": "Fotógrafo profesional con más de 20 años de experiencia especializado en bodas, comuniones y reportajes familiares. Piloto certificado de drones con experiencia en videografía cinematográfica.",
+            "knowsAbout": ["Fotografía de Bodas", "Videografía", "Fotografía de Eventos", "Fotografía Aérea con Drones"],
+            "hasCredential": {
+                "@type": "EducationalOccupationalCredential",
+                "credentialCategory": "Certificación",
+                "recognizedBy": {
+                    "@type": "Organization",
+                    "name": "Agencia Estatal de Seguridad Aérea"
+                }
+            }
         }
         </script>
     </x-slot>

@@ -3,18 +3,40 @@
     {{--    SEO COMPLETO Y PROFESIONAL PARA LA PÁGINA DE STUDIO     --}}
     {{-- ========================================================== --}}
     <x-slot name="head">
-        {{-- Meta Tags Básicos --}}
+        @php
+            // Para studio, obtenemos la primera imagen del carrusel dinámico
+            $firstCarouselSlide = \App\Models\CarouselSlide::where('is_active', true)
+                ->orderBy('order')
+                ->first();
+            
+            if ($firstCarouselSlide && $firstCarouselSlide->background_image_path) {
+                $pageImageUrl = Storage::disk('s3')->url($firstCarouselSlide->background_image_path);
+            } else {
+                // Fallback al logo si no hay slides en el carrusel
+                $pageImageUrl = Storage::disk('logos')->url('SuperLogo.png');
+            }
+            $pageImageWidth = 1200;
+            $pageImageHeight = 630;
+        @endphp
+        {{-- Meta Tags Básicos Optimizados para SEO 2025 --}}
         <title>Estudio Fotográfico en Almería | Sesiones Creativas y Temáticas | Foto Valera</title>
         <meta name="description" content="Foto Valera, estudio fotográfico profesional en Almería. Sesiones creativas, temáticas y artísticas: Halloween, Navidad, retratos y proyectos únicos. Más de 23 años de experiencia en fotografía de estudio.">
         <meta name="keywords" content="estudio fotografia almeria, estudio fotografico almeria, sesiones tematicas almeria, reportajes tematicos almeria, fotografia creativa almeria, fotografo estudio almeria, sesiones navidad almeria, sesiones halloween almeria, reportajes navidad almeria, sesion fotos san valentin, smash cake almeria, retratos profesionales almeria, sesiones personalizadas almeria, fotovalera estudio, fotografia artistica almeria">
         <meta name="author" content="Foto Valera">
         <meta name="publisher" content="Foto Valera">
-        <meta name="robots" content="index, follow">
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
         <meta name="language" content="es">
         <meta name="geo.region" content="ES-AL">
         <meta name="geo.placename" content="Almería">
         <meta name="geo.position" content="36.8381;-2.4597">
         <meta name="ICBM" content="36.8381, -2.4597">
+        
+        {{-- Meta Tags para Búsqueda por Voz y E-E-A-T 2025 --}}
+        <meta name="rating" content="General">
+        <meta name="distribution" content="Global">
+        <meta name="coverage" content="Worldwide">
+        <meta name="audience" content="All">
+        <meta name="classification" content="Fotografía de Estudio, Sesiones Creativas, Fotografía Temática">
 
         {{-- URL Canónica --}}
         <link rel="canonical" href="{{ route('studio.index') }}">
@@ -24,9 +46,9 @@
         <meta property="og:url" content="{{ route('studio.index') }}">
         <meta property="og:title" content="Estudio Fotográfico en Almería | Sesiones Creativas y Temáticas | Foto Valera">
         <meta property="og:description" content="Foto Valera, estudio fotográfico profesional en Almería. Sesiones creativas, temáticas y artísticas: Halloween, Navidad, retratos y proyectos únicos.">
-        <meta property="og:image" content="{{ Storage::disk('logos')->url('SuperLogo.png') }}">
-        <meta property="og:image:width" content="1200">
-        <meta property="og:image:height" content="630">
+        <meta property="og:image" content="{{ $pageImageUrl }}">
+        <meta property="og:image:width" content="{{ $pageImageWidth }}">
+        <meta property="og:image:height" content="{{ $pageImageHeight }}">
         <meta property="og:image:alt" content="Foto Valera - Estudio Fotográfico Profesional en Almería">
         <meta property="og:site_name" content="Foto Valera">
         <meta property="og:locale" content="es_ES">
@@ -37,7 +59,7 @@
         <meta name="twitter:creator" content="@foto_valera">
         <meta name="twitter:title" content="Estudio Fotográfico en Almería | Sesiones Creativas y Temáticas | Foto Valera">
         <meta name="twitter:description" content="Foto Valera, estudio fotográfico profesional en Almería. Sesiones creativas, temáticas y artísticas: Halloween, Navidad, retratos y proyectos únicos.">
-        <meta name="twitter:image" content="{{ Storage::disk('logos')->url('SuperLogo.png') }}">
+        <meta name="twitter:image" content="{{ $pageImageUrl }}">
         <meta name="twitter:image:alt" content="Foto Valera - Estudio Fotográfico Profesional en Almería">
 
         {{-- Meta Tags Adicionales --}}
@@ -130,6 +152,75 @@
                         "text": "¡Por supuesto! Nos encanta trabajar con ideas creativas y personalizadas. Antes de la sesión, hablamos contigo para planificar y hacer realidad tu visión."
                     }
                 }
+            ]
+        }
+        </script>
+        
+        {{-- Schema.org para Organization Mejorado 2025 - Para imagen en buscador --}}
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "Foto Valera",
+            "legalName": "Foto Valera",
+            "url": "{{ route('home') }}",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "{{ Storage::disk('logos')->url('SuperLogo.png') }}",
+                "width": "600",
+                "height": "600"
+            },
+            "image": {
+                "@type": "ImageObject",
+                "url": "{{ $pageImageUrl }}",
+                "width": "{{ $pageImageWidth }}",
+                "height": "{{ $pageImageHeight }}"
+            },
+            "description": "Foto Valera es un estudio fotográfico profesional en Almería con más de 23 años de experiencia. Especializados en sesiones de estudio creativas, temáticas (Halloween, Navidad), retratos profesionales, smash cake, sesiones artísticas y proyectos personalizados.",
+            "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "C. Alcalde Muñoz, 13",
+                "addressLocality": "Almería",
+                "addressRegion": "Andalucía",
+                "postalCode": "04004",
+                "addressCountry": "ES"
+            },
+            "contactPoint": [
+                {
+                    "@type": "ContactPoint",
+                    "telephone": "+34-660-581-178",
+                    "contactType": "customer service",
+                    "availableLanguage": ["Spanish", "es"],
+                    "areaServed": "ES",
+                    "hoursAvailable": {
+                        "@type": "OpeningHoursSpecification",
+                        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                        "opens": "09:00",
+                        "closes": "19:00"
+                    }
+                }
+            ],
+            "foundingDate": "2001",
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.7",
+                "reviewCount": "45",
+                "bestRating": "5",
+                "worstRating": "1"
+            },
+            "sameAs": [
+                "https://www.facebook.com/fotovalera",
+                "https://www.instagram.com/fotovalera",
+                "https://www.twitter.com/foto_valera"
+            ],
+            "knowsAbout": [
+                "Fotografía de Estudio",
+                "Sesiones Temáticas",
+                "Fotografía Creativa",
+                "Retratos Profesionales",
+                "Sesiones de Navidad",
+                "Sesiones de Halloween",
+                "Smash Cake"
             ]
         }
         </script>

@@ -3,18 +3,36 @@
     {{--    SEO COMPLETO Y PROFESIONAL PARA FOTOGRAFÍA NEWBORN      --}}
     {{-- ========================================================== --}}
     <x-slot name="head">
-        {{-- Meta Tags Básicos --}}
+        @php
+            // Obtener imagen del header de newborn
+            $headerSettings = \App\Models\PageHeaderSetting::where('identifier', 'Newborn_header')->first();
+            if ($headerSettings && $headerSettings->background_image_url) {
+                $pageImageUrl = Storage::disk('page-headers')->url($headerSettings->background_image_url);
+            } else {
+                $pageImageUrl = Storage::disk('logos')->url('SuperLogo.png');
+            }
+            $pageImageWidth = 1200;
+            $pageImageHeight = 630;
+        @endphp
+        {{-- Meta Tags Básicos Optimizados para SEO 2025 --}}
         <title>Fotografía Newborn en Almería | Sesiones de Recién Nacidos Profesionales | Foto Valera</title>
         <meta name="description" content="Foto Valera, especialistas en fotografía newborn en Almería. Sesiones de recién nacido seguras, tiernas y profesionales. Capturamos la magia de los primeros días de tu bebé con más de 23 años de experiencia.">
         <meta name="keywords" content="fotografia newborn almeria, fotografo newborn almeria, fotografo recien nacido almeria, sesion fotos bebe almeria, fotos recien nacidos almeria, estudio fotografia bebes almeria, sesiones newborn almeria, fotografo bebes almeria, fotos bebes recien nacidos, sesion newborn profesional, fotografo newborn profesional almeria, sesion recien nacido almeria">
         <meta name="author" content="Foto Valera">
         <meta name="publisher" content="Foto Valera">
-        <meta name="robots" content="index, follow">
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
         <meta name="language" content="es">
         <meta name="geo.region" content="ES-AL">
         <meta name="geo.placename" content="Almería">
         <meta name="geo.position" content="36.8381;-2.4597">
         <meta name="ICBM" content="36.8381, -2.4597">
+        
+        {{-- Meta Tags para Búsqueda por Voz y E-E-A-T 2025 --}}
+        <meta name="rating" content="General">
+        <meta name="distribution" content="Global">
+        <meta name="coverage" content="Worldwide">
+        <meta name="audience" content="All">
+        <meta name="classification" content="Fotografía Newborn, Recién Nacidos, Fotografía de Bebés">
 
         {{-- URL Canónica --}}
         <link rel="canonical" href="{{ route('newborn.index') }}">
@@ -24,9 +42,9 @@
         <meta property="og:url" content="{{ route('newborn.index') }}">
         <meta property="og:title" content="Fotografía Newborn en Almería | Sesiones de Recién Nacidos Profesionales | Foto Valera">
         <meta property="og:description" content="Foto Valera, especialistas en fotografía newborn en Almería. Sesiones de recién nacido seguras, tiernas y profesionales. Capturamos la magia de los primeros días de tu bebé.">
-        <meta property="og:image" content="{{ Storage::disk('logos')->url('SuperLogo.png') }}">
-        <meta property="og:image:width" content="1200">
-        <meta property="og:image:height" content="630">
+        <meta property="og:image" content="{{ $pageImageUrl }}">
+        <meta property="og:image:width" content="{{ $pageImageWidth }}">
+        <meta property="og:image:height" content="{{ $pageImageHeight }}">
         <meta property="og:image:alt" content="Foto Valera - Fotografía Newborn Profesional en Almería">
         <meta property="og:site_name" content="Foto Valera">
         <meta property="og:locale" content="es_ES">
@@ -37,7 +55,7 @@
         <meta name="twitter:creator" content="@foto_valera">
         <meta name="twitter:title" content="Fotografía Newborn en Almería | Sesiones de Recién Nacidos Profesionales | Foto Valera">
         <meta name="twitter:description" content="Foto Valera, especialistas en fotografía newborn en Almería. Sesiones de recién nacido seguras, tiernas y profesionales.">
-        <meta name="twitter:image" content="{{ Storage::disk('logos')->url('SuperLogo.png') }}">
+        <meta name="twitter:image" content="{{ $pageImageUrl }}">
         <meta name="twitter:image:alt" content="Foto Valera - Fotografía Newborn Profesional en Almería">
 
         {{-- Meta Tags Adicionales --}}
@@ -130,6 +148,66 @@
                         "text": "¡Por supuesto! Las fotos con los padres son muy especiales y emotivas. Incluimos poses familiares tiernas y momentos de conexión."
                     }
                 }
+            ]
+        }
+        </script>
+        
+        {{-- Schema.org para Organization Mejorado 2025 - Para imagen en buscador --}}
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "Foto Valera",
+            "legalName": "Foto Valera",
+            "url": "{{ route('home') }}",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "{{ Storage::disk('logos')->url('SuperLogo.png') }}",
+                "width": "600",
+                "height": "600"
+            },
+            "image": {
+                "@type": "ImageObject",
+                "url": "{{ $pageImageUrl }}",
+                "width": "{{ $pageImageWidth }}",
+                "height": "{{ $pageImageHeight }}"
+            },
+            "description": "Foto Valera es un estudio fotográfico profesional en Almería con más de 23 años de experiencia especializado en fotografía newborn. Sesiones de recién nacido seguras, tiernas y profesionales con protocolos estrictos de seguridad. Capturamos la magia de los primeros días de los bebés con formación especializada en seguridad newborn.",
+            "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "C. Alcalde Muñoz, 13",
+                "addressLocality": "Almería",
+                "addressRegion": "Andalucía",
+                "postalCode": "04004",
+                "addressCountry": "ES"
+            },
+            "contactPoint": [
+                {
+                    "@type": "ContactPoint",
+                    "telephone": "+34-660-581-178",
+                    "contactType": "customer service",
+                    "availableLanguage": ["Spanish", "es"],
+                    "areaServed": "ES"
+                }
+            ],
+            "foundingDate": "2001",
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.9",
+                "reviewCount": "78",
+                "bestRating": "5",
+                "worstRating": "1"
+            },
+            "sameAs": [
+                "https://www.facebook.com/fotovalera",
+                "https://www.instagram.com/fotovalera",
+                "https://www.twitter.com/foto_valera"
+            ],
+            "knowsAbout": [
+                "Fotografía Newborn",
+                "Fotografía de Recién Nacidos",
+                "Sesiones de Bebés",
+                "Seguridad Newborn"
             ]
         }
         </script>

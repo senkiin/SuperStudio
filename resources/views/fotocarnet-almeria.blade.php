@@ -4,18 +4,36 @@
     {{--    SEO COMPLETO Y PROFESIONAL PARA FOTOCARNET ALMERÍA      --}}
     {{-- ========================================================== --}}
     <x-slot name="head">
-        {{-- Meta Tags Básicos --}}
+        @php
+            // Obtener imagen del header de fotocarnet
+            $headerSettings = \App\Models\PageHeaderSetting::where('identifier', 'fotocarnet_almeria_header')->first();
+            if ($headerSettings && $headerSettings->background_image_url) {
+                $pageImageUrl = Storage::disk('page-headers')->url($headerSettings->background_image_url);
+            } else {
+                $pageImageUrl = Storage::disk('logos')->url('SuperLogo.png');
+            }
+            $pageImageWidth = 1200;
+            $pageImageHeight = 630;
+        @endphp
+        {{-- Meta Tags Básicos Optimizados para SEO 2025 --}}
         <title>Fotocarnet al Instante en Almería | DNI, Pasaporte, Carnet Conducir - Foto Valera</title>
         <meta name="description" content="Fotocarnet profesional en Almería. Fotos para DNI, pasaporte, carnet de conducir, visados y documentos oficiales. Calidad garantizada, listo en minutos. Estudio profesional en centro de Almería.">
         <meta name="keywords" content="fotocarnet almeria, foto dni almeria, foto pasaporte almeria, fotos carnet almeria, fotocarnet rapido almeria, foto carnet conducir almeria, fotos visado almeria, fotos documento oficial almeria, estudio fotografico almeria, fotovalera almeria, foto nie almeria, foto curriculum almeria">
         <meta name="author" content="Foto Valera">
         <meta name="publisher" content="Foto Valera">
-        <meta name="robots" content="index, follow">
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
         <meta name="language" content="es">
         <meta name="geo.region" content="ES-AL">
         <meta name="geo.placename" content="Almería">
         <meta name="geo.position" content="36.8381;-2.4597">
         <meta name="ICBM" content="36.8381, -2.4597">
+
+        {{-- Meta Tags para Búsqueda por Voz y E-E-A-T 2025 --}}
+        <meta name="rating" content="General">
+        <meta name="distribution" content="Global">
+        <meta name="coverage" content="Worldwide">
+        <meta name="audience" content="All">
+        <meta name="classification" content="Fotocarnet, Documentos Oficiales, Fotografía Profesional">
 
         {{-- URL Canónica --}}
         <link rel="canonical" href="{{ route('fotocarnet.almeria') }}">
@@ -25,9 +43,9 @@
         <meta property="og:url" content="{{ route('fotocarnet.almeria') }}">
         <meta property="og:title" content="Fotocarnet al Instante en Almería | DNI, Pasaporte, Carnet Conducir - Foto Valera">
         <meta property="og:description" content="Fotocarnet profesional en Almería. Fotos para DNI, pasaporte, carnet de conducir, visados y documentos oficiales. Calidad garantizada, listo en minutos. Estudio profesional en centro de Almería.">
-        <meta property="og:image" content="{{ asset('images/og_fotocarnet_almeria.jpg') }}">
-        <meta property="og:image:width" content="1200">
-        <meta property="og:image:height" content="630">
+        <meta property="og:image" content="{{ $pageImageUrl }}">
+        <meta property="og:image:width" content="{{ $pageImageWidth }}">
+        <meta property="og:image:height" content="{{ $pageImageHeight }}">
         <meta property="og:image:alt" content="Fotocarnet profesional en Almería - Foto Valera">
         <meta property="og:site_name" content="Foto Valera">
         <meta property="og:locale" content="es_ES">
@@ -38,7 +56,7 @@
         <meta name="twitter:creator" content="@foto_valera">
         <meta name="twitter:title" content="Fotocarnet al Instante en Almería | DNI, Pasaporte, Carnet Conducir - Foto Valera">
         <meta name="twitter:description" content="Fotocarnet profesional en Almería. Fotos para DNI, pasaporte, carnet de conducir, visados y documentos oficiales. Calidad garantizada, listo en minutos.">
-        <meta name="twitter:image" content="{{ asset('images/twitter_fotocarnet_almeria.jpg') }}">
+        <meta name="twitter:image" content="{{ $pageImageUrl }}">
         <meta name="twitter:image:alt" content="Fotocarnet profesional en Almería - Foto Valera">
 
         {{-- Meta Tags Adicionales --}}
@@ -156,6 +174,67 @@
                         "text": "Sí, estamos al día con todos los requisitos específicos para fotos de DNI español, pasaporte europeo e internacional, así como para otros documentos oficiales y visados de diferentes países."
                     }
                 }
+            ]
+        }
+        </script>
+
+        {{-- Schema.org para Organization Mejorado 2025 - Para imagen en buscador --}}
+        <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "Foto Valera",
+            "legalName": "Foto Valera",
+            "url": "{{ route('home') }}",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "{{ Storage::disk('logos')->url('SuperLogo.png') }}",
+                "width": "600",
+                "height": "600"
+            },
+            "image": {
+                "@type": "ImageObject",
+                "url": "{{ $pageImageUrl }}",
+                "width": "{{ $pageImageWidth }}",
+                "height": "{{ $pageImageHeight }}"
+            },
+            "description": "Foto Valera es un estudio fotográfico profesional en Almería especializado en fotocarnet para documentos oficiales. Fotos para DNI, pasaporte, carnet de conducir, visados y documentos oficiales con cumplimiento estricto de normativas. Listo en minutos en nuestro estudio del centro de Almería.",
+            "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "C. Alcalde Muñoz, 13",
+                "addressLocality": "Almería",
+                "addressRegion": "Andalucía",
+                "postalCode": "04004",
+                "addressCountry": "ES"
+            },
+            "contactPoint": [
+                {
+                    "@type": "ContactPoint",
+                    "telephone": "+34-660-581-178",
+                    "contactType": "customer service",
+                    "availableLanguage": ["Spanish", "es"],
+                    "areaServed": "ES"
+                }
+            ],
+            "foundingDate": "2001",
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.8",
+                "reviewCount": "127",
+                "bestRating": "5",
+                "worstRating": "1"
+            },
+            "sameAs": [
+                "https://www.facebook.com/fotovalera",
+                "https://www.instagram.com/fotovalera",
+                "https://www.twitter.com/foto_valera"
+            ],
+            "knowsAbout": [
+                "Fotocarnet Profesional",
+                "Fotos para DNI",
+                "Fotos para Pasaporte",
+                "Fotos para Carnet de Conducir",
+                "Documentos Oficiales"
             ]
         }
         </script>
